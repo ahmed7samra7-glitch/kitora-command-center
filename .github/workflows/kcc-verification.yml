@@ -31,6 +31,21 @@ jobs:
       - name: Production build
         run: bun run build
 
+      - name: Start KCC server
+        run: |
+          nohup bun run server/index.ts > /tmp/kcc-server.log 2>&1 &
+          echo $! > /tmp/kcc-server.pid
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:3000/health >/dev/null 2>&1; then
+              echo "KCC server is ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "KCC server failed to become ready"
+          cat /tmp/kcc-server.log
+          exit 1
+
       - name: Adversarial proof suite
         run: bun run scripts/runAdversarialProofSuite.ts
 
@@ -42,3 +57,14 @@ jobs:
 
       - name: Orchestration verification
         run: node scripts/verifyOrchestration.js
+
+      - name: Stop KCC server
+        if: always()
+        run: |
+          if [ -f /tmp/kcc-server.pid ]; then
+            kill "$(cat /tmp/kcc-server.pid)" 2>/dev/null || true
+          fi
+          if [ -f /tmp/kcc-server.log ]; then
+            echo "--- KCC server log ---"
+            cat /tmp/kcc-server.log
+          fi
