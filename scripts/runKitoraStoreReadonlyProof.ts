@@ -1,44 +1,58 @@
 import { kitoraStoreAdapter } from '../server/kitoraStoreAdapter.js';
-import { kccMissionEngine } from '../server/kccMissionEngine.js';
-import { kccMissionLoop } from '../server/kccMissionLoop.js';
 
+/**
+ * Deterministic, read-only reality proof for the live KITORA store.
+ *
+ * This test intentionally does NOT create an Executive Brain mission or
+ * dispatch AI tasks. Mission orchestration is covered by the dedicated
+ * sequence/orchestration tests. Keeping this proof bounded prevents a
+ * live-store connectivity check from waiting on unrelated AI providers.
+ */
 async function runLiveKitoraInspection() {
+  const startedAt = Date.now();
+
   console.log('===================================================');
   console.log('KCC CONNECTING TO LIVE STORE: https://kitora.ai.studio/');
   console.log('===================================================');
 
-  // Step 1: Direct Store Adapter Inspection
   const inspection = await kitoraStoreAdapter.inspectStore();
   console.log('\n[1] DIRECT STORE ADAPTER INSPECTION:');
   console.log(JSON.stringify(inspection, null, 2));
 
-  // Step 2: Deployment & Latency Proof
   const deployment = await kitoraStoreAdapter.verifyDeployment();
   console.log('\n[2] DEPLOYMENT & LATENCY PROOF:');
   console.log(JSON.stringify(deployment, null, 2));
 
-  // Step 3: Executive Brain Autonomous Mission Connection
-  console.log('\n[3] EXECUTIVE BRAIN AUTONOMOUS MISSION CONNECTION:');
-  const mission = await kccMissionEngine.createMission(
-    "Connect to existing KITORA store (https://kitora.ai.studio/) and perform read-only inspection and reality verification",
-    "CRITICAL"
-  );
-  console.log(`Mission Created ID: ${mission.missionId}`);
-  console.log(`Initial Status: ${mission.status}`);
-  console.log(`Generated Tasks Count: ${mission.tasks.length}`);
+  // Explicit read-only assertions.
+  if (!deployment.verified) {
+    throw new Error('KITORA deployment could not be verified.');
+  }
 
-  // Execute Mission Loop
-  const processed = await kccMissionLoop.processMission(mission.missionId);
-  console.log('\n[4] MISSION EXECUTION COMPLETED:');
-  console.log(`Final Status: ${processed?.status}`);
-  console.log(`Progress: ${processed?.progressPercentage}%`);
-  console.log(`Tasks Results:`);
-  processed?.tasks.forEach(t => {
-    console.log(` - Task [${t.taskId}] ${t.title} (${t.assignedProvider}): ${t.status}`);
-    if (t.result?.kitoraInspection) {
-      console.log(`   Kitora Inspection Evidence:`, t.result.kitoraInspection.evidence);
-    }
-  });
+  if (inspection.checkoutStatus !== 'HEALTHY') {
+    throw new Error(`KITORA checkout health is ${inspection.checkoutStatus}.`);
+  }
+
+  const products = await kitoraStoreAdapter.getProducts();
+  const orders = await kitoraStoreAdapter.getOrders();
+  const inventory = await kitoraStoreAdapter.getInventory();
+
+  if (!Array.isArray(products)) {
+    throw new Error('KITORA product catalog is not readable.');
+  }
+
+  if (!Array.isArray(orders)) {
+    throw new Error('KITORA order store is not readable.');
+  }
+
+  if (typeof inventory !== 'object' || inventory === null || Array.isArray(inventory)) {
+    throw new Error('KITORA inventory state is not readable.');
+  }
+
+  console.log('\n[3] READ-ONLY STATE ASSERTIONS:');
+  console.log(`Products readable: ${products.length}`);
+  console.log(`Orders readable: ${orders.length}`);
+  console.log(`Inventory entries readable: ${Object.keys(inventory).length}`);
+  console.log(`Total proof duration: ${Date.now() - startedAt}ms`);
 
   console.log('\n===================================================');
   console.log('LIVE KITORA STORE READ-ONLY PROOF PASSED');
