@@ -9,224 +9,224 @@
   "cjOrders": [],
   "cjProducts": [
     {
-      "pid": "2608081005501627000",
-      "productName": "Heated Vest Portable 5V 2A Power Bank",
-      "productSku": "CJYD3046124",
-      "categoryName": "Power Bank",
-      "productImage": "https://oss-cf.cjdropshipping.com/product/2026/08/08/10/43639f2d-4a96-49ca-8371-28937f79caae_trans.jpeg",
-      "sellPrice": 3.05,
+      "pid": "2608090956141607700",
+      "productName": "Medieval Vintage Off Shoulder Dress - Women's Cinched Waist Asymmetrical Hem Summer Casual Tunic",
+      "productSku": "CJLY3047248",
+      "categoryName": "Lady Dresses",
+      "productImage": "https://oss-cf.cjdropshipping.com/product/2026/08/09/09/f1dbff80-ac76-44ea-be03-7fd02c92ea9e.jpg",
+      "sellPrice": 6.08,
       "costPrice": 12.5,
-      "netMarginPercentage": -309.84,
-      "inventoryCount": 450,
-      "supplierRiskScore": 9,
-      "variants": [
-        {
-          "vid": "VID-2608081005501627000-A",
-          "variantSku": "CJYD3046124-BLK",
-          "variantName": "Default / Black",
-          "variantPrice": 3.05,
-          "stock": 450
-        }
-      ],
-      "syncedAt": "2026-08-08T12:47:02.793Z"
-    },
-    {
-      "pid": "2608080932431600200",
-      "productName": "Durable Swivel Suitcase With Password Lock Box",
-      "productSku": "CJNS3046044",
-      "categoryName": "Luggage & Travel Bags",
-      "productImage": "https://oss-cf.cjdropshipping.com/product/2026/08/08/09/433d1f10-d934-4611-92d2-6c286c26ea61.jpg",
-      "sellPrice": 43.82,
-      "costPrice": 12.5,
-      "netMarginPercentage": 71.47,
-      "inventoryCount": 450,
-      "supplierRiskScore": 5,
-      "variants": [
-        {
-          "vid": "VID-2608080932431600200-A",
-          "variantSku": "CJNS3046044-BLK",
-          "variantName": "Default / Black",
-          "variantPrice": 43.82,
-          "stock": 450
-        }
-      ],
-      "syncedAt": "2026-08-08T12:47:02.793Z"
-    },
-    {
-      "pid": "2608080912271611500",
-      "productName": "6 Styles Of Colorful Wrist Tattoo Stickers For Womenlong-lasting Fresh And Chic",
-      "productSku": "CJYD3045999",
-      "categoryName": "Event & Party Supplies",
-      "productImage": "https://oss-cf.cjdropshipping.com/product/2026/08/08/09/b8f2cfb7-c16f-4fbb-bc26-a500fabebdb9_trans.jpeg",
-      "sellPrice": 1.3,
-      "costPrice": 12.5,
-      "netMarginPercentage": -861.54,
-      "inventoryCount": 450,
-      "supplierRiskScore": 9,
-      "variants": [
-        {
-          "vid": "VID-2608080912271611500-A",
-          "variantSku": "CJYD3045999-BLK",
-          "variantName": "Default / Black",
-          "variantPrice": 1.3,
-          "stock": 450
-        }
-      ],
-      "syncedAt": "2026-08-08T12:47:02.793Z"
-    },
-    {
-      "pid": "2608080908321600000",
-      "productName": "High-Speed Handheld Mini Fan With Digital Display Ice-Cooling Portable For Outdoor And Desk Use",
-      "productSku": "CJJT3045983",
-      "categoryName": "Smart Home Appliances",
-      "productImage": "https://oss-cf.cjdropshipping.com/product/2026/08/08/09/8159390f-200c-4292-b34b-b5d3f8f21f4e_trans.jpeg",
-      "sellPrice": 4.21,
-      "costPrice": 12.5,
-      "netMarginPercentage": -196.91,
-      "inventoryCount": 450,
-      "supplierRiskScore": 15,
-      "variants": [
-        {
-          "vid": "VID-2608080908321600000-A",
-          "variantSku": "CJJT3045983-BLK",
-          "variantName": "Default / Black",
-          "variantPrice": 4.21,
-          "stock": 450
-        }
-      ],
-      "syncedAt": "2026-08-08T12:47:02.793Z"
-    },
-    {
-      "pid": "2608080853161628200",
-      "productName": "Small Versatile Minimalist Earrings",
-      "productSku": "CJLX3045953",
-      "categoryName": "Earrings",
-      "productImage": "https://cf.cjdropshipping.com/quick/product/8ae00d19-dc70-48e5-bd4e-0701173575a3.jpg",
-      "sellPrice": 0.69,
-      "costPrice": 12.5,
-      "netMarginPercentage": -1711.59,
-      "inventoryCount": 450,
-      "supplierRiskScore": 7,
-      "variants": [
-        {
-          "vid": "VID-2608080853161628200-A",
-          "variantSku": "CJLX3045953-BLK",
-          "variantName": "Default / Black",
-          "variantPrice": 0.69,
-          "stock": 450
-        }
-      ],
-      "syncedAt": "2026-08-08T12:47:02.793Z"
-    },
-    {
-      "pid": "2608080853141630100",
-      "productName": "Mens Long-sleeve T-shirt With A Color-blocked Henley Sweater",
-      "productSku": "CJYH3045949",
-      "categoryName": "Men's Sweaters",
-      "productImage": "https://cf.cjdropshipping.com/quick/product/2631f23c-0cac-4614-8804-47bab1ae5343.jpg",
-      "sellPrice": 5.73,
-      "costPrice": 12.5,
-      "netMarginPercentage": -118.15,
-      "inventoryCount": 450,
-      "supplierRiskScore": 5,
-      "variants": [
-        {
-          "vid": "VID-2608080853141630100-A",
-          "variantSku": "CJYH3045949-BLK",
-          "variantName": "Default / Black",
-          "variantPrice": 5.73,
-          "stock": 450
-        }
-      ],
-      "syncedAt": "2026-08-08T12:47:02.793Z"
-    },
-    {
-      "pid": "2608080828421630300",
-      "productName": "Lightweight Outdoor Quick-Drying Towel",
-      "productSku": "CJYD3045890",
-      "categoryName": "Towels",
-      "productImage": "https://oss-cf.cjdropshipping.com/product/2026/08/08/08/73c9c17f-37ed-443b-ae8a-7580d615b59c_trans.jpeg",
-      "sellPrice": 0.75,
-      "costPrice": 12.5,
-      "netMarginPercentage": -1566.67,
-      "inventoryCount": 450,
-      "supplierRiskScore": 16,
-      "variants": [
-        {
-          "vid": "VID-2608080828421630300-A",
-          "variantSku": "CJYD3045890-BLK",
-          "variantName": "Default / Black",
-          "variantPrice": 0.75,
-          "stock": 450
-        }
-      ],
-      "syncedAt": "2026-08-08T12:47:02.793Z"
-    },
-    {
-      "pid": "2608080819411633900",
-      "productName": "Mens Formal Jacquard Scarf With Tiny Polka Dots Neck Wrap",
-      "productSku": "CJYD3045874",
-      "categoryName": "Scarves",
-      "productImage": "https://oss-cf.cjdropshipping.com/product/2026/08/08/08/dc9c26c8-09f0-486b-b350-6f7fd390988d_trans.jpeg",
-      "sellPrice": 2.57,
-      "costPrice": 12.5,
-      "netMarginPercentage": -386.38,
+      "netMarginPercentage": -105.59,
       "inventoryCount": 450,
       "supplierRiskScore": 10,
       "variants": [
         {
-          "vid": "VID-2608080819411633900-A",
-          "variantSku": "CJYD3045874-BLK",
+          "vid": "VID-2608090956141607700-A",
+          "variantSku": "CJLY3047248-BLK",
           "variantName": "Default / Black",
-          "variantPrice": 2.57,
+          "variantPrice": 6.08,
           "stock": 450
         }
       ],
-      "syncedAt": "2026-08-08T12:47:02.793Z"
+      "syncedAt": "2026-08-09T15:03:26.024Z"
     },
     {
-      "pid": "2608080812551611700",
-      "productName": "Womens Stylish Casual Sheath Dress",
-      "productSku": "CJYD3045859",
-      "categoryName": "Lady Dresses",
-      "productImage": "https://cf.cjdropshipping.com/quick/product/029d19c4-93ed-4dab-969c-f2abc37df688.jpg",
-      "sellPrice": 18.06,
+      "pid": "2608090922471620200",
+      "productName": "Mens New AutumnWinter Stylish Knitted Top",
+      "productSku": "CJMY3047202",
+      "categoryName": "Men's Sweaters",
+      "productImage": "https://cf.cjdropshipping.com/quick/product/2441dd77-6c51-4a8c-8c0c-5d7d92471c46.jpg",
+      "sellPrice": 7.47,
       "costPrice": 12.5,
-      "netMarginPercentage": 30.79,
+      "netMarginPercentage": -67.34,
+      "inventoryCount": 450,
+      "supplierRiskScore": 14,
+      "variants": [
+        {
+          "vid": "VID-2608090922471620200-A",
+          "variantSku": "CJMY3047202-BLK",
+          "variantName": "Default / Black",
+          "variantPrice": 7.47,
+          "stock": 450
+        }
+      ],
+      "syncedAt": "2026-08-09T15:03:26.024Z"
+    },
+    {
+      "pid": "2608090846171628300",
+      "productName": "Womens V-neck Draped Maxi Dress",
+      "productSku": "CJLY3047146",
+      "categoryName": "Lady Dresses",
+      "productImage": "https://cf.cjdropshipping.com/quick/product/6c7c7937-faa8-4d31-a91c-b87334485f7e.jpg",
+      "sellPrice": 9.03,
+      "costPrice": 12.5,
+      "netMarginPercentage": -38.43,
       "inventoryCount": 450,
       "supplierRiskScore": 18,
       "variants": [
         {
-          "vid": "VID-2608080812551611700-A",
-          "variantSku": "CJYD3045859-BLK",
+          "vid": "VID-2608090846171628300-A",
+          "variantSku": "CJLY3047146-BLK",
           "variantName": "Default / Black",
-          "variantPrice": 18.06,
+          "variantPrice": 9.03,
           "stock": 450
         }
       ],
-      "syncedAt": "2026-08-08T12:47:02.793Z"
+      "syncedAt": "2026-08-09T15:03:26.024Z"
     },
     {
-      "pid": "2608080808021605800",
-      "productName": "Arrival Lightning-Stripe Straight-Leg Denim Jeans For Men",
-      "productSku": "CJXX3045843",
-      "categoryName": "Casual Pants",
-      "productImage": "https://cf.cjdropshipping.com/quick/product/197633e7-e683-4ae7-b3e6-a832e6883e1d.jpg",
+      "pid": "2608090842231610000",
+      "productName": "Velvet Lantern-Sleeve Ruffled Peter-Pan Collar Shirt Dress For Women",
+      "productSku": "CJLY3047138",
+      "categoryName": "Lady Dresses",
+      "productImage": "https://cf.cjdropshipping.com/quick/product/77136ecb-47c9-43fb-8508-43f17cf65433.jpg",
       "sellPrice": 8.33,
       "costPrice": 12.5,
       "netMarginPercentage": -50.06,
       "inventoryCount": 450,
-      "supplierRiskScore": 7,
+      "supplierRiskScore": 13,
       "variants": [
         {
-          "vid": "VID-2608080808021605800-A",
-          "variantSku": "CJXX3045843-BLK",
+          "vid": "VID-2608090842231610000-A",
+          "variantSku": "CJLY3047138-BLK",
           "variantName": "Default / Black",
           "variantPrice": 8.33,
           "stock": 450
         }
       ],
-      "syncedAt": "2026-08-08T12:47:02.793Z"
+      "syncedAt": "2026-08-09T15:03:26.024Z"
+    },
+    {
+      "pid": "2608090842201612600",
+      "productName": "Crepy Skin Care Cream",
+      "productSku": "CJYD3047133",
+      "categoryName": "Face Skin Care Tools",
+      "productImage": "https://cf.cjdropshipping.com/quick/product/5d3fc8d4-b490-4fa8-ab96-b85c5b5a7bd8.jpg",
+      "sellPrice": 1.83,
+      "costPrice": 12.5,
+      "netMarginPercentage": -583.06,
+      "inventoryCount": 450,
+      "supplierRiskScore": 8,
+      "variants": [
+        {
+          "vid": "VID-2608090842201612600-A",
+          "variantSku": "CJYD3047133-BLK",
+          "variantName": "Default / Black",
+          "variantPrice": 1.83,
+          "stock": 450
+        }
+      ],
+      "syncedAt": "2026-08-09T15:03:26.024Z"
+    },
+    {
+      "pid": "2608090841401625300",
+      "productName": "Lightweight Luxury Sleepwear Set With A Robe And Trousers",
+      "productSku": "CJYD3047135",
+      "categoryName": "Sleep & Lounge",
+      "productImage": "https://cf.cjdropshipping.com/quick/product/9a84fb4f-acfb-474e-9788-cd8a3abb86c0.jpg",
+      "sellPrice": 4.56,
+      "costPrice": 12.5,
+      "netMarginPercentage": -174.12,
+      "inventoryCount": 450,
+      "supplierRiskScore": 19,
+      "variants": [
+        {
+          "vid": "VID-2608090841401625300-A",
+          "variantSku": "CJYD3047135-BLK",
+          "variantName": "Default / Black",
+          "variantPrice": 4.56,
+          "stock": 450
+        }
+      ],
+      "syncedAt": "2026-08-09T15:03:26.024Z"
+    },
+    {
+      "pid": "2608090838191607500",
+      "productName": "Quick-release Nylon Watch Strap With Magnetic Wristband",
+      "productSku": "CJYD3047124",
+      "categoryName": "Watch Accessories",
+      "productImage": "https://oss-cf.cjdropshipping.com/product/2026/08/09/08/c8f52e3d-0eaa-48a4-a835-4f51b5b5578f_water.jpeg",
+      "sellPrice": 6.06,
+      "costPrice": 12.5,
+      "netMarginPercentage": -106.27,
+      "inventoryCount": 450,
+      "supplierRiskScore": 14,
+      "variants": [
+        {
+          "vid": "VID-2608090838191607500-A",
+          "variantSku": "CJYD3047124-BLK",
+          "variantName": "Default / Black",
+          "variantPrice": 6.06,
+          "stock": 450
+        }
+      ],
+      "syncedAt": "2026-08-09T15:03:26.024Z"
+    },
+    {
+      "pid": "2608090837361624500",
+      "productName": "Tea Room Incense Holder Storage Tray",
+      "productSku": "CJJT3047128",
+      "categoryName": "Home Office Storage",
+      "productImage": "https://cf.cjdropshipping.com/quick/product/5c104c30-5af4-441d-93e9-040fb79604a4.jpg",
+      "sellPrice": 3.1,
+      "costPrice": 12.5,
+      "netMarginPercentage": -303.23,
+      "inventoryCount": 450,
+      "supplierRiskScore": 19,
+      "variants": [
+        {
+          "vid": "VID-2608090837361624500-A",
+          "variantSku": "CJJT3047128-BLK",
+          "variantName": "Default / Black",
+          "variantPrice": 3.1,
+          "stock": 450
+        }
+      ],
+      "syncedAt": "2026-08-09T15:03:26.024Z"
+    },
+    {
+      "pid": "2608090837241628600",
+      "productName": "Collagen Eye Nourishing Stick",
+      "productSku": "CJMJ3047129",
+      "categoryName": "Face Skin Care Tools",
+      "productImage": "https://cf.cjdropshipping.com/quick/product/d3612490-99af-48b6-a050-8b7ae493ab6b.jpg",
+      "sellPrice": 1.83,
+      "costPrice": 12.5,
+      "netMarginPercentage": -583.06,
+      "inventoryCount": 450,
+      "supplierRiskScore": 5,
+      "variants": [
+        {
+          "vid": "VID-2608090837241628600-A",
+          "variantSku": "CJMJ3047129-BLK",
+          "variantName": "Default / Black",
+          "variantPrice": 1.83,
+          "stock": 450
+        }
+      ],
+      "syncedAt": "2026-08-09T15:03:26.024Z"
+    },
+    {
+      "pid": "2608090832551635800",
+      "productName": "Peppermint Skin Lotion",
+      "productSku": "CJYD3047126",
+      "categoryName": "Face Skin Care Tools",
+      "productImage": "https://cf.cjdropshipping.com/quick/product/c962770f-78eb-4874-900e-2de7295a37bb.jpg",
+      "sellPrice": 1.83,
+      "costPrice": 12.5,
+      "netMarginPercentage": -583.06,
+      "inventoryCount": 450,
+      "supplierRiskScore": 15,
+      "variants": [
+        {
+          "vid": "VID-2608090832551635800-A",
+          "variantSku": "CJYD3047126-BLK",
+          "variantName": "Default / Black",
+          "variantPrice": 1.83,
+          "stock": 450
+        }
+      ],
+      "syncedAt": "2026-08-09T15:03:26.024Z"
     }
   ],
   "storeCatalog": [
@@ -281,55 +281,519 @@
       "name": "Autonomous Order Fulfillment Processor",
       "cronExpression": "*/1 * * * *",
       "intervalMs": 60000,
-      "nextRunAt": "2026-08-08T12:50:01.295Z",
+      "nextRunAt": "2026-08-09T15:04:24.558Z",
       "status": "SUCCESS",
       "failureCount": 0,
       "maxRetries": 3,
       "enabled": true,
       "category": "FULFILLMENT",
-      "lastRunAt": "2026-08-08T12:49:01.272Z"
+      "lastRunAt": "2026-08-09T15:03:24.532Z"
     },
     {
       "id": "JOB-CJ-CATALOG-SYNC",
       "name": "CJ Dropshipping Catalog & Margin Sync",
       "cronExpression": "*/15 * * * *",
       "intervalMs": 900000,
-      "nextRunAt": "2026-08-08T13:02:02.818Z",
+      "nextRunAt": "2026-08-09T15:18:26.050Z",
       "status": "SUCCESS",
       "failureCount": 0,
       "maxRetries": 3,
       "enabled": true,
       "category": "SYNC",
-      "lastRunAt": "2026-08-08T12:47:01.245Z"
+      "lastRunAt": "2026-08-09T15:03:24.585Z"
     },
     {
       "id": "JOB-INVENTORY-REBALANCE",
       "name": "Inventory Stock & Risk Monitor",
       "cronExpression": "*/30 * * * *",
       "intervalMs": 1800000,
-      "nextRunAt": "2026-08-08T13:16:35.463Z",
+      "nextRunAt": "2026-08-09T15:33:26.113Z",
       "status": "SUCCESS",
       "failureCount": 0,
       "maxRetries": 3,
       "enabled": true,
       "category": "SYNC",
-      "lastRunAt": "2026-08-08T12:46:35.387Z"
+      "lastRunAt": "2026-08-09T15:03:26.075Z"
     },
     {
       "id": "JOB-HEALTH-HEARTBEAT",
       "name": "Core System Health & Heartbeat Checker",
       "cronExpression": "*/30s * * * *",
       "intervalMs": 30000,
-      "nextRunAt": "2026-08-08T12:49:41.300Z",
+      "nextRunAt": "2026-08-09T15:03:56.465Z",
       "status": "SUCCESS",
       "failureCount": 0,
       "maxRetries": 5,
       "enabled": true,
       "category": "HEALTH",
-      "lastRunAt": "2026-08-08T12:49:11.273Z"
+      "lastRunAt": "2026-08-09T15:03:26.138Z"
     }
   ],
   "eventLogs": [
+    {
+      "id": "EVT-1786287824755-4636",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-X8W45A",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:44.744Z"
+      },
+      "timestamp": "2026-08-09T15:03:44.755Z"
+    },
+    {
+      "id": "EVT-1786287824731-4569",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-K0VDC6",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:44.721Z"
+      },
+      "timestamp": "2026-08-09T15:03:44.732Z"
+    },
+    {
+      "id": "EVT-1786287824694-5128",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-W1KLKM",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:44.683Z"
+      },
+      "timestamp": "2026-08-09T15:03:44.694Z"
+    },
+    {
+      "id": "EVT-1786287824668-6720",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-OXJVM3",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:44.656Z"
+      },
+      "timestamp": "2026-08-09T15:03:44.668Z"
+    },
+    {
+      "id": "EVT-1786287819742-9695",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-6UN50Q",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:39.727Z"
+      },
+      "timestamp": "2026-08-09T15:03:39.742Z"
+    },
+    {
+      "id": "EVT-1786287819702-790",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-P4THC0",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:39.691Z"
+      },
+      "timestamp": "2026-08-09T15:03:39.702Z"
+    },
+    {
+      "id": "EVT-1786287819679-166",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-1VFEDP",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:39.667Z"
+      },
+      "timestamp": "2026-08-09T15:03:39.679Z"
+    },
+    {
+      "id": "EVT-1786287819655-4638",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-2AWNZ8",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:39.643Z"
+      },
+      "timestamp": "2026-08-09T15:03:39.655Z"
+    },
+    {
+      "id": "EVT-1786287814739-4269",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-KN7KDR",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:34.727Z"
+      },
+      "timestamp": "2026-08-09T15:03:34.739Z"
+    },
+    {
+      "id": "EVT-1786287814700-1664",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-Y0LCSL",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:34.688Z"
+      },
+      "timestamp": "2026-08-09T15:03:34.700Z"
+    },
+    {
+      "id": "EVT-1786287814677-8444",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-00H8LK",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:34.664Z"
+      },
+      "timestamp": "2026-08-09T15:03:34.677Z"
+    },
+    {
+      "id": "EVT-1786287814651-9952",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-NJQIVF",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:34.639Z"
+      },
+      "timestamp": "2026-08-09T15:03:34.651Z"
+    },
+    {
+      "id": "EVT-1786287809738-3543",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-U4561C",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:29.727Z"
+      },
+      "timestamp": "2026-08-09T15:03:29.738Z"
+    },
+    {
+      "id": "EVT-1786287809704-138",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-4AP6ZN",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:29.688Z"
+      },
+      "timestamp": "2026-08-09T15:03:29.704Z"
+    },
+    {
+      "id": "EVT-1786287809676-1557",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-BOQNCR",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:29.664Z"
+      },
+      "timestamp": "2026-08-09T15:03:29.677Z"
+    },
+    {
+      "id": "EVT-1786287809650-9913",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-S9IIIE",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:29.638Z"
+      },
+      "timestamp": "2026-08-09T15:03:29.650Z"
+    },
+    {
+      "id": "EVT-1786287806465-3252",
+      "topic": "SCHEDULER.JOB.COMPLETED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-V6SOFF",
+      "payload": {
+        "jobId": "JOB-HEALTH-HEARTBEAT"
+      },
+      "timestamp": "2026-08-09T15:03:26.465Z"
+    },
+    {
+      "id": "EVT-1786287806451-7179",
+      "topic": "PAYPAL.AUTH.SUCCESS",
+      "source": "PayPalRuntime",
+      "traceId": "TR-J5XVID",
+      "payload": {
+        "mode": "live",
+        "expiresIn": 32400
+      },
+      "timestamp": "2026-08-09T15:03:26.451Z"
+    },
+    {
+      "id": "EVT-1786287806150-308",
+      "topic": "SCHEDULER.JOB.STARTED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-8A3Z9Z",
+      "payload": {
+        "jobId": "JOB-HEALTH-HEARTBEAT",
+        "name": "Core System Health & Heartbeat Checker"
+      },
+      "timestamp": "2026-08-09T15:03:26.150Z"
+    },
+    {
+      "id": "EVT-1786287806113-5346",
+      "topic": "SCHEDULER.JOB.COMPLETED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-NJBAWD",
+      "payload": {
+        "jobId": "JOB-INVENTORY-REBALANCE"
+      },
+      "timestamp": "2026-08-09T15:03:26.113Z"
+    },
+    {
+      "id": "EVT-1786287806100-3160",
+      "topic": "CJ.INVENTORY.SYNCED",
+      "source": "CJDropshippingRuntime",
+      "traceId": "TR-WL1FOV",
+      "payload": {
+        "totalSkus": 10,
+        "totalUnits": 4500,
+        "updatedAt": "2026-08-09T15:03:26.100Z"
+      },
+      "timestamp": "2026-08-09T15:03:26.100Z"
+    },
+    {
+      "id": "EVT-1786287806088-9223",
+      "topic": "SCHEDULER.JOB.STARTED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-LCUUWY",
+      "payload": {
+        "jobId": "JOB-INVENTORY-REBALANCE",
+        "name": "Inventory Stock & Risk Monitor"
+      },
+      "timestamp": "2026-08-09T15:03:26.088Z"
+    },
+    {
+      "id": "EVT-1786287806050-3534",
+      "topic": "SCHEDULER.JOB.COMPLETED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-2RF7PF",
+      "payload": {
+        "jobId": "JOB-CJ-CATALOG-SYNC"
+      },
+      "timestamp": "2026-08-09T15:03:26.050Z"
+    },
+    {
+      "id": "EVT-1786287806037-7160",
+      "topic": "CJ.PRODUCTS.SYNCED",
+      "source": "CJDropshippingRuntime",
+      "traceId": "TR-NZSKDD",
+      "payload": {
+        "count": 10
+      },
+      "timestamp": "2026-08-09T15:03:26.037Z"
+    },
+    {
+      "id": "EVT-1786287804738-394",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-FXET4Z",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:24.726Z"
+      },
+      "timestamp": "2026-08-09T15:03:24.738Z"
+    },
+    {
+      "id": "EVT-1786287804701-8249",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-OIJAJH",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:24.688Z"
+      },
+      "timestamp": "2026-08-09T15:03:24.701Z"
+    },
+    {
+      "id": "EVT-1786287804677-3735",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-X7EP4B",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:24.664Z"
+      },
+      "timestamp": "2026-08-09T15:03:24.677Z"
+    },
+    {
+      "id": "EVT-1786287804651-4002",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-H3LAGO",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:24.638Z"
+      },
+      "timestamp": "2026-08-09T15:03:24.652Z"
+    },
+    {
+      "id": "EVT-1786287804597-5621",
+      "topic": "SCHEDULER.JOB.STARTED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-6YWD80",
+      "payload": {
+        "jobId": "JOB-CJ-CATALOG-SYNC",
+        "name": "CJ Dropshipping Catalog & Margin Sync"
+      },
+      "timestamp": "2026-08-09T15:03:24.597Z"
+    },
+    {
+      "id": "EVT-1786287804559-4921",
+      "topic": "SCHEDULER.JOB.COMPLETED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-UZO0OG",
+      "payload": {
+        "jobId": "JOB-ORDER-FULFILLMENT"
+      },
+      "timestamp": "2026-08-09T15:03:24.559Z"
+    },
+    {
+      "id": "EVT-1786287804544-7029",
+      "topic": "SCHEDULER.JOB.STARTED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-RH2C7N",
+      "payload": {
+        "jobId": "JOB-ORDER-FULFILLMENT",
+        "name": "Autonomous Order Fulfillment Processor"
+      },
+      "timestamp": "2026-08-09T15:03:24.544Z"
+    },
+    {
+      "id": "EVT-1786287799691-9495",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-LK6MY4",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:19.679Z"
+      },
+      "timestamp": "2026-08-09T15:03:19.691Z"
+    },
+    {
+      "id": "EVT-1786287799666-6953",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-J5DLU2",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:19.652Z"
+      },
+      "timestamp": "2026-08-09T15:03:19.666Z"
+    },
+    {
+      "id": "EVT-1786287799640-4768",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-YY4AR5",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:19.629Z"
+      },
+      "timestamp": "2026-08-09T15:03:19.640Z"
+    },
+    {
+      "id": "EVT-1786287799614-2409",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-4WH4BI",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:19.600Z"
+      },
+      "timestamp": "2026-08-09T15:03:19.614Z"
+    },
+    {
+      "id": "EVT-1786287794664-6416",
+      "topic": "worker_registered",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-8GK3BD",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "provider": "openai",
+        "status": "ONLINE"
+      },
+      "timestamp": "2026-08-09T15:03:14.664Z"
+    },
+    {
+      "id": "EVT-1786287794632-3814",
+      "topic": "worker_registered",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-7EJ5JE",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "provider": "claude",
+        "status": "ONLINE"
+      },
+      "timestamp": "2026-08-09T15:03:14.632Z"
+    },
+    {
+      "id": "EVT-1786287794610-3305",
+      "topic": "worker_registered",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-VK9D6A",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "provider": "manus",
+        "status": "ONLINE"
+      },
+      "timestamp": "2026-08-09T15:03:14.610Z"
+    },
+    {
+      "id": "EVT-1786287794587-5373",
+      "topic": "worker_registered",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-XPMLLR",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "provider": "gemini",
+        "status": "ONLINE"
+      },
+      "timestamp": "2026-08-09T15:03:14.587Z"
+    },
+    {
+      "id": "EVT-1786287794565-2338",
+      "topic": "RUNTIME.BOOT.SUCCESS",
+      "source": "AutonomousAgentRuntime",
+      "traceId": "TR-F569KN",
+      "payload": {
+        "zeroTouchMode": true,
+        "timestamp": "2026-08-09T15:03:14.565Z"
+      },
+      "timestamp": "2026-08-09T15:03:14.565Z"
+    },
     {
       "id": "EVT-1786193366592-6377",
       "topic": "worker_heartbeat",
@@ -5774,483 +6238,6 @@
         "timestamp": "2026-08-08T12:40:58.802Z"
       },
       "timestamp": "2026-08-08T12:40:58.816Z"
-    },
-    {
-      "id": "EVT-1786192854019-9316",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-DBXRET",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:54.007Z"
-      },
-      "timestamp": "2026-08-08T12:40:54.019Z"
-    },
-    {
-      "id": "EVT-1786192853982-8802",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-XGRCW9",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:53.969Z"
-      },
-      "timestamp": "2026-08-08T12:40:53.982Z"
-    },
-    {
-      "id": "EVT-1786192853924-4233",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-DBD18D",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:53.911Z"
-      },
-      "timestamp": "2026-08-08T12:40:53.924Z"
-    },
-    {
-      "id": "EVT-1786192853815-3671",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-MGZT4T",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:53.802Z"
-      },
-      "timestamp": "2026-08-08T12:40:53.815Z"
-    },
-    {
-      "id": "EVT-1786192849020-7049",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-RT63OP",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:49.007Z"
-      },
-      "timestamp": "2026-08-08T12:40:49.020Z"
-    },
-    {
-      "id": "EVT-1786192848980-9520",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-B73K3F",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:48.968Z"
-      },
-      "timestamp": "2026-08-08T12:40:48.980Z"
-    },
-    {
-      "id": "EVT-1786192848924-9629",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-VVZKQ4",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:48.910Z"
-      },
-      "timestamp": "2026-08-08T12:40:48.924Z"
-    },
-    {
-      "id": "EVT-1786192848802-3193",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-FREI5E",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:48.790Z"
-      },
-      "timestamp": "2026-08-08T12:40:48.802Z"
-    },
-    {
-      "id": "EVT-1786192844019-742",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-XPZFW3",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:44.007Z"
-      },
-      "timestamp": "2026-08-08T12:40:44.019Z"
-    },
-    {
-      "id": "EVT-1786192843982-2684",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-47GYUT",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:43.968Z"
-      },
-      "timestamp": "2026-08-08T12:40:43.982Z"
-    },
-    {
-      "id": "EVT-1786192843924-396",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-DZT5OP",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:43.909Z"
-      },
-      "timestamp": "2026-08-08T12:40:43.924Z"
-    },
-    {
-      "id": "EVT-1786192843800-103",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-60TT8X",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:43.789Z"
-      },
-      "timestamp": "2026-08-08T12:40:43.800Z"
-    },
-    {
-      "id": "EVT-1786192839018-7493",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-OE8PP0",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:39.006Z"
-      },
-      "timestamp": "2026-08-08T12:40:39.018Z"
-    },
-    {
-      "id": "EVT-1786192838971-9105",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-NBCWI3",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:38.957Z"
-      },
-      "timestamp": "2026-08-08T12:40:38.971Z"
-    },
-    {
-      "id": "EVT-1786192838920-6231",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-QMNVQA",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:38.908Z"
-      },
-      "timestamp": "2026-08-08T12:40:38.920Z"
-    },
-    {
-      "id": "EVT-1786192838804-4225",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-3HZZW0",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:38.788Z"
-      },
-      "timestamp": "2026-08-08T12:40:38.804Z"
-    },
-    {
-      "id": "EVT-1786192834060-7833",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-ZEQRDZ",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:34.005Z"
-      },
-      "timestamp": "2026-08-08T12:40:34.060Z"
-    },
-    {
-      "id": "EVT-1786192833972-9701",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-HVICZC",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:33.955Z"
-      },
-      "timestamp": "2026-08-08T12:40:33.972Z"
-    },
-    {
-      "id": "EVT-1786192833912-9811",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-8PWSQV",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:33.898Z"
-      },
-      "timestamp": "2026-08-08T12:40:33.912Z"
-    },
-    {
-      "id": "EVT-1786192833801-6044",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-QMJG5K",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:33.788Z"
-      },
-      "timestamp": "2026-08-08T12:40:33.801Z"
-    },
-    {
-      "id": "EVT-1786192833623-4362",
-      "topic": "SCHEDULER.JOB.COMPLETED",
-      "source": "SchedulerEngine",
-      "traceId": "TR-0CU6KS",
-      "payload": {
-        "jobId": "JOB-HEALTH-HEARTBEAT"
-      },
-      "timestamp": "2026-08-08T12:40:33.623Z"
-    },
-    {
-      "id": "EVT-1786192833610-6107",
-      "topic": "SCHEDULER.JOB.STARTED",
-      "source": "SchedulerEngine",
-      "traceId": "TR-E0SMFL",
-      "payload": {
-        "jobId": "JOB-HEALTH-HEARTBEAT",
-        "name": "Core System Health & Heartbeat Checker"
-      },
-      "timestamp": "2026-08-08T12:40:33.610Z"
-    },
-    {
-      "id": "EVT-1786192829069-8648",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-778NGX",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:29.004Z"
-      },
-      "timestamp": "2026-08-08T12:40:29.069Z"
-    },
-    {
-      "id": "EVT-1786192828967-45",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-9VNY1V",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:28.955Z"
-      },
-      "timestamp": "2026-08-08T12:40:28.967Z"
-    },
-    {
-      "id": "EVT-1786192828897-9735",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-KPG3OE",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:28.884Z"
-      },
-      "timestamp": "2026-08-08T12:40:28.897Z"
-    },
-    {
-      "id": "EVT-1786192828794-1401",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-9KZE67",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:28.774Z"
-      },
-      "timestamp": "2026-08-08T12:40:28.794Z"
-    },
-    {
-      "id": "EVT-1786192824056-4298",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-WHPOWW",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:24.003Z"
-      },
-      "timestamp": "2026-08-08T12:40:24.056Z"
-    },
-    {
-      "id": "EVT-1786192823969-9393",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-0MPTTO",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:23.953Z"
-      },
-      "timestamp": "2026-08-08T12:40:23.969Z"
-    },
-    {
-      "id": "EVT-1786192823896-725",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-VXDF2A",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:23.884Z"
-      },
-      "timestamp": "2026-08-08T12:40:23.896Z"
-    },
-    {
-      "id": "EVT-1786192823785-7733",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-0ZDSET",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:23.773Z"
-      },
-      "timestamp": "2026-08-08T12:40:23.785Z"
-    },
-    {
-      "id": "EVT-1786192819014-9130",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-PT7WCG",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:19.002Z"
-      },
-      "timestamp": "2026-08-08T12:40:19.014Z"
-    },
-    {
-      "id": "EVT-1786192818936-33",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-8E59FV",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:18.923Z"
-      },
-      "timestamp": "2026-08-08T12:40:18.936Z"
-    },
-    {
-      "id": "EVT-1786192818884-5653",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-U5FOKV",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:18.871Z"
-      },
-      "timestamp": "2026-08-08T12:40:18.884Z"
-    },
-    {
-      "id": "EVT-1786192818786-3233",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-K95GA4",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:18.773Z"
-      },
-      "timestamp": "2026-08-08T12:40:18.786Z"
-    },
-    {
-      "id": "EVT-1786192814015-3396",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-JZ630F",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:14.002Z"
-      },
-      "timestamp": "2026-08-08T12:40:14.015Z"
-    },
-    {
-      "id": "EVT-1786192813933-5584",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-6Z8ASP",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:13.922Z"
-      },
-      "timestamp": "2026-08-08T12:40:13.933Z"
-    },
-    {
-      "id": "EVT-1786192813882-7484",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-EZP1O4",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:13.870Z"
-      },
-      "timestamp": "2026-08-08T12:40:13.882Z"
-    },
-    {
-      "id": "EVT-1786192813784-1158",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-8LXN8N",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:13.772Z"
-      },
-      "timestamp": "2026-08-08T12:40:13.784Z"
-    },
-    {
-      "id": "EVT-1786192809015-756",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-VEVCJL",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:09.001Z"
-      },
-      "timestamp": "2026-08-08T12:40:09.015Z"
-    },
-    {
-      "id": "EVT-1786192808954-1263",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-CVNAY3",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:08.920Z"
-      },
-      "timestamp": "2026-08-08T12:40:08.954Z"
     }
   ],
   "kccPromptRegistry": {
@@ -6305,7 +6292,7 @@
   },
   "kccMissionControlState": {
     "isBooted": true,
-    "lastBootAt": "2026-08-08T12:46:41.246Z",
+    "lastBootAt": "2026-08-09T15:03:14.534Z",
     "operationalMode": "KCC_CTO_FULL_AUTONOMOUS",
     "status": "ALL_SERVICES_ONLINE"
   },
@@ -6516,7 +6503,7 @@
   ],
   "kccSelfDevLoopStats": {
     "isLoopRunning": true,
-    "lastIterationAt": "2026-08-08T12:46:41.393Z",
+    "lastIterationAt": "2026-08-09T15:03:14.682Z",
     "totalTasksObserved": 3,
     "tasksCompletedAndLearned": 1,
     "tasksInFlight": 1,
@@ -6551,7 +6538,7 @@
       "status": "ONLINE",
       "workerType": "REMOTE_AI_WORKER",
       "currentTask": null,
-      "lastHeartbeat": "2026-08-08T12:49:28.096Z",
+      "lastHeartbeat": "2026-08-09T15:03:48.234Z",
       "registeredAt": "2026-08-07T17:43:06.907Z"
     },
     {
@@ -6566,7 +6553,7 @@
       "status": "ONLINE",
       "workerType": "REMOTE_AI_WORKER",
       "currentTask": null,
-      "lastHeartbeat": "2026-08-08T12:49:28.268Z",
+      "lastHeartbeat": "2026-08-09T15:03:48.296Z",
       "registeredAt": "2026-08-07T17:43:06.907Z"
     },
     {
@@ -6580,7 +6567,7 @@
       "status": "ONLINE",
       "workerType": "REMOTE_AI_WORKER",
       "currentTask": null,
-      "lastHeartbeat": "2026-08-08T12:49:28.319Z",
+      "lastHeartbeat": "2026-08-09T15:03:48.355Z",
       "registeredAt": "2026-08-07T17:43:06.908Z"
     },
     {
@@ -6594,7 +6581,7 @@
       "status": "ONLINE",
       "workerType": "REMOTE_AI_WORKER",
       "currentTask": null,
-      "lastHeartbeat": "2026-08-08T12:49:27.856Z",
+      "lastHeartbeat": "2026-08-09T15:03:48.370Z",
       "registeredAt": "2026-08-07T17:43:06.908Z"
     }
   ],
@@ -10095,7 +10082,7 @@
     }
   ],
   "kccConsensusDecisions": [],
-  "updatedAt": "2026-08-08T12:49:28.320Z",
+  "updatedAt": "2026-08-09T15:03:48.370Z",
   "kccBusinessKPIs": {
     "totalRevenue": 18450.75,
     "totalProfit": 12300.5,
