@@ -2,7 +2,6 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 
-// Single-owner configuration is environment driven. Production must fail closed.
 export function getOwnerEmail(): string {
   const email = process.env.ADMIN_EMAIL;
   if (!email) throw new Error('ADMIN_EMAIL is required');
@@ -32,11 +31,7 @@ export interface SecurityAuditEvent {
 const securityAuditLogs: SecurityAuditEvent[] = [];
 
 export function logSecurityEvent(event: Omit<SecurityAuditEvent, 'id' | 'timestamp'>) {
-  const entry: SecurityAuditEvent = {
-    id: `SEC-LOG-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-    timestamp: new Date().toISOString(),
-    ...event
-  };
+  const entry = { id: `SEC-LOG-${Date.now()}-${Math.floor(Math.random() * 1000)}`, timestamp: new Date().toISOString(), ...event };
   securityAuditLogs.unshift(entry);
   if (securityAuditLogs.length > 500) securityAuditLogs.pop();
 }
@@ -46,29 +41,17 @@ export function getSecurityAuditLogs(): SecurityAuditEvent[] { return securityAu
 export function initializeSingleOwnerSecurity() {
   const email = getOwnerEmail();
   currentPasswordHash = process.env.ADMIN_PASSWORD_HASH || '';
-  if (!currentPasswordHash) {
-    throw new Error('ADMIN_PASSWORD_HASH is required; refusing to start without configured owner credentials.');
-  }
+  if (!currentPasswordHash) throw new Error('ADMIN_PASSWORD_HASH is required; refusing to start without configured owner credentials.');
   getJwtSecret();
-  logSecurityEvent({
-    eventType: 'LOGIN_SUCCESS',
-    ip: '127.0.0.1',
-    userAgent: 'SYSTEM_BOOT',
-    path: '/system/boot',
-    details: `Single Owner initialized for ${email}. Registration & Demo access disabled.`
-  });
+  logSecurityEvent({ eventType: 'LOGIN_SUCCESS', ip: '127.0.0.1', userAgent: 'SYSTEM_BOOT', path: '/system/boot', details: `Single Owner initialized for ${email}. Registration & Demo access disabled.` });
   console.log(`[Single Owner Security] Single Owner system active for: ${email}`);
 }
 
 export function checkLoginRateLimit(ip: string): { allowed: boolean; remainingAttempts: number; retryAfterSecs: number } {
-  const now = Date.now();
-  const windowMs = 15 * 60 * 1000;
-  const maxFailures = 5;
+  const now = Date.now(), windowMs = 15 * 60 * 1000, maxFailures = 5;
   const attempts = (failedLoginAttempts.get(ip) || []).filter(ts => now - ts < windowMs);
   failedLoginAttempts.set(ip, attempts);
-  if (attempts.length >= maxFailures) {
-    return { allowed: false, remainingAttempts: 0, retryAfterSecs: Math.ceil((attempts[0] + windowMs - now) / 1000) };
-  }
+  if (attempts.length >= maxFailures) return { allowed: false, remainingAttempts: 0, retryAfterSecs: Math.ceil((attempts[0] + windowMs - now) / 1000) };
   return { allowed: true, remainingAttempts: maxFailures - attempts.length, retryAfterSecs: 0 };
 }
 
@@ -83,19 +66,10 @@ export function clearFailedLogins(ip: string) { failedLoginAttempts.delete(ip); 
 
 export async function authenticateOwner(emailInput: string, passwordInput: string): Promise<{ success: boolean; token?: string; error?: string }> {
   const ownerEmail = getOwnerEmail();
-  if (emailInput.toLowerCase().trim() !== ownerEmail.toLowerCase().trim()) {
-    return { success: false, error: 'Forbidden. Only the configured administrator is allowed to log in.' };
-  }
-  if (!currentPasswordHash || !getJwtSecret()) {
-    return { success: false, error: 'Authentication is not configured.' };
-  }
-  const isValid = bcrypt.compareSync(passwordInput, currentPasswordHash);
-  if (!isValid) return { success: false, error: 'Invalid owner credentials.' };
-  const token = jwt.sign(
-    { email: ownerEmail, role: 'OWNER', v: activeJwtVersion, iss: 'KCC_SECURITY_GATEWAY' },
-    getJwtSecret(),
-    { expiresIn: '24h' }
-  );
+  if (emailInput.toLowerCase().trim() !== ownerEmail.toLowerCase().trim()) return { success: false, error: 'Forbidden. Only the configured administrator is allowed to log in.' };
+  if (!currentPasswordHash || !getJwtSecret()) return { success: false, error: 'Authentication is not configured.' };
+  if (!bcrypt.compareSync(passwordInput, currentPasswordHash)) return { success: false, error: 'Invalid owner credentials.' };
+  const token = jwt.sign({ email: ownerEmail, role: 'OWNER', v: activeJwtVersion, iss: 'KCC_SECURITY_GATEWAY' }, getJwtSecret(), { expiresIn: '24h' });
   return { success: true, token };
 }
 
@@ -105,9 +79,7 @@ export function verifyOwnerToken(token: string): { valid: boolean; email?: strin
     if (!decoded || decoded.email?.toLowerCase() !== getOwnerEmail().toLowerCase()) return { valid: false, error: 'Unauthorized owner email in token' };
     if (decoded.v !== activeJwtVersion) return { valid: false, error: 'Session invalidated due to emergency lockdown or logout everywhere' };
     return { valid: true, email: decoded.email };
-  } catch (err: any) {
-    return { valid: false, error: err?.message || 'Invalid or expired token' };
-  }
+  } catch (err: any) { return { valid: false, error: err?.message || 'Invalid or expired token' }; }
 }
 
 export function verifySingleOwnerSession(token: string): boolean { return verifyOwnerToken(token).valid; }
@@ -140,20 +112,5 @@ export function requireOwnerAuth(req: Request, res: Response, next: NextFunction
 }
 
 export function getSecurityAuditSummary(protectedRouteCount: number = 32) {
-  return {
-    singleOwner: true,
-    registrationDisabled: true,
-    ownerEmail: getOwnerEmail(),
-    protectedRoutes: protectedRouteCount,
-    authentication: 'ACTIVE',
-    authorization: 'ACTIVE',
-    demoAccessRemoved: true,
-    jwt: 'ACTIVE',
-    helmet: true,
-    rateLimit: true,
-    csrf: true,
-    lockdownEndpoint: true,
-    ownerTransferSupported: true,
-    activeJwtVersion
-  };
+  return { singleOwner: true, registrationDisabled: true, ownerEmail: getOwnerEmail(), protectedRoutes: protectedRouteCount, authentication: 'ACTIVE', authorization: 'ACTIVE', demoAccessRemoved: true, jwt: 'ACTIVE', helmet: true, rateLimit: true, csrf: true, lockdownEndpoint: true, ownerTransferSupported: true, activeJwtVersion };
 }
