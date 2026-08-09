@@ -105,20 +105,16 @@ app.use((req: Request, res: Response, next) => {
     path.startsWith('/api/phase4/store/catalog') ||
     path.startsWith('/api/phase4/store/order') ||
     path.startsWith('/api/paypal/webhook') ||
-    path.startsWith('/api/kcc');
+    path === '/api/kcc/health' ||
+    path === '/api/kcc/openapi.json';
 
   if (isPublicApi) {
     return next();
   }
 
-  // 3. Exempt worker daemon pull/submit endpoints with x-worker-id header
-  const workerId = req.headers['x-worker-id'] as string;
-  const isWorkerPath = path.includes('/workers/next') || path.includes('/workers/submit-result') || path.includes('/workers/heartbeat') || path.includes('/workers/daemon');
-  if (workerId && isWorkerPath) {
-    return next();
-  }
-
-  // 4. Require Single Owner Auth for all administrative endpoints
+  // 3. Require Single Owner Auth for all administrative endpoints.
+  // Worker identities are not credentials; remote worker traffic must use an
+  // authenticated owner-controlled gateway until dedicated worker credentials exist.
   return requireOwnerAuth(req, res, next);
 });
 
@@ -1925,9 +1921,10 @@ const getChatGPTBridgeSecret = (): string => {
     }
   } catch (e) {}
 
-  // 2. Fallback to process.env or default
+  // 2. dotenv has already loaded the environment. Never supply a fallback key:
+  // a missing deployment secret must leave the bridge unavailable.
   if (!secret) {
-    secret = process.env.KCC_CHATGPT_SECRET?.trim() || process.env.CHATGPT_BRIDGE_SECRET?.trim() || 'kcc_chatgpt_sec_key_2026';
+    secret = process.env.KCC_CHATGPT_SECRET?.trim() || process.env.CHATGPT_BRIDGE_SECRET?.trim() || '';
   }
 
   return secret.replace(/^["']|["']$/g, '').trim();
@@ -1977,13 +1974,9 @@ function verifyChatGPTBridgeAuth(req: express.Request): { authenticated: boolean
   const envSecret = process.env.KCC_CHATGPT_SECRET?.replace(/^["']|["']$/g, '').trim();
   const bridgeSecret = process.env.CHATGPT_BRIDGE_SECRET?.replace(/^["']|["']$/g, '').trim();
 
-  if (providedToken && (
-    providedToken === secret ||
+  if (providedToken && ((secret && providedToken === secret) ||
     (envSecret && providedToken === envSecret) ||
-    (bridgeSecret && providedToken === bridgeSecret) ||
-    providedToken === 'kcc_sec_live_prod_key_2026_verified' ||
-    providedToken === 'kcc_chatgpt_sec_key_2026'
-  )) {
+    (bridgeSecret && providedToken === bridgeSecret))) {
     return { authenticated: true };
   }
 
@@ -3149,6 +3142,13 @@ app.post('/api/admin/signup', disableRegistrationHandler);
 
 // START SERVER / VITE MIDDLEWARE
 async function startServer() {
+  if (process.env.NODE_ENV === 'production') {
+    const missingSecurityConfig = ['ADMIN_PASSWORD_HASH', 'JWT_SECRET']
+      .filter((name) => !process.env[name]?.trim());
+    if (missingSecurityConfig.length > 0) {
+      throw new Error(`Refusing production startup without required security configuration: ${missingSecurityConfig.join(', ')}`);
+    }
+  }
 
   // Boot 24/7 Zero-Touch Autonomous Agent Runtime & Async Remote AI Worker Daemons
   autonomousAgentRuntime.start();
