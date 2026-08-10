@@ -7,15 +7,15 @@ export function getOwnerEmail(): string {
   return process.env.ADMIN_EMAIL || 'samraboss@gmail.com';
 }
 
-function getJwtSecret(): string {
-  return process.env.JWT_SECRET || 'KCC_SINGLE_OWNER_JWT_SECRET_2026_SECURE_KEY';
+export function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET || process.env.KCC_SINGLE_OWNER_JWT_SECRET || process.env.SINGLE_OWNER_AUTH_SECRET;
+  if (!secret || !secret.trim()) {
+    throw new Error('SECURITY FATAL: Missing JWT secret configuration in environment. System failed closed.');
+  }
+  return secret.trim();
 }
 
-// Default hash for 'KccOwner2026!' if ADMIN_PASSWORD_HASH is not set in environment
-const DEFAULT_PASSWORD_PLAIN = 'KccOwner2026!';
-const DEFAULT_BCRYPT_HASH = '$2a$10$wO0K.Jp3H.LhS6sH4uV0MeF6f9M9Q.7wN3X2z0w8K4q8k2Z0q1e3G'; // bcrypt of 'KccOwner2026!'
-
-let currentPasswordHash: string = process.env.ADMIN_PASSWORD_HASH || DEFAULT_BCRYPT_HASH;
+let currentPasswordHash: string | null = process.env.ADMIN_PASSWORD_HASH || null;
 
 // Active JWT Version for global session invalidation (Emergency Lockdown)
 let activeJwtVersion: number = 1;
@@ -55,15 +55,14 @@ export function getSecurityAuditLogs(): SecurityAuditEvent[] {
 // FIRST BOOT INITIALIZATION
 export function initializeSingleOwnerSecurity() {
   const email = getOwnerEmail();
-  if (process.env.ADMIN_PASSWORD_HASH) {
-    currentPasswordHash = process.env.ADMIN_PASSWORD_HASH;
-  } else {
-    // Generate fresh hash for default password if missing
-    try {
-      currentPasswordHash = bcrypt.hashSync(DEFAULT_PASSWORD_PLAIN, 10);
-    } catch {
-      currentPasswordHash = DEFAULT_BCRYPT_HASH;
-    }
+  const hasJwtSecret = !!(process.env.JWT_SECRET || process.env.KCC_SINGLE_OWNER_JWT_SECRET || process.env.SINGLE_OWNER_AUTH_SECRET);
+  const hasAdminPassword = !!(process.env.ADMIN_PASSWORD_HASH || process.env.ADMIN_PASSWORD);
+
+  if (!hasJwtSecret) {
+    console.error('[Single Owner Security] 🚨 FATAL SECURITY CONFIGURATION: Missing JWT secret in environment.');
+  }
+  if (!hasAdminPassword) {
+    console.error('[Single Owner Security] 🚨 FATAL SECURITY CONFIGURATION: Missing administrator password in environment.');
   }
 
   logSecurityEvent({
@@ -71,7 +70,7 @@ export function initializeSingleOwnerSecurity() {
     ip: '127.0.0.1',
     userAgent: 'SYSTEM_BOOT',
     path: '/system/boot',
-    details: `Single Owner initialized for ${email}. Registration & Demo access permanently disabled.`
+    details: `Single Owner initialized for ${email}. Secrets configured: JWT=${hasJwtSecret}, Pass=${hasAdminPassword}. Registration & Demo access permanently disabled.`
   });
 
   console.log(`[Single Owner Security] 🔒 Single Owner system active for: ${email}`);
@@ -116,15 +115,25 @@ export async function authenticateOwner(emailInput: string, passwordInput: strin
     return { success: false, error: 'Forbidden. Only the single configured administrator is allowed to log in.' };
   }
 
-  // Verify Password
-  const isValid = (passwordInput === DEFAULT_PASSWORD_PLAIN) ||
-                  (process.env.ADMIN_PASSWORD && passwordInput === process.env.ADMIN_PASSWORD) ||
-                  bcrypt.compareSync(passwordInput, currentPasswordHash);
+  const envHash = process.env.ADMIN_PASSWORD_HASH;
+  const envPlain = process.env.ADMIN_PASSWORD;
+
+  if (!envHash && !envPlain) {
+    return { success: false, error: 'SECURITY FATAL: Missing administrator password configuration in environment. System failed closed.' };
+  }
+
+  let isValid = false;
+  if (envPlain && passwordInput === envPlain) {
+    isValid = true;
+  } else if (envHash && bcrypt.compareSync(passwordInput, envHash)) {
+    isValid = true;
+  }
+
   if (!isValid) {
     return { success: false, error: 'Invalid owner credentials.' };
   }
 
-  // Generate JWT Token
+  // Generate JWT Token (will throw if JWT_SECRET is missing)
   const token = jwt.sign(
     {
       email: ownerEmail,

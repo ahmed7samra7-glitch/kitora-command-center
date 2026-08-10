@@ -3,6 +3,8 @@ import fs from 'fs';
 import express, { Request, Response } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 import { GoogleGenAI } from '@google/genai';
 import { createServer as createViteServer } from 'vite';
 import helmet from 'helmet';
@@ -11,6 +13,7 @@ import cookieParser from 'cookie-parser';
 import {
   initializeSingleOwnerSecurity,
   getOwnerEmail,
+  getJwtSecret,
   checkLoginRateLimit,
   recordFailedLogin,
   clearFailedLogins,
@@ -81,6 +84,86 @@ app.use(express.json());
 
 initializeSingleOwnerSecurity();
 
+// --- WORKER CRYPTOGRAPHIC AUTHENTICATION HELPER ---
+export function generateWorkerToken(workerId: string): string {
+  const envWorkerSecret = process.env.KCC_WORKER_SECRET || process.env.WORKER_SECRET;
+  if (envWorkerSecret) return envWorkerSecret;
+  return crypto.createHmac('sha256', getJwtSecret()).update(`KCC_WORKER_${workerId}`).digest('hex');
+}
+
+export function verifyWorkerAuth(req: Request): { valid: boolean; workerId?: string; error?: string } {
+  // 1. If valid owner auth is provided, allow access
+  let token = req.cookies?.kcc_admin_token;
+  if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+  if (!token && req.headers['x-admin-token']) {
+    token = req.headers['x-admin-token'] as string;
+  }
+  if (token) {
+    const ownerVerification = verifyOwnerToken(token);
+    if (ownerVerification.valid) {
+      const workerId = (req.headers['x-worker-id'] as string) || (req.query.workerId as string) || req.body?.workerId || 'ADMIN_WORKER';
+      return { valid: true, workerId };
+    }
+  }
+
+  // 2. Extract worker ID
+  const workerId = (req.headers['x-worker-id'] as string) || (req.query.workerId as string) || req.body?.workerId;
+  if (!workerId) {
+    return { valid: false, error: 'Missing x-worker-id header or workerId parameter.' };
+  }
+
+  // Verify worker ID is registered or a known default worker
+  const registeredWorkers = workerRegistryManager.getWorkers();
+  const isRegistered = registeredWorkers.some(w => w.workerId === workerId);
+  const isKnownWorker = ['REMOTE-GEMINI-WORKER', 'REMOTE-MANUS-WORKER', 'REMOTE-CLAUDE-WORKER', 'REMOTE-OPENAI-WORKER'].includes(workerId);
+
+  if (!isRegistered && !isKnownWorker) {
+    return { valid: false, error: `Unknown or unregistered worker ID: ${workerId}` };
+  }
+
+  // 3. Extract worker token / secret from header
+  const workerSecretHeader = (req.headers['x-worker-secret'] || req.headers['x-worker-token']) as string;
+  let bearerToken = '';
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+    bearerToken = req.headers.authorization.split(' ')[1];
+  }
+
+  const providedSecret = (workerSecretHeader || bearerToken || '').trim();
+  if (!providedSecret) {
+    return { valid: false, error: 'Missing worker authentication token/secret. x-worker-id header alone is insufficient.' };
+  }
+
+  // 4. Cryptographic validation of worker secret
+  const envWorkerSecret = (process.env.KCC_WORKER_SECRET || process.env.WORKER_SECRET || '').trim();
+  let isValidSecret = false;
+
+  if (envWorkerSecret && providedSecret === envWorkerSecret) {
+    isValidSecret = true;
+  } else {
+    try {
+      const expectedToken = generateWorkerToken(workerId);
+      if (providedSecret === expectedToken) {
+        isValidSecret = true;
+      } else {
+        const decoded = jwt.verify(providedSecret, getJwtSecret()) as any;
+        if (decoded && (decoded.workerId === workerId || decoded.role === 'WORKER' || decoded.role === 'OWNER')) {
+          isValidSecret = true;
+        }
+      }
+    } catch (e) {
+      // Invalid secret or signature
+    }
+  }
+
+  if (!isValidSecret) {
+    return { valid: false, error: 'Invalid or forged worker authentication token/secret.' };
+  }
+
+  return { valid: true, workerId };
+}
+
 // GLOBAL ADMINISTRATIVE ROUTE AUTHORIZATION GUARD MIDDLEWARE
 app.use((req: Request, res: Response, next) => {
   const path = req.originalUrl || req.path;
@@ -90,7 +173,7 @@ app.use((req: Request, res: Response, next) => {
     return next();
   }
 
-  // 2. Exempt public/auth endpoints
+  // 2. Exempt public/auth endpoints (STRICT WHITE-LIST ONLY)
   const isPublicApi =
     path === '/api/system/info' ||
     path === '/api/admin/login' ||
@@ -102,23 +185,58 @@ app.use((req: Request, res: Response, next) => {
     path === '/api/auth/signup' ||
     path === '/api/admin/signup' ||
     path === '/api/openapi.json' ||
+    path === '/api/kcc/health' ||
+    path === '/api/kcc/openapi.json' ||
     path.startsWith('/api/phase4/store/catalog') ||
     path.startsWith('/api/phase4/store/order') ||
-    path.startsWith('/api/paypal/webhook') ||
-    path.startsWith('/api/kcc');
+    path.startsWith('/api/paypal/webhook');
 
   if (isPublicApi) {
     return next();
   }
 
-  // 3. Exempt worker daemon pull/submit endpoints with x-worker-id header
-  const workerId = req.headers['x-worker-id'] as string;
-  const isWorkerPath = path.includes('/workers/next') || path.includes('/workers/submit-result') || path.includes('/workers/heartbeat') || path.includes('/workers/daemon');
-  if (workerId && isWorkerPath) {
+  // 3. ChatGPT Bridge Endpoint (/api/kcc/chatgpt/order) uses verifyChatGPTBridgeAuth internally
+  if (path === '/api/kcc/chatgpt/order') {
+    const chatGptAuth = verifyChatGPTBridgeAuth(req);
+    if (!chatGptAuth.authenticated) {
+      logSecurityEvent({
+        eventType: 'UNAUTHORIZED_ACCESS',
+        ip: String(req.ip || req.socket.remoteAddress || '127.0.0.1'),
+        userAgent: String(req.headers['user-agent'] || 'unknown'),
+        path,
+        details: `ChatGPT Bridge Auth Failed: ${chatGptAuth.reason}`
+      });
+      return res.status(401).json({
+        success: false,
+        error: `Unauthorized: ${chatGptAuth.reason}`
+      });
+    }
     return next();
   }
 
-  // 4. Require Single Owner Auth for all administrative endpoints
+  // 4. Worker daemon pull/submit endpoints require cryptographically validated worker auth
+  const isWorkerPath = path.startsWith('/api/workers/next') ||
+                       path.startsWith('/api/workers/submit-result') ||
+                       path.startsWith('/api/workers/heartbeat');
+  if (isWorkerPath) {
+    const workerAuth = verifyWorkerAuth(req);
+    if (!workerAuth.valid) {
+      logSecurityEvent({
+        eventType: 'UNAUTHORIZED_ACCESS',
+        ip: String(req.ip || req.socket.remoteAddress || '127.0.0.1'),
+        userAgent: String(req.headers['user-agent'] || 'unknown'),
+        path,
+        details: `Worker Auth Failed: ${workerAuth.error}`
+      });
+      return res.status(401).json({
+        success: false,
+        error: `Unauthorized worker request: ${workerAuth.error}`
+      });
+    }
+    return next();
+  }
+
+  // 5. Require Single Owner Auth for all protected /api/ endpoints (including /api/kcc/*, /api/workers/daemon/*, etc.)
   return requireOwnerAuth(req, res, next);
 });
 
@@ -1925,9 +2043,9 @@ const getChatGPTBridgeSecret = (): string => {
     }
   } catch (e) {}
 
-  // 2. Fallback to process.env or default
+  // 2. Fallback to process.env
   if (!secret) {
-    secret = process.env.KCC_CHATGPT_SECRET?.trim() || process.env.CHATGPT_BRIDGE_SECRET?.trim() || 'kcc_chatgpt_sec_key_2026';
+    secret = process.env.KCC_CHATGPT_SECRET?.trim() || process.env.CHATGPT_BRIDGE_SECRET?.trim() || '';
   }
 
   return secret.replace(/^["']|["']$/g, '').trim();
@@ -1952,9 +2070,12 @@ const chatGptRateLimiter = {
 // Helper: Verify ChatGPT Bridge Authentication
 function verifyChatGPTBridgeAuth(req: express.Request): { authenticated: boolean; reason?: string } {
   // Also accept single owner session cookie if user is logged into admin dashboard
-  const sessionToken = req.cookies?.single_owner_session || req.headers['x-single-owner-session'];
-  if (sessionToken && verifySingleOwnerSession(sessionToken as string)) {
-    return { authenticated: true };
+  const sessionToken = req.cookies?.single_owner_session || req.headers['x-single-owner-session'] || req.cookies?.kcc_admin_token;
+  if (sessionToken) {
+    const ownerCheck = verifyOwnerToken(sessionToken as string);
+    if (ownerCheck.valid) {
+      return { authenticated: true };
+    }
   }
 
   const apiKeyHeader = req.headers['x-kcc-chatgpt-key'] || req.headers['x-api-key'];
@@ -1977,12 +2098,18 @@ function verifyChatGPTBridgeAuth(req: express.Request): { authenticated: boolean
   const envSecret = process.env.KCC_CHATGPT_SECRET?.replace(/^["']|["']$/g, '').trim();
   const bridgeSecret = process.env.CHATGPT_BRIDGE_SECRET?.replace(/^["']|["']$/g, '').trim();
 
+  const configuredSecret = secret || envSecret || bridgeSecret;
+  if (!configuredSecret) {
+    return {
+      authenticated: false,
+      reason: 'ChatGPT bridge secret not configured in server environment. System failed closed.'
+    };
+  }
+
   if (providedToken && (
-    providedToken === secret ||
+    (secret && providedToken === secret) ||
     (envSecret && providedToken === envSecret) ||
-    (bridgeSecret && providedToken === bridgeSecret) ||
-    providedToken === 'kcc_sec_live_prod_key_2026_verified' ||
-    providedToken === 'kcc_chatgpt_sec_key_2026'
+    (bridgeSecret && providedToken === bridgeSecret)
   )) {
     return { authenticated: true };
   }
