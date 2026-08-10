@@ -9,224 +9,224 @@
   "cjOrders": [],
   "cjProducts": [
     {
-      "pid": "2608081005501627000",
-      "productName": "Heated Vest Portable 5V 2A Power Bank",
-      "productSku": "CJYD3046124",
-      "categoryName": "Power Bank",
-      "productImage": "https://oss-cf.cjdropshipping.com/product/2026/08/08/10/43639f2d-4a96-49ca-8371-28937f79caae_trans.jpeg",
-      "sellPrice": 3.05,
+      "pid": "2608101002091623300",
+      "productName": "Color Matching Lapel Short Sleeve Sweater Casual",
+      "productSku": "CJYH3049797",
+      "categoryName": "Print",
+      "productImage": "https://oss-cf.cjdropshipping.com/product/2026/08/10/10/20405114-505f-446f-9e51-77e76cf93188.jpg",
+      "sellPrice": 52.08,
       "costPrice": 12.5,
-      "netMarginPercentage": -309.84,
-      "inventoryCount": 450,
-      "supplierRiskScore": 9,
-      "variants": [
-        {
-          "vid": "VID-2608081005501627000-A",
-          "variantSku": "CJYD3046124-BLK",
-          "variantName": "Default / Black",
-          "variantPrice": 3.05,
-          "stock": 450
-        }
-      ],
-      "syncedAt": "2026-08-08T12:47:02.793Z"
-    },
-    {
-      "pid": "2608080932431600200",
-      "productName": "Durable Swivel Suitcase With Password Lock Box",
-      "productSku": "CJNS3046044",
-      "categoryName": "Luggage & Travel Bags",
-      "productImage": "https://oss-cf.cjdropshipping.com/product/2026/08/08/09/433d1f10-d934-4611-92d2-6c286c26ea61.jpg",
-      "sellPrice": 43.82,
-      "costPrice": 12.5,
-      "netMarginPercentage": 71.47,
-      "inventoryCount": 450,
-      "supplierRiskScore": 5,
-      "variants": [
-        {
-          "vid": "VID-2608080932431600200-A",
-          "variantSku": "CJNS3046044-BLK",
-          "variantName": "Default / Black",
-          "variantPrice": 43.82,
-          "stock": 450
-        }
-      ],
-      "syncedAt": "2026-08-08T12:47:02.793Z"
-    },
-    {
-      "pid": "2608080912271611500",
-      "productName": "6 Styles Of Colorful Wrist Tattoo Stickers For Womenlong-lasting Fresh And Chic",
-      "productSku": "CJYD3045999",
-      "categoryName": "Event & Party Supplies",
-      "productImage": "https://oss-cf.cjdropshipping.com/product/2026/08/08/09/b8f2cfb7-c16f-4fbb-bc26-a500fabebdb9_trans.jpeg",
-      "sellPrice": 1.3,
-      "costPrice": 12.5,
-      "netMarginPercentage": -861.54,
-      "inventoryCount": 450,
-      "supplierRiskScore": 9,
-      "variants": [
-        {
-          "vid": "VID-2608080912271611500-A",
-          "variantSku": "CJYD3045999-BLK",
-          "variantName": "Default / Black",
-          "variantPrice": 1.3,
-          "stock": 450
-        }
-      ],
-      "syncedAt": "2026-08-08T12:47:02.793Z"
-    },
-    {
-      "pid": "2608080908321600000",
-      "productName": "High-Speed Handheld Mini Fan With Digital Display Ice-Cooling Portable For Outdoor And Desk Use",
-      "productSku": "CJJT3045983",
-      "categoryName": "Smart Home Appliances",
-      "productImage": "https://oss-cf.cjdropshipping.com/product/2026/08/08/09/8159390f-200c-4292-b34b-b5d3f8f21f4e_trans.jpeg",
-      "sellPrice": 4.21,
-      "costPrice": 12.5,
-      "netMarginPercentage": -196.91,
+      "netMarginPercentage": 76,
       "inventoryCount": 450,
       "supplierRiskScore": 15,
       "variants": [
         {
-          "vid": "VID-2608080908321600000-A",
-          "variantSku": "CJJT3045983-BLK",
+          "vid": "VID-2608101002091623300-A",
+          "variantSku": "CJYH3049797-BLK",
+          "variantName": "Default / Black",
+          "variantPrice": 52.08,
+          "stock": 450
+        }
+      ],
+      "syncedAt": "2026-08-10T10:13:51.766Z"
+    },
+    {
+      "pid": "2608100952231624000",
+      "productName": "Solid-color Digital Letter-embossed Print Hooded Sweatshirt With Pockets",
+      "productSku": "CJWY3049755",
+      "categoryName": "Man Hoodies & Sweatshirts",
+      "productImage": "https://oss-cf.cjdropshipping.com/product/2026/08/10/09/9efe6ebd-ce25-470a-8355-350cf96422f0_water.jpeg",
+      "sellPrice": 11.81,
+      "costPrice": 12.5,
+      "netMarginPercentage": -5.84,
+      "inventoryCount": 450,
+      "supplierRiskScore": 14,
+      "variants": [
+        {
+          "vid": "VID-2608100952231624000-A",
+          "variantSku": "CJWY3049755-BLK",
+          "variantName": "Default / Black",
+          "variantPrice": 11.81,
+          "stock": 450
+        }
+      ],
+      "syncedAt": "2026-08-10T10:13:51.766Z"
+    },
+    {
+      "pid": "2608100938361603400",
+      "productName": "New Womens Pullover V-neck Short-sleeve Sweater",
+      "productSku": "CJMY3049703",
+      "categoryName": "Blazers",
+      "productImage": "https://cf.cjdropshipping.com/quick/product/2511ea79-4845-4c43-8efe-c8bfac0bf6e4.jpg",
+      "sellPrice": 13.4,
+      "costPrice": 12.5,
+      "netMarginPercentage": 6.72,
+      "inventoryCount": 450,
+      "supplierRiskScore": 14,
+      "variants": [
+        {
+          "vid": "VID-2608100938361603400-A",
+          "variantSku": "CJMY3049703-BLK",
+          "variantName": "Default / Black",
+          "variantPrice": 13.4,
+          "stock": 450
+        }
+      ],
+      "syncedAt": "2026-08-10T10:13:51.766Z"
+    },
+    {
+      "pid": "2608100931311629700",
+      "productName": "Retro Casual U-neck Tassel Long-sleeve T-shirt",
+      "productSku": "CJCS3049664",
+      "categoryName": "Blazers",
+      "productImage": "https://cf.cjdropshipping.com/quick/product/db10d741-50c8-41c5-b3ad-d4ef6dc5ff78.jpg",
+      "sellPrice": 4.92,
+      "costPrice": 12.5,
+      "netMarginPercentage": -154.07,
+      "inventoryCount": 450,
+      "supplierRiskScore": 19,
+      "variants": [
+        {
+          "vid": "VID-2608100931311629700-A",
+          "variantSku": "CJCS3049664-BLK",
+          "variantName": "Default / Black",
+          "variantPrice": 4.92,
+          "stock": 450
+        }
+      ],
+      "syncedAt": "2026-08-10T10:13:51.766Z"
+    },
+    {
+      "pid": "2608100915301630900",
+      "productName": "Customized Zipper Bag",
+      "productSku": "CJSL3049590",
+      "categoryName": "Consumer Electronics",
+      "productImage": "https://oss-cf.cjdropshipping.com/product/2026/08/10/09/1a9a3116-ccce-4ee5-b94c-25164a085d8e.jpg",
+      "sellPrice": 0.31,
+      "costPrice": 12.5,
+      "netMarginPercentage": -3932.26,
+      "inventoryCount": 450,
+      "supplierRiskScore": 19,
+      "variants": [
+        {
+          "vid": "VID-2608100915301630900-A",
+          "variantSku": "CJSL3049590-BLK",
+          "variantName": "Default / Black",
+          "variantPrice": 0.31,
+          "stock": 450
+        }
+      ],
+      "syncedAt": "2026-08-10T10:13:51.766Z"
+    },
+    {
+      "pid": "2608100909561629000",
+      "productName": "New Womens Casual Loose-fit Solid-color Lapel Short-sleeve Button-down Shirt",
+      "productSku": "CJCS3049540",
+      "categoryName": "Blouses & Shirts",
+      "productImage": "https://cf.cjdropshipping.com/quick/product/9e862cdd-75e7-455b-8c6c-af27b070f08a.jpg",
+      "sellPrice": 6.08,
+      "costPrice": 12.5,
+      "netMarginPercentage": -105.59,
+      "inventoryCount": 450,
+      "supplierRiskScore": 11,
+      "variants": [
+        {
+          "vid": "VID-2608100909561629000-A",
+          "variantSku": "CJCS3049540-BLK",
+          "variantName": "Default / Black",
+          "variantPrice": 6.08,
+          "stock": 450
+        }
+      ],
+      "syncedAt": "2026-08-10T10:13:51.766Z"
+    },
+    {
+      "pid": "2608100856031617600",
+      "productName": "Women's Solid Color Loose Lotus Leaf Hem Loose Shirt",
+      "productSku": "CJYD3049502",
+      "categoryName": "Blouses & Shirts",
+      "productImage": "https://cf.cjdropshipping.com/quick/product/817bc3be-5364-424d-a607-4016d655b05f.jpg",
+      "sellPrice": 4.21,
+      "costPrice": 12.5,
+      "netMarginPercentage": -196.91,
+      "inventoryCount": 450,
+      "supplierRiskScore": 13,
+      "variants": [
+        {
+          "vid": "VID-2608100856031617600-A",
+          "variantSku": "CJYD3049502-BLK",
           "variantName": "Default / Black",
           "variantPrice": 4.21,
           "stock": 450
         }
       ],
-      "syncedAt": "2026-08-08T12:47:02.793Z"
+      "syncedAt": "2026-08-10T10:13:51.766Z"
     },
     {
-      "pid": "2608080853161628200",
-      "productName": "Small Versatile Minimalist Earrings",
-      "productSku": "CJLX3045953",
-      "categoryName": "Earrings",
-      "productImage": "https://cf.cjdropshipping.com/quick/product/8ae00d19-dc70-48e5-bd4e-0701173575a3.jpg",
-      "sellPrice": 0.69,
+      "pid": "2608100850451637900",
+      "productName": "Fashionable And Unique Starfish Baby Outfit With Stars",
+      "productSku": "CJNT3049476",
+      "categoryName": "Tops & Tees",
+      "productImage": "https://oss-cf.cjdropshipping.com/product/2026/08/10/08/627fc44f-20c7-414d-bbf8-7a02e38463a5.jpg",
+      "sellPrice": 15.48,
       "costPrice": 12.5,
-      "netMarginPercentage": -1711.59,
-      "inventoryCount": 450,
-      "supplierRiskScore": 7,
-      "variants": [
-        {
-          "vid": "VID-2608080853161628200-A",
-          "variantSku": "CJLX3045953-BLK",
-          "variantName": "Default / Black",
-          "variantPrice": 0.69,
-          "stock": 450
-        }
-      ],
-      "syncedAt": "2026-08-08T12:47:02.793Z"
-    },
-    {
-      "pid": "2608080853141630100",
-      "productName": "Mens Long-sleeve T-shirt With A Color-blocked Henley Sweater",
-      "productSku": "CJYH3045949",
-      "categoryName": "Men's Sweaters",
-      "productImage": "https://cf.cjdropshipping.com/quick/product/2631f23c-0cac-4614-8804-47bab1ae5343.jpg",
-      "sellPrice": 5.73,
-      "costPrice": 12.5,
-      "netMarginPercentage": -118.15,
+      "netMarginPercentage": 19.25,
       "inventoryCount": 450,
       "supplierRiskScore": 5,
       "variants": [
         {
-          "vid": "VID-2608080853141630100-A",
-          "variantSku": "CJYH3045949-BLK",
+          "vid": "VID-2608100850451637900-A",
+          "variantSku": "CJNT3049476-BLK",
           "variantName": "Default / Black",
-          "variantPrice": 5.73,
+          "variantPrice": 15.48,
           "stock": 450
         }
       ],
-      "syncedAt": "2026-08-08T12:47:02.793Z"
+      "syncedAt": "2026-08-10T10:13:51.766Z"
     },
     {
-      "pid": "2608080828421630300",
-      "productName": "Lightweight Outdoor Quick-Drying Towel",
-      "productSku": "CJYD3045890",
-      "categoryName": "Towels",
-      "productImage": "https://oss-cf.cjdropshipping.com/product/2026/08/08/08/73c9c17f-37ed-443b-ae8a-7580d615b59c_trans.jpeg",
-      "sellPrice": 0.75,
+      "pid": "2608100848061611900",
+      "productName": "Mosquito Lamp For Food Factory Workshops Commercial Use",
+      "productSku": "CJYD3049463",
+      "categoryName": "Home Office Storage",
+      "productImage": "https://oss-cf.cjdropshipping.com/product/2026/08/10/08/11d463c2-6a51-49dd-97a4-1a093f9229f8_fine.jpeg",
+      "sellPrice": 8.13,
       "costPrice": 12.5,
-      "netMarginPercentage": -1566.67,
-      "inventoryCount": 450,
-      "supplierRiskScore": 16,
-      "variants": [
-        {
-          "vid": "VID-2608080828421630300-A",
-          "variantSku": "CJYD3045890-BLK",
-          "variantName": "Default / Black",
-          "variantPrice": 0.75,
-          "stock": 450
-        }
-      ],
-      "syncedAt": "2026-08-08T12:47:02.793Z"
-    },
-    {
-      "pid": "2608080819411633900",
-      "productName": "Mens Formal Jacquard Scarf With Tiny Polka Dots Neck Wrap",
-      "productSku": "CJYD3045874",
-      "categoryName": "Scarves",
-      "productImage": "https://oss-cf.cjdropshipping.com/product/2026/08/08/08/dc9c26c8-09f0-486b-b350-6f7fd390988d_trans.jpeg",
-      "sellPrice": 2.57,
-      "costPrice": 12.5,
-      "netMarginPercentage": -386.38,
+      "netMarginPercentage": -53.75,
       "inventoryCount": 450,
       "supplierRiskScore": 10,
       "variants": [
         {
-          "vid": "VID-2608080819411633900-A",
-          "variantSku": "CJYD3045874-BLK",
+          "vid": "VID-2608100848061611900-A",
+          "variantSku": "CJYD3049463-BLK",
           "variantName": "Default / Black",
-          "variantPrice": 2.57,
+          "variantPrice": 8.13,
           "stock": 450
         }
       ],
-      "syncedAt": "2026-08-08T12:47:02.793Z"
+      "syncedAt": "2026-08-10T10:13:51.766Z"
     },
     {
-      "pid": "2608080812551611700",
-      "productName": "Womens Stylish Casual Sheath Dress",
-      "productSku": "CJYD3045859",
-      "categoryName": "Lady Dresses",
-      "productImage": "https://cf.cjdropshipping.com/quick/product/029d19c4-93ed-4dab-969c-f2abc37df688.jpg",
-      "sellPrice": 18.06,
+      "pid": "2608100835281613400",
+      "productName": "Cat Bed Scratching Post And Cat Tree All In Onepet Cat Toy",
+      "productSku": "CJYD3049408",
+      "categoryName": "Cat Trees & Condos",
+      "productImage": "https://oss-cf.cjdropshipping.com/product/2026/08/10/08/1f8ed559-ae10-445b-b897-1978ac8d728c.jpg",
+      "sellPrice": 25.17,
       "costPrice": 12.5,
-      "netMarginPercentage": 30.79,
+      "netMarginPercentage": 50.34,
       "inventoryCount": 450,
-      "supplierRiskScore": 18,
+      "supplierRiskScore": 5,
       "variants": [
         {
-          "vid": "VID-2608080812551611700-A",
-          "variantSku": "CJYD3045859-BLK",
+          "vid": "VID-2608100835281613400-A",
+          "variantSku": "CJYD3049408-BLK",
           "variantName": "Default / Black",
-          "variantPrice": 18.06,
+          "variantPrice": 25.17,
           "stock": 450
         }
       ],
-      "syncedAt": "2026-08-08T12:47:02.793Z"
-    },
-    {
-      "pid": "2608080808021605800",
-      "productName": "Arrival Lightning-Stripe Straight-Leg Denim Jeans For Men",
-      "productSku": "CJXX3045843",
-      "categoryName": "Casual Pants",
-      "productImage": "https://cf.cjdropshipping.com/quick/product/197633e7-e683-4ae7-b3e6-a832e6883e1d.jpg",
-      "sellPrice": 8.33,
-      "costPrice": 12.5,
-      "netMarginPercentage": -50.06,
-      "inventoryCount": 450,
-      "supplierRiskScore": 7,
-      "variants": [
-        {
-          "vid": "VID-2608080808021605800-A",
-          "variantSku": "CJXX3045843-BLK",
-          "variantName": "Default / Black",
-          "variantPrice": 8.33,
-          "stock": 450
-        }
-      ],
-      "syncedAt": "2026-08-08T12:47:02.793Z"
+      "syncedAt": "2026-08-10T10:13:51.766Z"
     }
   ],
   "storeCatalog": [
@@ -281,55 +281,2549 @@
       "name": "Autonomous Order Fulfillment Processor",
       "cronExpression": "*/1 * * * *",
       "intervalMs": 60000,
-      "nextRunAt": "2026-08-08T12:50:01.295Z",
+      "nextRunAt": "2026-08-10T10:17:09.817Z",
       "status": "SUCCESS",
       "failureCount": 0,
       "maxRetries": 3,
       "enabled": true,
       "category": "FULFILLMENT",
-      "lastRunAt": "2026-08-08T12:49:01.272Z"
+      "lastRunAt": "2026-08-10T10:16:09.782Z"
     },
     {
       "id": "JOB-CJ-CATALOG-SYNC",
       "name": "CJ Dropshipping Catalog & Margin Sync",
       "cronExpression": "*/15 * * * *",
       "intervalMs": 900000,
-      "nextRunAt": "2026-08-08T13:02:02.818Z",
+      "nextRunAt": "2026-08-10T10:28:51.793Z",
       "status": "SUCCESS",
       "failureCount": 0,
       "maxRetries": 3,
       "enabled": true,
       "category": "SYNC",
-      "lastRunAt": "2026-08-08T12:47:01.245Z"
+      "lastRunAt": "2026-08-10T10:13:49.808Z"
     },
     {
       "id": "JOB-INVENTORY-REBALANCE",
       "name": "Inventory Stock & Risk Monitor",
       "cronExpression": "*/30 * * * *",
       "intervalMs": 1800000,
-      "nextRunAt": "2026-08-08T13:16:35.463Z",
+      "nextRunAt": "2026-08-10T10:43:51.863Z",
       "status": "SUCCESS",
       "failureCount": 0,
       "maxRetries": 3,
       "enabled": true,
       "category": "SYNC",
-      "lastRunAt": "2026-08-08T12:46:35.387Z"
+      "lastRunAt": "2026-08-10T10:13:51.821Z"
     },
     {
       "id": "JOB-HEALTH-HEARTBEAT",
       "name": "Core System Health & Heartbeat Checker",
       "cronExpression": "*/30s * * * *",
       "intervalMs": 30000,
-      "nextRunAt": "2026-08-08T12:49:41.300Z",
+      "nextRunAt": "2026-08-10T10:16:59.821Z",
       "status": "SUCCESS",
       "failureCount": 0,
       "maxRetries": 5,
       "enabled": true,
       "category": "HEALTH",
-      "lastRunAt": "2026-08-08T12:49:11.273Z"
+      "lastRunAt": "2026-08-10T10:16:29.785Z"
     }
   ],
   "eventLogs": [
+    {
+      "id": "EVT-1786357000126-325",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-U1YHS7",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:40.113Z"
+      },
+      "timestamp": "2026-08-10T10:16:40.126Z"
+    },
+    {
+      "id": "EVT-1786357000080-6173",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-LE9HLV",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:40.062Z"
+      },
+      "timestamp": "2026-08-10T10:16:40.080Z"
+    },
+    {
+      "id": "EVT-1786357000003-6148",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-G3SC6L",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:39.985Z"
+      },
+      "timestamp": "2026-08-10T10:16:40.003Z"
+    },
+    {
+      "id": "EVT-1786356999939-8425",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-LPGRLX",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:39.925Z"
+      },
+      "timestamp": "2026-08-10T10:16:39.939Z"
+    },
+    {
+      "id": "EVT-1786356995137-7329",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-TWOVK2",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:35.113Z"
+      },
+      "timestamp": "2026-08-10T10:16:35.137Z"
+    },
+    {
+      "id": "EVT-1786356995077-8879",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-SSKDO2",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:35.061Z"
+      },
+      "timestamp": "2026-08-10T10:16:35.077Z"
+    },
+    {
+      "id": "EVT-1786356995008-6173",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-CWGDKA",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:34.984Z"
+      },
+      "timestamp": "2026-08-10T10:16:35.008Z"
+    },
+    {
+      "id": "EVT-1786356994941-3840",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-JVOVP2",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:34.925Z"
+      },
+      "timestamp": "2026-08-10T10:16:34.941Z"
+    },
+    {
+      "id": "EVT-1786356990129-6521",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-6OHEQO",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:30.112Z"
+      },
+      "timestamp": "2026-08-10T10:16:30.129Z"
+    },
+    {
+      "id": "EVT-1786356990079-9591",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-KE9CGM",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:30.061Z"
+      },
+      "timestamp": "2026-08-10T10:16:30.079Z"
+    },
+    {
+      "id": "EVT-1786356990009-2511",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-Q97TIU",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:29.984Z"
+      },
+      "timestamp": "2026-08-10T10:16:30.009Z"
+    },
+    {
+      "id": "EVT-1786356989941-8669",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-NKP7RD",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:29.925Z"
+      },
+      "timestamp": "2026-08-10T10:16:29.941Z"
+    },
+    {
+      "id": "EVT-1786356989821-388",
+      "topic": "SCHEDULER.JOB.COMPLETED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-K0UACP",
+      "payload": {
+        "jobId": "JOB-HEALTH-HEARTBEAT"
+      },
+      "timestamp": "2026-08-10T10:16:29.821Z"
+    },
+    {
+      "id": "EVT-1786356989804-1948",
+      "topic": "SCHEDULER.JOB.STARTED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-VZ7J14",
+      "payload": {
+        "jobId": "JOB-HEALTH-HEARTBEAT",
+        "name": "Core System Health & Heartbeat Checker"
+      },
+      "timestamp": "2026-08-10T10:16:29.804Z"
+    },
+    {
+      "id": "EVT-1786356985127-7282",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-P9FNPP",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:25.111Z"
+      },
+      "timestamp": "2026-08-10T10:16:25.127Z"
+    },
+    {
+      "id": "EVT-1786356985057-749",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-VFW89I",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:25.044Z"
+      },
+      "timestamp": "2026-08-10T10:16:25.057Z"
+    },
+    {
+      "id": "EVT-1786356985000-5359",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-GVZEQ6",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:24.982Z"
+      },
+      "timestamp": "2026-08-10T10:16:25.000Z"
+    },
+    {
+      "id": "EVT-1786356984940-2681",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-WP2H2Y",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:24.925Z"
+      },
+      "timestamp": "2026-08-10T10:16:24.940Z"
+    },
+    {
+      "id": "EVT-1786356980119-8410",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-22IE3T",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:20.101Z"
+      },
+      "timestamp": "2026-08-10T10:16:20.119Z"
+    },
+    {
+      "id": "EVT-1786356980057-733",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-696BAP",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:20.043Z"
+      },
+      "timestamp": "2026-08-10T10:16:20.057Z"
+    },
+    {
+      "id": "EVT-1786356979994-9335",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-ZPTA6I",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:19.981Z"
+      },
+      "timestamp": "2026-08-10T10:16:19.994Z"
+    },
+    {
+      "id": "EVT-1786356979942-6654",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-ACCZ1R",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:19.924Z"
+      },
+      "timestamp": "2026-08-10T10:16:19.942Z"
+    },
+    {
+      "id": "EVT-1786356975119-2700",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-5MI4GC",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:15.101Z"
+      },
+      "timestamp": "2026-08-10T10:16:15.119Z"
+    },
+    {
+      "id": "EVT-1786356975063-4412",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-BS7LMB",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:15.043Z"
+      },
+      "timestamp": "2026-08-10T10:16:15.063Z"
+    },
+    {
+      "id": "EVT-1786356974997-9606",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-KM19XN",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:14.980Z"
+      },
+      "timestamp": "2026-08-10T10:16:14.997Z"
+    },
+    {
+      "id": "EVT-1786356974942-9687",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-08FZ2W",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:14.924Z"
+      },
+      "timestamp": "2026-08-10T10:16:14.942Z"
+    },
+    {
+      "id": "EVT-1786356970117-8526",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-KS1UQR",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:10.100Z"
+      },
+      "timestamp": "2026-08-10T10:16:10.117Z"
+    },
+    {
+      "id": "EVT-1786356970052-1176",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-6STC6P",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:10.034Z"
+      },
+      "timestamp": "2026-08-10T10:16:10.052Z"
+    },
+    {
+      "id": "EVT-1786356969998-8442",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-ILB2HF",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:09.979Z"
+      },
+      "timestamp": "2026-08-10T10:16:09.998Z"
+    },
+    {
+      "id": "EVT-1786356969939-928",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-XBO7XP",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:09.923Z"
+      },
+      "timestamp": "2026-08-10T10:16:09.939Z"
+    },
+    {
+      "id": "EVT-1786356969818-9432",
+      "topic": "SCHEDULER.JOB.COMPLETED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-A8U8PM",
+      "payload": {
+        "jobId": "JOB-ORDER-FULFILLMENT"
+      },
+      "timestamp": "2026-08-10T10:16:09.818Z"
+    },
+    {
+      "id": "EVT-1786356969799-4630",
+      "topic": "SCHEDULER.JOB.STARTED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-FNBPGH",
+      "payload": {
+        "jobId": "JOB-ORDER-FULFILLMENT",
+        "name": "Autonomous Order Fulfillment Processor"
+      },
+      "timestamp": "2026-08-10T10:16:09.799Z"
+    },
+    {
+      "id": "EVT-1786356965094-2176",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-8H891T",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:05.076Z"
+      },
+      "timestamp": "2026-08-10T10:16:05.095Z"
+    },
+    {
+      "id": "EVT-1786356965054-4921",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-H9EUDJ",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:05.033Z"
+      },
+      "timestamp": "2026-08-10T10:16:05.054Z"
+    },
+    {
+      "id": "EVT-1786356964992-9218",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-7C2H78",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:04.978Z"
+      },
+      "timestamp": "2026-08-10T10:16:04.992Z"
+    },
+    {
+      "id": "EVT-1786356964938-2250",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-USVV0C",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:04.922Z"
+      },
+      "timestamp": "2026-08-10T10:16:04.938Z"
+    },
+    {
+      "id": "EVT-1786356960091-8808",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-GWFF0E",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:00.076Z"
+      },
+      "timestamp": "2026-08-10T10:16:00.091Z"
+    },
+    {
+      "id": "EVT-1786356960046-8340",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-UYCCGS",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:16:00.032Z"
+      },
+      "timestamp": "2026-08-10T10:16:00.046Z"
+    },
+    {
+      "id": "EVT-1786356959991-6255",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-YMYXIN",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:59.978Z"
+      },
+      "timestamp": "2026-08-10T10:15:59.991Z"
+    },
+    {
+      "id": "EVT-1786356959927-7952",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-PWC6U8",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:59.914Z"
+      },
+      "timestamp": "2026-08-10T10:15:59.927Z"
+    },
+    {
+      "id": "EVT-1786356955087-7247",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-DSBYVO",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:55.072Z"
+      },
+      "timestamp": "2026-08-10T10:15:55.087Z"
+    },
+    {
+      "id": "EVT-1786356955045-8578",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-85K8KL",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:55.030Z"
+      },
+      "timestamp": "2026-08-10T10:15:55.045Z"
+    },
+    {
+      "id": "EVT-1786356954984-9974",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-P9ST92",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:54.969Z"
+      },
+      "timestamp": "2026-08-10T10:15:54.984Z"
+    },
+    {
+      "id": "EVT-1786356954929-2171",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-LD1AI3",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:54.913Z"
+      },
+      "timestamp": "2026-08-10T10:15:54.929Z"
+    },
+    {
+      "id": "EVT-1786356950084-1161",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-A67A32",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:50.071Z"
+      },
+      "timestamp": "2026-08-10T10:15:50.084Z"
+    },
+    {
+      "id": "EVT-1786356950043-2811",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-NV31BD",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:50.030Z"
+      },
+      "timestamp": "2026-08-10T10:15:50.043Z"
+    },
+    {
+      "id": "EVT-1786356949980-2850",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-7Z9GYC",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:49.968Z"
+      },
+      "timestamp": "2026-08-10T10:15:49.980Z"
+    },
+    {
+      "id": "EVT-1786356949930-1873",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-7FPX4K",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:49.913Z"
+      },
+      "timestamp": "2026-08-10T10:15:49.930Z"
+    },
+    {
+      "id": "EVT-1786356949800-2642",
+      "topic": "SCHEDULER.JOB.COMPLETED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-XGT1EW",
+      "payload": {
+        "jobId": "JOB-HEALTH-HEARTBEAT"
+      },
+      "timestamp": "2026-08-10T10:15:49.800Z"
+    },
+    {
+      "id": "EVT-1786356949785-9628",
+      "topic": "SCHEDULER.JOB.STARTED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-8ZQ14L",
+      "payload": {
+        "jobId": "JOB-HEALTH-HEARTBEAT",
+        "name": "Core System Health & Heartbeat Checker"
+      },
+      "timestamp": "2026-08-10T10:15:49.785Z"
+    },
+    {
+      "id": "EVT-1786356945089-7858",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-DMND2Z",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:45.071Z"
+      },
+      "timestamp": "2026-08-10T10:15:45.089Z"
+    },
+    {
+      "id": "EVT-1786356945045-812",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-RVG1NA",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:45.029Z"
+      },
+      "timestamp": "2026-08-10T10:15:45.045Z"
+    },
+    {
+      "id": "EVT-1786356944983-2474",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-Q6Q8PZ",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:44.967Z"
+      },
+      "timestamp": "2026-08-10T10:15:44.983Z"
+    },
+    {
+      "id": "EVT-1786356944930-4694",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-25R37N",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:44.912Z"
+      },
+      "timestamp": "2026-08-10T10:15:44.930Z"
+    },
+    {
+      "id": "EVT-1786356940092-1933",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-QIB3LA",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:40.071Z"
+      },
+      "timestamp": "2026-08-10T10:15:40.092Z"
+    },
+    {
+      "id": "EVT-1786356940034-2829",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-T8XEAA",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:40.015Z"
+      },
+      "timestamp": "2026-08-10T10:15:40.034Z"
+    },
+    {
+      "id": "EVT-1786356939981-5770",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-G5M7GT",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:39.966Z"
+      },
+      "timestamp": "2026-08-10T10:15:39.981Z"
+    },
+    {
+      "id": "EVT-1786356939926-1969",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-DM2XN7",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:39.911Z"
+      },
+      "timestamp": "2026-08-10T10:15:39.926Z"
+    },
+    {
+      "id": "EVT-1786356935083-2657",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-05Z4PP",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:35.071Z"
+      },
+      "timestamp": "2026-08-10T10:15:35.083Z"
+    },
+    {
+      "id": "EVT-1786356935027-2713",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-MLBSGT",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:35.015Z"
+      },
+      "timestamp": "2026-08-10T10:15:35.027Z"
+    },
+    {
+      "id": "EVT-1786356934980-2544",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-WEJQLZ",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:34.965Z"
+      },
+      "timestamp": "2026-08-10T10:15:34.980Z"
+    },
+    {
+      "id": "EVT-1786356934923-8706",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-JRFRAF",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:34.911Z"
+      },
+      "timestamp": "2026-08-10T10:15:34.923Z"
+    },
+    {
+      "id": "EVT-1786356930085-1264",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-LYK7NC",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:30.069Z"
+      },
+      "timestamp": "2026-08-10T10:15:30.085Z"
+    },
+    {
+      "id": "EVT-1786356930026-3536",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-YAFS3B",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:30.013Z"
+      },
+      "timestamp": "2026-08-10T10:15:30.026Z"
+    },
+    {
+      "id": "EVT-1786356929960-4858",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-SYU6K9",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:29.946Z"
+      },
+      "timestamp": "2026-08-10T10:15:29.960Z"
+    },
+    {
+      "id": "EVT-1786356929924-5545",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-N7WS1S",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:29.910Z"
+      },
+      "timestamp": "2026-08-10T10:15:29.924Z"
+    },
+    {
+      "id": "EVT-1786356925086-281",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-S6XA3L",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:25.069Z"
+      },
+      "timestamp": "2026-08-10T10:15:25.086Z"
+    },
+    {
+      "id": "EVT-1786356925031-1863",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-16SBUB",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:25.013Z"
+      },
+      "timestamp": "2026-08-10T10:15:25.031Z"
+    },
+    {
+      "id": "EVT-1786356924959-3660",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-CI0XFU",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:24.945Z"
+      },
+      "timestamp": "2026-08-10T10:15:24.959Z"
+    },
+    {
+      "id": "EVT-1786356924926-2593",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-3PTP1L",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:24.910Z"
+      },
+      "timestamp": "2026-08-10T10:15:24.926Z"
+    },
+    {
+      "id": "EVT-1786356920110-2043",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-HJECSG",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:20.068Z"
+      },
+      "timestamp": "2026-08-10T10:15:20.110Z"
+    },
+    {
+      "id": "EVT-1786356920027-5553",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-00MA7F",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:20.013Z"
+      },
+      "timestamp": "2026-08-10T10:15:20.027Z"
+    },
+    {
+      "id": "EVT-1786356919958-5648",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-26PO2I",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:19.945Z"
+      },
+      "timestamp": "2026-08-10T10:15:19.958Z"
+    },
+    {
+      "id": "EVT-1786356919929-674",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-K4XCIE",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:19.910Z"
+      },
+      "timestamp": "2026-08-10T10:15:19.929Z"
+    },
+    {
+      "id": "EVT-1786356915083-2661",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-SJN1R5",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:15.066Z"
+      },
+      "timestamp": "2026-08-10T10:15:15.083Z"
+    },
+    {
+      "id": "EVT-1786356915019-3792",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-KP1SXV",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:14.999Z"
+      },
+      "timestamp": "2026-08-10T10:15:15.019Z"
+    },
+    {
+      "id": "EVT-1786356914966-6157",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-KVBCT0",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:14.945Z"
+      },
+      "timestamp": "2026-08-10T10:15:14.966Z"
+    },
+    {
+      "id": "EVT-1786356914899-317",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-WIGMXK",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:14.877Z"
+      },
+      "timestamp": "2026-08-10T10:15:14.899Z"
+    },
+    {
+      "id": "EVT-1786356910056-7078",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-ROUO39",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:10.041Z"
+      },
+      "timestamp": "2026-08-10T10:15:10.056Z"
+    },
+    {
+      "id": "EVT-1786356910015-1016",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-ML9YLP",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:09.998Z"
+      },
+      "timestamp": "2026-08-10T10:15:10.015Z"
+    },
+    {
+      "id": "EVT-1786356909959-6449",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-O2J3XK",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:09.944Z"
+      },
+      "timestamp": "2026-08-10T10:15:09.959Z"
+    },
+    {
+      "id": "EVT-1786356909889-2375",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-FXJQO0",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:09.876Z"
+      },
+      "timestamp": "2026-08-10T10:15:09.889Z"
+    },
+    {
+      "id": "EVT-1786356909792-8776",
+      "topic": "SCHEDULER.JOB.COMPLETED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-7BKEZI",
+      "payload": {
+        "jobId": "JOB-HEALTH-HEARTBEAT"
+      },
+      "timestamp": "2026-08-10T10:15:09.792Z"
+    },
+    {
+      "id": "EVT-1786356909769-6297",
+      "topic": "SCHEDULER.JOB.STARTED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-AD6EUI",
+      "payload": {
+        "jobId": "JOB-HEALTH-HEARTBEAT",
+        "name": "Core System Health & Heartbeat Checker"
+      },
+      "timestamp": "2026-08-10T10:15:09.769Z"
+    },
+    {
+      "id": "EVT-1786356905064-6062",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-7YBFF6",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:05.040Z"
+      },
+      "timestamp": "2026-08-10T10:15:05.064Z"
+    },
+    {
+      "id": "EVT-1786356905004-3221",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-5L2MOQ",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:04.980Z"
+      },
+      "timestamp": "2026-08-10T10:15:05.004Z"
+    },
+    {
+      "id": "EVT-1786356904961-9813",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-NPOCT3",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:04.942Z"
+      },
+      "timestamp": "2026-08-10T10:15:04.961Z"
+    },
+    {
+      "id": "EVT-1786356904896-8000",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-I3CXO3",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:04.876Z"
+      },
+      "timestamp": "2026-08-10T10:15:04.896Z"
+    },
+    {
+      "id": "EVT-1786356900059-8470",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-J1SCBT",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:15:00.039Z"
+      },
+      "timestamp": "2026-08-10T10:15:00.059Z"
+    },
+    {
+      "id": "EVT-1786356899994-3740",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-5NWS8N",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:59.977Z"
+      },
+      "timestamp": "2026-08-10T10:14:59.995Z"
+    },
+    {
+      "id": "EVT-1786356899958-2700",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-VR8RM6",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:59.942Z"
+      },
+      "timestamp": "2026-08-10T10:14:59.958Z"
+    },
+    {
+      "id": "EVT-1786356899888-5491",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-4VO94R",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:59.874Z"
+      },
+      "timestamp": "2026-08-10T10:14:59.889Z"
+    },
+    {
+      "id": "EVT-1786356899788-9798",
+      "topic": "SCHEDULER.JOB.COMPLETED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-3CM6MD",
+      "payload": {
+        "jobId": "JOB-ORDER-FULFILLMENT"
+      },
+      "timestamp": "2026-08-10T10:14:59.789Z"
+    },
+    {
+      "id": "EVT-1786356899773-3218",
+      "topic": "SCHEDULER.JOB.STARTED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-HHSTBR",
+      "payload": {
+        "jobId": "JOB-ORDER-FULFILLMENT",
+        "name": "Autonomous Order Fulfillment Processor"
+      },
+      "timestamp": "2026-08-10T10:14:59.773Z"
+    },
+    {
+      "id": "EVT-1786356895029-4112",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-JMJ76B",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:55.012Z"
+      },
+      "timestamp": "2026-08-10T10:14:55.029Z"
+    },
+    {
+      "id": "EVT-1786356894991-9014",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-YOZKK0",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:54.976Z"
+      },
+      "timestamp": "2026-08-10T10:14:54.991Z"
+    },
+    {
+      "id": "EVT-1786356894937-8734",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-B4F8OC",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:54.925Z"
+      },
+      "timestamp": "2026-08-10T10:14:54.937Z"
+    },
+    {
+      "id": "EVT-1786356894892-2179",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-9M2YVZ",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:54.873Z"
+      },
+      "timestamp": "2026-08-10T10:14:54.892Z"
+    },
+    {
+      "id": "EVT-1786356890027-7105",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-HX7X13",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:50.012Z"
+      },
+      "timestamp": "2026-08-10T10:14:50.027Z"
+    },
+    {
+      "id": "EVT-1786356889994-5241",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-P3HHPE",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:49.976Z"
+      },
+      "timestamp": "2026-08-10T10:14:49.994Z"
+    },
+    {
+      "id": "EVT-1786356889943-3872",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-FZVSTD",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:49.925Z"
+      },
+      "timestamp": "2026-08-10T10:14:49.943Z"
+    },
+    {
+      "id": "EVT-1786356889887-3126",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-7J9JLQ",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:49.872Z"
+      },
+      "timestamp": "2026-08-10T10:14:49.887Z"
+    },
+    {
+      "id": "EVT-1786356885026-3937",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-2Z6PX5",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:45.011Z"
+      },
+      "timestamp": "2026-08-10T10:14:45.026Z"
+    },
+    {
+      "id": "EVT-1786356884991-8342",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-A0FKD4",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:44.976Z"
+      },
+      "timestamp": "2026-08-10T10:14:44.991Z"
+    },
+    {
+      "id": "EVT-1786356884940-9593",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-4G224O",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:44.924Z"
+      },
+      "timestamp": "2026-08-10T10:14:44.940Z"
+    },
+    {
+      "id": "EVT-1786356884888-79",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-7A8T1Q",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:44.871Z"
+      },
+      "timestamp": "2026-08-10T10:14:44.888Z"
+    },
+    {
+      "id": "EVT-1786356880008-213",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-NIX0RS",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:39.990Z"
+      },
+      "timestamp": "2026-08-10T10:14:40.008Z"
+    },
+    {
+      "id": "EVT-1786356879972-7767",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-NSH87V",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:39.958Z"
+      },
+      "timestamp": "2026-08-10T10:14:39.972Z"
+    },
+    {
+      "id": "EVT-1786356879939-5535",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-1E57VC",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:39.923Z"
+      },
+      "timestamp": "2026-08-10T10:14:39.939Z"
+    },
+    {
+      "id": "EVT-1786356879890-9016",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-CGBX2F",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:39.871Z"
+      },
+      "timestamp": "2026-08-10T10:14:39.890Z"
+    },
+    {
+      "id": "EVT-1786356875005-831",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-3USVG4",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:34.989Z"
+      },
+      "timestamp": "2026-08-10T10:14:35.005Z"
+    },
+    {
+      "id": "EVT-1786356874970-8759",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-S1Y0EB",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:34.957Z"
+      },
+      "timestamp": "2026-08-10T10:14:34.970Z"
+    },
+    {
+      "id": "EVT-1786356874936-5632",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-K2H2H2",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:34.921Z"
+      },
+      "timestamp": "2026-08-10T10:14:34.936Z"
+    },
+    {
+      "id": "EVT-1786356874888-8247",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-27RO18",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:34.871Z"
+      },
+      "timestamp": "2026-08-10T10:14:34.888Z"
+    },
+    {
+      "id": "EVT-1786356870008-4556",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-XVGHJ4",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:29.990Z"
+      },
+      "timestamp": "2026-08-10T10:14:30.008Z"
+    },
+    {
+      "id": "EVT-1786356869973-1756",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-LAHH2M",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:29.957Z"
+      },
+      "timestamp": "2026-08-10T10:14:29.973Z"
+    },
+    {
+      "id": "EVT-1786356869935-3039",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-V5JB5L",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:29.921Z"
+      },
+      "timestamp": "2026-08-10T10:14:29.935Z"
+    },
+    {
+      "id": "EVT-1786356869887-2129",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-B1H7A5",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:29.870Z"
+      },
+      "timestamp": "2026-08-10T10:14:29.887Z"
+    },
+    {
+      "id": "EVT-1786356869783-9152",
+      "topic": "SCHEDULER.JOB.COMPLETED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-3UXCFV",
+      "payload": {
+        "jobId": "JOB-HEALTH-HEARTBEAT"
+      },
+      "timestamp": "2026-08-10T10:14:29.783Z"
+    },
+    {
+      "id": "EVT-1786356869765-9471",
+      "topic": "SCHEDULER.JOB.STARTED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-5G7HKC",
+      "payload": {
+        "jobId": "JOB-HEALTH-HEARTBEAT",
+        "name": "Core System Health & Heartbeat Checker"
+      },
+      "timestamp": "2026-08-10T10:14:29.765Z"
+    },
+    {
+      "id": "EVT-1786356864996-4257",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-0MXWV1",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:24.983Z"
+      },
+      "timestamp": "2026-08-10T10:14:24.996Z"
+    },
+    {
+      "id": "EVT-1786356864960-6316",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-SHF1YR",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:24.946Z"
+      },
+      "timestamp": "2026-08-10T10:14:24.960Z"
+    },
+    {
+      "id": "EVT-1786356864920-4381",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-3DSGGQ",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:24.904Z"
+      },
+      "timestamp": "2026-08-10T10:14:24.920Z"
+    },
+    {
+      "id": "EVT-1786356864881-9412",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-CVKSQJ",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:24.864Z"
+      },
+      "timestamp": "2026-08-10T10:14:24.881Z"
+    },
+    {
+      "id": "EVT-1786356859999-2170",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-5669FK",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:19.983Z"
+      },
+      "timestamp": "2026-08-10T10:14:19.999Z"
+    },
+    {
+      "id": "EVT-1786356859962-5490",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-EQYA26",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:19.946Z"
+      },
+      "timestamp": "2026-08-10T10:14:19.962Z"
+    },
+    {
+      "id": "EVT-1786356859927-1251",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-5HMKL7",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:19.904Z"
+      },
+      "timestamp": "2026-08-10T10:14:19.927Z"
+    },
+    {
+      "id": "EVT-1786356859870-2932",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-J5HBHC",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:19.854Z"
+      },
+      "timestamp": "2026-08-10T10:14:19.870Z"
+    },
+    {
+      "id": "EVT-1786356855002-2689",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-ZRHVC6",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:14.982Z"
+      },
+      "timestamp": "2026-08-10T10:14:15.002Z"
+    },
+    {
+      "id": "EVT-1786356854962-9063",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-F92J4C",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:14.945Z"
+      },
+      "timestamp": "2026-08-10T10:14:14.962Z"
+    },
+    {
+      "id": "EVT-1786356854917-839",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-4P0IJ4",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:14.904Z"
+      },
+      "timestamp": "2026-08-10T10:14:14.917Z"
+    },
+    {
+      "id": "EVT-1786356854871-3916",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-BCNRYB",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:14.854Z"
+      },
+      "timestamp": "2026-08-10T10:14:14.871Z"
+    },
+    {
+      "id": "EVT-1786356849997-3742",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-7V2NJE",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:09.982Z"
+      },
+      "timestamp": "2026-08-10T10:14:09.997Z"
+    },
+    {
+      "id": "EVT-1786356849951-2442",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-NK7P90",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:09.936Z"
+      },
+      "timestamp": "2026-08-10T10:14:09.951Z"
+    },
+    {
+      "id": "EVT-1786356849909-4327",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-FBPCF8",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:09.892Z"
+      },
+      "timestamp": "2026-08-10T10:14:09.909Z"
+    },
+    {
+      "id": "EVT-1786356849870-3427",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-WZ9WTC",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:09.853Z"
+      },
+      "timestamp": "2026-08-10T10:14:09.870Z"
+    },
+    {
+      "id": "EVT-1786356844994-1675",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-1EGJEI",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:04.980Z"
+      },
+      "timestamp": "2026-08-10T10:14:04.994Z"
+    },
+    {
+      "id": "EVT-1786356844948-2476",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-3JABG3",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:04.935Z"
+      },
+      "timestamp": "2026-08-10T10:14:04.948Z"
+    },
+    {
+      "id": "EVT-1786356844906-6910",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-UC9GEZ",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:04.892Z"
+      },
+      "timestamp": "2026-08-10T10:14:04.906Z"
+    },
+    {
+      "id": "EVT-1786356844858-6136",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-A0HDNN",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:14:04.845Z"
+      },
+      "timestamp": "2026-08-10T10:14:04.858Z"
+    },
+    {
+      "id": "EVT-1786356839992-788",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-HU2UMJ",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:13:59.980Z"
+      },
+      "timestamp": "2026-08-10T10:13:59.992Z"
+    },
+    {
+      "id": "EVT-1786356839951-1376",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-1YKPKP",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:13:59.935Z"
+      },
+      "timestamp": "2026-08-10T10:13:59.951Z"
+    },
+    {
+      "id": "EVT-1786356839904-7900",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-8Q0GEC",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:13:59.890Z"
+      },
+      "timestamp": "2026-08-10T10:13:59.904Z"
+    },
+    {
+      "id": "EVT-1786356839860-1969",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-1AW3PY",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:13:59.844Z"
+      },
+      "timestamp": "2026-08-10T10:13:59.860Z"
+    },
+    {
+      "id": "EVT-1786356834987-240",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-VDZ52S",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:13:54.970Z"
+      },
+      "timestamp": "2026-08-10T10:13:54.987Z"
+    },
+    {
+      "id": "EVT-1786356834933-7390",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-2MZ6H3",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:13:54.919Z"
+      },
+      "timestamp": "2026-08-10T10:13:54.933Z"
+    },
+    {
+      "id": "EVT-1786356834902-8183",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-L9KJ3T",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:13:54.888Z"
+      },
+      "timestamp": "2026-08-10T10:13:54.902Z"
+    },
+    {
+      "id": "EVT-1786356834857-8631",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-0Z40DI",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:13:54.844Z"
+      },
+      "timestamp": "2026-08-10T10:13:54.857Z"
+    },
+    {
+      "id": "EVT-1786356832231-7859",
+      "topic": "SCHEDULER.JOB.COMPLETED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-LEZ30C",
+      "payload": {
+        "jobId": "JOB-HEALTH-HEARTBEAT"
+      },
+      "timestamp": "2026-08-10T10:13:52.231Z"
+    },
+    {
+      "id": "EVT-1786356832216-9856",
+      "topic": "PAYPAL.AUTH.SUCCESS",
+      "source": "PayPalRuntime",
+      "traceId": "TR-2T9208",
+      "payload": {
+        "mode": "live",
+        "expiresIn": 32400
+      },
+      "timestamp": "2026-08-10T10:13:52.216Z"
+    },
+    {
+      "id": "EVT-1786356831910-5441",
+      "topic": "SCHEDULER.JOB.STARTED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-XGETFP",
+      "payload": {
+        "jobId": "JOB-HEALTH-HEARTBEAT",
+        "name": "Core System Health & Heartbeat Checker"
+      },
+      "timestamp": "2026-08-10T10:13:51.910Z"
+    },
+    {
+      "id": "EVT-1786356831863-2810",
+      "topic": "SCHEDULER.JOB.COMPLETED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-YU75BF",
+      "payload": {
+        "jobId": "JOB-INVENTORY-REBALANCE"
+      },
+      "timestamp": "2026-08-10T10:13:51.863Z"
+    },
+    {
+      "id": "EVT-1786356831850-4839",
+      "topic": "CJ.INVENTORY.SYNCED",
+      "source": "CJDropshippingRuntime",
+      "traceId": "TR-NT1ISG",
+      "payload": {
+        "totalSkus": 10,
+        "totalUnits": 4500,
+        "updatedAt": "2026-08-10T10:13:51.850Z"
+      },
+      "timestamp": "2026-08-10T10:13:51.850Z"
+    },
+    {
+      "id": "EVT-1786356831835-5034",
+      "topic": "SCHEDULER.JOB.STARTED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-Y0R6KL",
+      "payload": {
+        "jobId": "JOB-INVENTORY-REBALANCE",
+        "name": "Inventory Stock & Risk Monitor"
+      },
+      "timestamp": "2026-08-10T10:13:51.835Z"
+    },
+    {
+      "id": "EVT-1786356831793-3020",
+      "topic": "SCHEDULER.JOB.COMPLETED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-4ZHS7Z",
+      "payload": {
+        "jobId": "JOB-CJ-CATALOG-SYNC"
+      },
+      "timestamp": "2026-08-10T10:13:51.793Z"
+    },
+    {
+      "id": "EVT-1786356831780-2696",
+      "topic": "CJ.PRODUCTS.SYNCED",
+      "source": "CJDropshippingRuntime",
+      "traceId": "TR-6JYAZF",
+      "payload": {
+        "count": 10
+      },
+      "timestamp": "2026-08-10T10:13:51.780Z"
+    },
+    {
+      "id": "EVT-1786356829987-9697",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-7CAH30",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:13:49.970Z"
+      },
+      "timestamp": "2026-08-10T10:13:49.987Z"
+    },
+    {
+      "id": "EVT-1786356829935-5695",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-0JYCD1",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:13:49.919Z"
+      },
+      "timestamp": "2026-08-10T10:13:49.935Z"
+    },
+    {
+      "id": "EVT-1786356829890-2298",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-F55YPF",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:13:49.872Z"
+      },
+      "timestamp": "2026-08-10T10:13:49.890Z"
+    },
+    {
+      "id": "EVT-1786356829858-4274",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-AV1G9Z",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:13:49.843Z"
+      },
+      "timestamp": "2026-08-10T10:13:49.858Z"
+    },
+    {
+      "id": "EVT-1786356829824-8479",
+      "topic": "SCHEDULER.JOB.STARTED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-AAKR4Y",
+      "payload": {
+        "jobId": "JOB-CJ-CATALOG-SYNC",
+        "name": "CJ Dropshipping Catalog & Margin Sync"
+      },
+      "timestamp": "2026-08-10T10:13:49.824Z"
+    },
+    {
+      "id": "EVT-1786356829779-8601",
+      "topic": "SCHEDULER.JOB.COMPLETED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-UBP51T",
+      "payload": {
+        "jobId": "JOB-ORDER-FULFILLMENT"
+      },
+      "timestamp": "2026-08-10T10:13:49.779Z"
+    },
+    {
+      "id": "EVT-1786356829763-5299",
+      "topic": "SCHEDULER.JOB.STARTED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-EK7D1T",
+      "payload": {
+        "jobId": "JOB-ORDER-FULFILLMENT",
+        "name": "Autonomous Order Fulfillment Processor"
+      },
+      "timestamp": "2026-08-10T10:13:49.763Z"
+    },
+    {
+      "id": "EVT-1786356824986-4454",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-8O26C3",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:13:44.970Z"
+      },
+      "timestamp": "2026-08-10T10:13:44.986Z"
+    },
+    {
+      "id": "EVT-1786356824930-9989",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-QVCUIP",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:13:44.918Z"
+      },
+      "timestamp": "2026-08-10T10:13:44.930Z"
+    },
+    {
+      "id": "EVT-1786356824879-8449",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-S57EFG",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:13:44.865Z"
+      },
+      "timestamp": "2026-08-10T10:13:44.879Z"
+    },
+    {
+      "id": "EVT-1786356824851-6795",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-XEGN0T",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-10T10:13:44.838Z"
+      },
+      "timestamp": "2026-08-10T10:13:44.851Z"
+    },
+    {
+      "id": "EVT-1786356819922-5591",
+      "topic": "worker_registered",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-HI7M51",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "provider": "openai",
+        "status": "ONLINE"
+      },
+      "timestamp": "2026-08-10T10:13:39.922Z"
+    },
+    {
+      "id": "EVT-1786356819875-686",
+      "topic": "worker_registered",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-9UIX1I",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "provider": "claude",
+        "status": "ONLINE"
+      },
+      "timestamp": "2026-08-10T10:13:39.875Z"
+    },
+    {
+      "id": "EVT-1786356819850-8315",
+      "topic": "worker_registered",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-ANYIA9",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "provider": "manus",
+        "status": "ONLINE"
+      },
+      "timestamp": "2026-08-10T10:13:39.850Z"
+    },
+    {
+      "id": "EVT-1786356819822-7544",
+      "topic": "worker_registered",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-NSG1WT",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "provider": "gemini",
+        "status": "ONLINE"
+      },
+      "timestamp": "2026-08-10T10:13:39.822Z"
+    },
+    {
+      "id": "EVT-1786356819789-654",
+      "topic": "RUNTIME.BOOT.SUCCESS",
+      "source": "AutonomousAgentRuntime",
+      "traceId": "TR-G1YS9S",
+      "payload": {
+        "zeroTouchMode": true,
+        "timestamp": "2026-08-10T10:13:39.789Z"
+      },
+      "timestamp": "2026-08-10T10:13:39.789Z"
+    },
+    {
+      "id": "EVT-1786287824755-4636",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-X8W45A",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:44.744Z"
+      },
+      "timestamp": "2026-08-09T15:03:44.755Z"
+    },
+    {
+      "id": "EVT-1786287824731-4569",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-K0VDC6",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:44.721Z"
+      },
+      "timestamp": "2026-08-09T15:03:44.732Z"
+    },
+    {
+      "id": "EVT-1786287824694-5128",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-W1KLKM",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:44.683Z"
+      },
+      "timestamp": "2026-08-09T15:03:44.694Z"
+    },
+    {
+      "id": "EVT-1786287824668-6720",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-OXJVM3",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:44.656Z"
+      },
+      "timestamp": "2026-08-09T15:03:44.668Z"
+    },
+    {
+      "id": "EVT-1786287819742-9695",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-6UN50Q",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:39.727Z"
+      },
+      "timestamp": "2026-08-09T15:03:39.742Z"
+    },
+    {
+      "id": "EVT-1786287819702-790",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-P4THC0",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:39.691Z"
+      },
+      "timestamp": "2026-08-09T15:03:39.702Z"
+    },
+    {
+      "id": "EVT-1786287819679-166",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-1VFEDP",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:39.667Z"
+      },
+      "timestamp": "2026-08-09T15:03:39.679Z"
+    },
+    {
+      "id": "EVT-1786287819655-4638",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-2AWNZ8",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:39.643Z"
+      },
+      "timestamp": "2026-08-09T15:03:39.655Z"
+    },
+    {
+      "id": "EVT-1786287814739-4269",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-KN7KDR",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:34.727Z"
+      },
+      "timestamp": "2026-08-09T15:03:34.739Z"
+    },
+    {
+      "id": "EVT-1786287814700-1664",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-Y0LCSL",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:34.688Z"
+      },
+      "timestamp": "2026-08-09T15:03:34.700Z"
+    },
+    {
+      "id": "EVT-1786287814677-8444",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-00H8LK",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:34.664Z"
+      },
+      "timestamp": "2026-08-09T15:03:34.677Z"
+    },
+    {
+      "id": "EVT-1786287814651-9952",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-NJQIVF",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:34.639Z"
+      },
+      "timestamp": "2026-08-09T15:03:34.651Z"
+    },
+    {
+      "id": "EVT-1786287809738-3543",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-U4561C",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:29.727Z"
+      },
+      "timestamp": "2026-08-09T15:03:29.738Z"
+    },
+    {
+      "id": "EVT-1786287809704-138",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-4AP6ZN",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:29.688Z"
+      },
+      "timestamp": "2026-08-09T15:03:29.704Z"
+    },
+    {
+      "id": "EVT-1786287809676-1557",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-BOQNCR",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:29.664Z"
+      },
+      "timestamp": "2026-08-09T15:03:29.677Z"
+    },
+    {
+      "id": "EVT-1786287809650-9913",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-S9IIIE",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:29.638Z"
+      },
+      "timestamp": "2026-08-09T15:03:29.650Z"
+    },
+    {
+      "id": "EVT-1786287806465-3252",
+      "topic": "SCHEDULER.JOB.COMPLETED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-V6SOFF",
+      "payload": {
+        "jobId": "JOB-HEALTH-HEARTBEAT"
+      },
+      "timestamp": "2026-08-09T15:03:26.465Z"
+    },
+    {
+      "id": "EVT-1786287806451-7179",
+      "topic": "PAYPAL.AUTH.SUCCESS",
+      "source": "PayPalRuntime",
+      "traceId": "TR-J5XVID",
+      "payload": {
+        "mode": "live",
+        "expiresIn": 32400
+      },
+      "timestamp": "2026-08-09T15:03:26.451Z"
+    },
+    {
+      "id": "EVT-1786287806150-308",
+      "topic": "SCHEDULER.JOB.STARTED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-8A3Z9Z",
+      "payload": {
+        "jobId": "JOB-HEALTH-HEARTBEAT",
+        "name": "Core System Health & Heartbeat Checker"
+      },
+      "timestamp": "2026-08-09T15:03:26.150Z"
+    },
+    {
+      "id": "EVT-1786287806113-5346",
+      "topic": "SCHEDULER.JOB.COMPLETED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-NJBAWD",
+      "payload": {
+        "jobId": "JOB-INVENTORY-REBALANCE"
+      },
+      "timestamp": "2026-08-09T15:03:26.113Z"
+    },
+    {
+      "id": "EVT-1786287806100-3160",
+      "topic": "CJ.INVENTORY.SYNCED",
+      "source": "CJDropshippingRuntime",
+      "traceId": "TR-WL1FOV",
+      "payload": {
+        "totalSkus": 10,
+        "totalUnits": 4500,
+        "updatedAt": "2026-08-09T15:03:26.100Z"
+      },
+      "timestamp": "2026-08-09T15:03:26.100Z"
+    },
+    {
+      "id": "EVT-1786287806088-9223",
+      "topic": "SCHEDULER.JOB.STARTED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-LCUUWY",
+      "payload": {
+        "jobId": "JOB-INVENTORY-REBALANCE",
+        "name": "Inventory Stock & Risk Monitor"
+      },
+      "timestamp": "2026-08-09T15:03:26.088Z"
+    },
+    {
+      "id": "EVT-1786287806050-3534",
+      "topic": "SCHEDULER.JOB.COMPLETED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-2RF7PF",
+      "payload": {
+        "jobId": "JOB-CJ-CATALOG-SYNC"
+      },
+      "timestamp": "2026-08-09T15:03:26.050Z"
+    },
+    {
+      "id": "EVT-1786287806037-7160",
+      "topic": "CJ.PRODUCTS.SYNCED",
+      "source": "CJDropshippingRuntime",
+      "traceId": "TR-NZSKDD",
+      "payload": {
+        "count": 10
+      },
+      "timestamp": "2026-08-09T15:03:26.037Z"
+    },
+    {
+      "id": "EVT-1786287804738-394",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-FXET4Z",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:24.726Z"
+      },
+      "timestamp": "2026-08-09T15:03:24.738Z"
+    },
+    {
+      "id": "EVT-1786287804701-8249",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-OIJAJH",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:24.688Z"
+      },
+      "timestamp": "2026-08-09T15:03:24.701Z"
+    },
+    {
+      "id": "EVT-1786287804677-3735",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-X7EP4B",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:24.664Z"
+      },
+      "timestamp": "2026-08-09T15:03:24.677Z"
+    },
+    {
+      "id": "EVT-1786287804651-4002",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-H3LAGO",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:24.638Z"
+      },
+      "timestamp": "2026-08-09T15:03:24.652Z"
+    },
+    {
+      "id": "EVT-1786287804597-5621",
+      "topic": "SCHEDULER.JOB.STARTED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-6YWD80",
+      "payload": {
+        "jobId": "JOB-CJ-CATALOG-SYNC",
+        "name": "CJ Dropshipping Catalog & Margin Sync"
+      },
+      "timestamp": "2026-08-09T15:03:24.597Z"
+    },
+    {
+      "id": "EVT-1786287804559-4921",
+      "topic": "SCHEDULER.JOB.COMPLETED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-UZO0OG",
+      "payload": {
+        "jobId": "JOB-ORDER-FULFILLMENT"
+      },
+      "timestamp": "2026-08-09T15:03:24.559Z"
+    },
+    {
+      "id": "EVT-1786287804544-7029",
+      "topic": "SCHEDULER.JOB.STARTED",
+      "source": "SchedulerEngine",
+      "traceId": "TR-RH2C7N",
+      "payload": {
+        "jobId": "JOB-ORDER-FULFILLMENT",
+        "name": "Autonomous Order Fulfillment Processor"
+      },
+      "timestamp": "2026-08-09T15:03:24.544Z"
+    },
+    {
+      "id": "EVT-1786287799691-9495",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-LK6MY4",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:19.679Z"
+      },
+      "timestamp": "2026-08-09T15:03:19.691Z"
+    },
+    {
+      "id": "EVT-1786287799666-6953",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-J5DLU2",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:19.652Z"
+      },
+      "timestamp": "2026-08-09T15:03:19.666Z"
+    },
+    {
+      "id": "EVT-1786287799640-4768",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-YY4AR5",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:19.629Z"
+      },
+      "timestamp": "2026-08-09T15:03:19.640Z"
+    },
+    {
+      "id": "EVT-1786287799614-2409",
+      "topic": "worker_heartbeat",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-4WH4BI",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "status": "ONLINE",
+        "timestamp": "2026-08-09T15:03:19.600Z"
+      },
+      "timestamp": "2026-08-09T15:03:19.614Z"
+    },
+    {
+      "id": "EVT-1786287794664-6416",
+      "topic": "worker_registered",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-8GK3BD",
+      "payload": {
+        "workerId": "REMOTE-OPENAI-WORKER",
+        "provider": "openai",
+        "status": "ONLINE"
+      },
+      "timestamp": "2026-08-09T15:03:14.664Z"
+    },
+    {
+      "id": "EVT-1786287794632-3814",
+      "topic": "worker_registered",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-7EJ5JE",
+      "payload": {
+        "workerId": "REMOTE-CLAUDE-WORKER",
+        "provider": "claude",
+        "status": "ONLINE"
+      },
+      "timestamp": "2026-08-09T15:03:14.632Z"
+    },
+    {
+      "id": "EVT-1786287794610-3305",
+      "topic": "worker_registered",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-VK9D6A",
+      "payload": {
+        "workerId": "REMOTE-MANUS-WORKER",
+        "provider": "manus",
+        "status": "ONLINE"
+      },
+      "timestamp": "2026-08-09T15:03:14.610Z"
+    },
+    {
+      "id": "EVT-1786287794587-5373",
+      "topic": "worker_registered",
+      "source": "WORKER_REGISTRY",
+      "traceId": "TR-XPMLLR",
+      "payload": {
+        "workerId": "REMOTE-GEMINI-WORKER",
+        "provider": "gemini",
+        "status": "ONLINE"
+      },
+      "timestamp": "2026-08-09T15:03:14.587Z"
+    },
+    {
+      "id": "EVT-1786287794565-2338",
+      "topic": "RUNTIME.BOOT.SUCCESS",
+      "source": "AutonomousAgentRuntime",
+      "traceId": "TR-F569KN",
+      "payload": {
+        "zeroTouchMode": true,
+        "timestamp": "2026-08-09T15:03:14.565Z"
+      },
+      "timestamp": "2026-08-09T15:03:14.565Z"
+    },
     {
       "id": "EVT-1786193366592-6377",
       "topic": "worker_heartbeat",
@@ -3734,2523 +6228,6 @@
         "timestamp": "2026-08-08T12:44:13.855Z"
       },
       "timestamp": "2026-08-08T12:44:13.867Z"
-    },
-    {
-      "id": "EVT-1786193049127-5463",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-TNN6PS",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:44:09.116Z"
-      },
-      "timestamp": "2026-08-08T12:44:09.127Z"
-    },
-    {
-      "id": "EVT-1786193049053-1442",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-TX9YIC",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:44:09.040Z"
-      },
-      "timestamp": "2026-08-08T12:44:09.053Z"
-    },
-    {
-      "id": "EVT-1786193048994-6082",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-XJRAH1",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:44:08.983Z"
-      },
-      "timestamp": "2026-08-08T12:44:08.994Z"
-    },
-    {
-      "id": "EVT-1786193048865-6474",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-8S3EM4",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:44:08.854Z"
-      },
-      "timestamp": "2026-08-08T12:44:08.865Z"
-    },
-    {
-      "id": "EVT-1786193044123-405",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-995QT8",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:44:04.110Z"
-      },
-      "timestamp": "2026-08-08T12:44:04.123Z"
-    },
-    {
-      "id": "EVT-1786193044052-4155",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-C0VAGA",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:44:04.040Z"
-      },
-      "timestamp": "2026-08-08T12:44:04.052Z"
-    },
-    {
-      "id": "EVT-1786193043994-434",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-O9SB37",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:44:03.982Z"
-      },
-      "timestamp": "2026-08-08T12:44:03.994Z"
-    },
-    {
-      "id": "EVT-1786193043860-767",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-WHLQCD",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:44:03.847Z"
-      },
-      "timestamp": "2026-08-08T12:44:03.860Z"
-    },
-    {
-      "id": "EVT-1786193039120-2583",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-ERALSX",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:59.109Z"
-      },
-      "timestamp": "2026-08-08T12:43:59.120Z"
-    },
-    {
-      "id": "EVT-1786193039053-5468",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-TRGSX7",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:59.039Z"
-      },
-      "timestamp": "2026-08-08T12:43:59.053Z"
-    },
-    {
-      "id": "EVT-1786193038994-5879",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-ZIDJS7",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:58.981Z"
-      },
-      "timestamp": "2026-08-08T12:43:58.995Z"
-    },
-    {
-      "id": "EVT-1786193038860-5934",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-TMFP3E",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:58.846Z"
-      },
-      "timestamp": "2026-08-08T12:43:58.860Z"
-    },
-    {
-      "id": "EVT-1786193034111-6158",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-0FG7X5",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:54.098Z"
-      },
-      "timestamp": "2026-08-08T12:43:54.111Z"
-    },
-    {
-      "id": "EVT-1786193034039-8342",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-6SKJXA",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:54.026Z"
-      },
-      "timestamp": "2026-08-08T12:43:54.039Z"
-    },
-    {
-      "id": "EVT-1786193033993-892",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-R6IE88",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:53.980Z"
-      },
-      "timestamp": "2026-08-08T12:43:53.993Z"
-    },
-    {
-      "id": "EVT-1786193033854-3146",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-CMEIFV",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:53.843Z"
-      },
-      "timestamp": "2026-08-08T12:43:53.854Z"
-    },
-    {
-      "id": "EVT-1786193033662-4233",
-      "topic": "SCHEDULER.JOB.COMPLETED",
-      "source": "SchedulerEngine",
-      "traceId": "TR-66MQEV",
-      "payload": {
-        "jobId": "JOB-HEALTH-HEARTBEAT"
-      },
-      "timestamp": "2026-08-08T12:43:53.662Z"
-    },
-    {
-      "id": "EVT-1786193033649-6369",
-      "topic": "SCHEDULER.JOB.STARTED",
-      "source": "SchedulerEngine",
-      "traceId": "TR-NSVO15",
-      "payload": {
-        "jobId": "JOB-HEALTH-HEARTBEAT",
-        "name": "Core System Health & Heartbeat Checker"
-      },
-      "timestamp": "2026-08-08T12:43:53.649Z"
-    },
-    {
-      "id": "EVT-1786193029110-2557",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-IB96PH",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:49.099Z"
-      },
-      "timestamp": "2026-08-08T12:43:49.110Z"
-    },
-    {
-      "id": "EVT-1786193029037-489",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-ILBAL4",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:49.025Z"
-      },
-      "timestamp": "2026-08-08T12:43:49.037Z"
-    },
-    {
-      "id": "EVT-1786193028987-3487",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-MIVZYD",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:48.974Z"
-      },
-      "timestamp": "2026-08-08T12:43:48.987Z"
-    },
-    {
-      "id": "EVT-1786193028854-5148",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-QQ89N5",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:48.842Z"
-      },
-      "timestamp": "2026-08-08T12:43:48.854Z"
-    },
-    {
-      "id": "EVT-1786193024103-8931",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-M6OL1T",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:44.091Z"
-      },
-      "timestamp": "2026-08-08T12:43:44.103Z"
-    },
-    {
-      "id": "EVT-1786193024036-9960",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-K7X9W9",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:44.025Z"
-      },
-      "timestamp": "2026-08-08T12:43:44.036Z"
-    },
-    {
-      "id": "EVT-1786193023986-2314",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-5FS43U",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:43.974Z"
-      },
-      "timestamp": "2026-08-08T12:43:43.986Z"
-    },
-    {
-      "id": "EVT-1786193023850-4827",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-Q4034X",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:43.838Z"
-      },
-      "timestamp": "2026-08-08T12:43:43.850Z"
-    },
-    {
-      "id": "EVT-1786193019104-3903",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-A9EICU",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:39.090Z"
-      },
-      "timestamp": "2026-08-08T12:43:39.104Z"
-    },
-    {
-      "id": "EVT-1786193019037-7513",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-UFROSG",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:39.025Z"
-      },
-      "timestamp": "2026-08-08T12:43:39.037Z"
-    },
-    {
-      "id": "EVT-1786193018991-9199",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-A86GA4",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:38.975Z"
-      },
-      "timestamp": "2026-08-08T12:43:38.991Z"
-    },
-    {
-      "id": "EVT-1786193018849-2880",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-5L2C5X",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:38.837Z"
-      },
-      "timestamp": "2026-08-08T12:43:38.849Z"
-    },
-    {
-      "id": "EVT-1786193014098-2940",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-8Q1WNW",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:34.084Z"
-      },
-      "timestamp": "2026-08-08T12:43:34.098Z"
-    },
-    {
-      "id": "EVT-1786193014036-9018",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-FSHRDZ",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:34.024Z"
-      },
-      "timestamp": "2026-08-08T12:43:34.036Z"
-    },
-    {
-      "id": "EVT-1786193013969-3792",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-KHJR29",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:33.957Z"
-      },
-      "timestamp": "2026-08-08T12:43:33.969Z"
-    },
-    {
-      "id": "EVT-1786193013844-9281",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-5BKPS2",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:33.832Z"
-      },
-      "timestamp": "2026-08-08T12:43:33.844Z"
-    },
-    {
-      "id": "EVT-1786193013660-7367",
-      "topic": "SCHEDULER.JOB.COMPLETED",
-      "source": "SchedulerEngine",
-      "traceId": "TR-GMYE66",
-      "payload": {
-        "jobId": "JOB-ORDER-FULFILLMENT"
-      },
-      "timestamp": "2026-08-08T12:43:33.660Z"
-    },
-    {
-      "id": "EVT-1786193013645-2040",
-      "topic": "SCHEDULER.JOB.STARTED",
-      "source": "SchedulerEngine",
-      "traceId": "TR-IN3G91",
-      "payload": {
-        "jobId": "JOB-ORDER-FULFILLMENT",
-        "name": "Autonomous Order Fulfillment Processor"
-      },
-      "timestamp": "2026-08-08T12:43:33.645Z"
-    },
-    {
-      "id": "EVT-1786193009095-9019",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-RSMLQL",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:29.083Z"
-      },
-      "timestamp": "2026-08-08T12:43:29.095Z"
-    },
-    {
-      "id": "EVT-1786193009036-3466",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-BZ5RVK",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:29.024Z"
-      },
-      "timestamp": "2026-08-08T12:43:29.036Z"
-    },
-    {
-      "id": "EVT-1786193008957-5801",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-8NDTCX",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:28.944Z"
-      },
-      "timestamp": "2026-08-08T12:43:28.957Z"
-    },
-    {
-      "id": "EVT-1786193008845-9408",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-NMV3NT",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:28.831Z"
-      },
-      "timestamp": "2026-08-08T12:43:28.845Z"
-    },
-    {
-      "id": "EVT-1786193004096-9770",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-ZU65EO",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:24.083Z"
-      },
-      "timestamp": "2026-08-08T12:43:24.096Z"
-    },
-    {
-      "id": "EVT-1786193004037-7723",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-ML7E1U",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:24.023Z"
-      },
-      "timestamp": "2026-08-08T12:43:24.037Z"
-    },
-    {
-      "id": "EVT-1786193003956-8621",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-OX6GT7",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:23.943Z"
-      },
-      "timestamp": "2026-08-08T12:43:23.956Z"
-    },
-    {
-      "id": "EVT-1786193003843-6080",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-J9NU0Y",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:23.831Z"
-      },
-      "timestamp": "2026-08-08T12:43:23.843Z"
-    },
-    {
-      "id": "EVT-1786192999097-4511",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-GK4QWR",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:19.082Z"
-      },
-      "timestamp": "2026-08-08T12:43:19.097Z"
-    },
-    {
-      "id": "EVT-1786192999035-4509",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-N5KK8C",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:19.022Z"
-      },
-      "timestamp": "2026-08-08T12:43:19.035Z"
-    },
-    {
-      "id": "EVT-1786192998954-8812",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-7JR3A8",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:18.942Z"
-      },
-      "timestamp": "2026-08-08T12:43:18.954Z"
-    },
-    {
-      "id": "EVT-1786192998842-242",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-KSX44G",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:18.830Z"
-      },
-      "timestamp": "2026-08-08T12:43:18.842Z"
-    },
-    {
-      "id": "EVT-1786192994094-513",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-M43EVM",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:14.081Z"
-      },
-      "timestamp": "2026-08-08T12:43:14.094Z"
-    },
-    {
-      "id": "EVT-1786192994035-7208",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-KZ21NN",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:14.022Z"
-      },
-      "timestamp": "2026-08-08T12:43:14.035Z"
-    },
-    {
-      "id": "EVT-1786192993956-7097",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-YH95KZ",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:13.941Z"
-      },
-      "timestamp": "2026-08-08T12:43:13.956Z"
-    },
-    {
-      "id": "EVT-1786192993843-3191",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-A1WVDK",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:13.829Z"
-      },
-      "timestamp": "2026-08-08T12:43:13.843Z"
-    },
-    {
-      "id": "EVT-1786192993656-4507",
-      "topic": "SCHEDULER.JOB.COMPLETED",
-      "source": "SchedulerEngine",
-      "traceId": "TR-UYAJW8",
-      "payload": {
-        "jobId": "JOB-HEALTH-HEARTBEAT"
-      },
-      "timestamp": "2026-08-08T12:43:13.656Z"
-    },
-    {
-      "id": "EVT-1786192993642-4301",
-      "topic": "SCHEDULER.JOB.STARTED",
-      "source": "SchedulerEngine",
-      "traceId": "TR-6JP242",
-      "payload": {
-        "jobId": "JOB-HEALTH-HEARTBEAT",
-        "name": "Core System Health & Heartbeat Checker"
-      },
-      "timestamp": "2026-08-08T12:43:13.642Z"
-    },
-    {
-      "id": "EVT-1786192989089-4675",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-P5WSL4",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:09.077Z"
-      },
-      "timestamp": "2026-08-08T12:43:09.089Z"
-    },
-    {
-      "id": "EVT-1786192989034-9738",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-6ZYVIO",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:09.021Z"
-      },
-      "timestamp": "2026-08-08T12:43:09.034Z"
-    },
-    {
-      "id": "EVT-1786192988952-6721",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-RJG3B6",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:08.940Z"
-      },
-      "timestamp": "2026-08-08T12:43:08.952Z"
-    },
-    {
-      "id": "EVT-1786192988843-2182",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-0M37A9",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:08.828Z"
-      },
-      "timestamp": "2026-08-08T12:43:08.843Z"
-    },
-    {
-      "id": "EVT-1786192984091-6042",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-S6ZRFY",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:04.077Z"
-      },
-      "timestamp": "2026-08-08T12:43:04.091Z"
-    },
-    {
-      "id": "EVT-1786192984035-7368",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-OM51K2",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:04.021Z"
-      },
-      "timestamp": "2026-08-08T12:43:04.035Z"
-    },
-    {
-      "id": "EVT-1786192983953-3888",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-VFW042",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:03.940Z"
-      },
-      "timestamp": "2026-08-08T12:43:03.953Z"
-    },
-    {
-      "id": "EVT-1786192983838-5370",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-9CHKST",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:43:03.827Z"
-      },
-      "timestamp": "2026-08-08T12:43:03.839Z"
-    },
-    {
-      "id": "EVT-1786192979090-7224",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-FR1FCZ",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:59.078Z"
-      },
-      "timestamp": "2026-08-08T12:42:59.090Z"
-    },
-    {
-      "id": "EVT-1786192979026-9251",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-ANPBFJ",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:59.014Z"
-      },
-      "timestamp": "2026-08-08T12:42:59.026Z"
-    },
-    {
-      "id": "EVT-1786192978952-2402",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-ENFGEL",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:58.939Z"
-      },
-      "timestamp": "2026-08-08T12:42:58.952Z"
-    },
-    {
-      "id": "EVT-1786192978838-3885",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-EVXFJB",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:58.826Z"
-      },
-      "timestamp": "2026-08-08T12:42:58.838Z"
-    },
-    {
-      "id": "EVT-1786192974089-2676",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-T5JVZZ",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:54.077Z"
-      },
-      "timestamp": "2026-08-08T12:42:54.089Z"
-    },
-    {
-      "id": "EVT-1786192974026-2510",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-Q9DC51",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:54.013Z"
-      },
-      "timestamp": "2026-08-08T12:42:54.026Z"
-    },
-    {
-      "id": "EVT-1786192973953-1977",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-NVRYUX",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:53.939Z"
-      },
-      "timestamp": "2026-08-08T12:42:53.953Z"
-    },
-    {
-      "id": "EVT-1786192973839-5972",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-W7SDSE",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:53.826Z"
-      },
-      "timestamp": "2026-08-08T12:42:53.839Z"
-    },
-    {
-      "id": "EVT-1786192969078-1295",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-1GJXIV",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:49.065Z"
-      },
-      "timestamp": "2026-08-08T12:42:49.078Z"
-    },
-    {
-      "id": "EVT-1786192969028-5635",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-OFJCAM",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:49.012Z"
-      },
-      "timestamp": "2026-08-08T12:42:49.028Z"
-    },
-    {
-      "id": "EVT-1786192968951-7385",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-HN6M0G",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:48.939Z"
-      },
-      "timestamp": "2026-08-08T12:42:48.951Z"
-    },
-    {
-      "id": "EVT-1786192968838-6146",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-HEY4EG",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:48.825Z"
-      },
-      "timestamp": "2026-08-08T12:42:48.838Z"
-    },
-    {
-      "id": "EVT-1786192964072-7073",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-7XN9LR",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:44.058Z"
-      },
-      "timestamp": "2026-08-08T12:42:44.072Z"
-    },
-    {
-      "id": "EVT-1786192964025-8154",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-UHW7LA",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:44.011Z"
-      },
-      "timestamp": "2026-08-08T12:42:44.025Z"
-    },
-    {
-      "id": "EVT-1786192963953-3973",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-V7MNRM",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:43.939Z"
-      },
-      "timestamp": "2026-08-08T12:42:43.953Z"
-    },
-    {
-      "id": "EVT-1786192963843-1536",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-3P2COI",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:43.824Z"
-      },
-      "timestamp": "2026-08-08T12:42:43.843Z"
-    },
-    {
-      "id": "EVT-1786192959054-8087",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-V7C5T2",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:39.042Z"
-      },
-      "timestamp": "2026-08-08T12:42:39.054Z"
-    },
-    {
-      "id": "EVT-1786192959026-502",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-WC8IL4",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:39.011Z"
-      },
-      "timestamp": "2026-08-08T12:42:39.026Z"
-    },
-    {
-      "id": "EVT-1786192958951-3059",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-3TNXCL",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:38.939Z"
-      },
-      "timestamp": "2026-08-08T12:42:38.951Z"
-    },
-    {
-      "id": "EVT-1786192958837-3334",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-T0Q0RL",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:38.824Z"
-      },
-      "timestamp": "2026-08-08T12:42:38.837Z"
-    },
-    {
-      "id": "EVT-1786192954054-4430",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-T5RSYL",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:34.041Z"
-      },
-      "timestamp": "2026-08-08T12:42:34.054Z"
-    },
-    {
-      "id": "EVT-1786192954023-5118",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-US39LU",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:34.010Z"
-      },
-      "timestamp": "2026-08-08T12:42:34.023Z"
-    },
-    {
-      "id": "EVT-1786192953956-6036",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-8HRGHX",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:33.939Z"
-      },
-      "timestamp": "2026-08-08T12:42:33.956Z"
-    },
-    {
-      "id": "EVT-1786192953827-4418",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-DO4GVX",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:33.812Z"
-      },
-      "timestamp": "2026-08-08T12:42:33.827Z"
-    },
-    {
-      "id": "EVT-1786192953644-1670",
-      "topic": "SCHEDULER.JOB.COMPLETED",
-      "source": "SchedulerEngine",
-      "traceId": "TR-QKM9SY",
-      "payload": {
-        "jobId": "JOB-HEALTH-HEARTBEAT"
-      },
-      "timestamp": "2026-08-08T12:42:33.644Z"
-    },
-    {
-      "id": "EVT-1786192953631-7717",
-      "topic": "SCHEDULER.JOB.STARTED",
-      "source": "SchedulerEngine",
-      "traceId": "TR-WE4J37",
-      "payload": {
-        "jobId": "JOB-HEALTH-HEARTBEAT",
-        "name": "Core System Health & Heartbeat Checker"
-      },
-      "timestamp": "2026-08-08T12:42:33.631Z"
-    },
-    {
-      "id": "EVT-1786192949052-2821",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-ISABMN",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:29.040Z"
-      },
-      "timestamp": "2026-08-08T12:42:29.052Z"
-    },
-    {
-      "id": "EVT-1786192949022-6209",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-N9OA2B",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:29.009Z"
-      },
-      "timestamp": "2026-08-08T12:42:29.022Z"
-    },
-    {
-      "id": "EVT-1786192948952-3294",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-7B9NBQ",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:28.938Z"
-      },
-      "timestamp": "2026-08-08T12:42:28.952Z"
-    },
-    {
-      "id": "EVT-1786192948826-1150",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-4DPUNQ",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:28.812Z"
-      },
-      "timestamp": "2026-08-08T12:42:28.826Z"
-    },
-    {
-      "id": "EVT-1786192944052-4617",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-7F8BAA",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:24.039Z"
-      },
-      "timestamp": "2026-08-08T12:42:24.052Z"
-    },
-    {
-      "id": "EVT-1786192944009-7671",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-39SNI6",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:23.996Z"
-      },
-      "timestamp": "2026-08-08T12:42:24.009Z"
-    },
-    {
-      "id": "EVT-1786192943951-8364",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-ALE3YZ",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:23.937Z"
-      },
-      "timestamp": "2026-08-08T12:42:23.951Z"
-    },
-    {
-      "id": "EVT-1786192943823-541",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-Z6EFX8",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:23.811Z"
-      },
-      "timestamp": "2026-08-08T12:42:23.823Z"
-    },
-    {
-      "id": "EVT-1786192943644-4412",
-      "topic": "SCHEDULER.JOB.COMPLETED",
-      "source": "SchedulerEngine",
-      "traceId": "TR-0Y6JDF",
-      "payload": {
-        "jobId": "JOB-ORDER-FULFILLMENT"
-      },
-      "timestamp": "2026-08-08T12:42:23.644Z"
-    },
-    {
-      "id": "EVT-1786192943631-8314",
-      "topic": "SCHEDULER.JOB.STARTED",
-      "source": "SchedulerEngine",
-      "traceId": "TR-HOHMAH",
-      "payload": {
-        "jobId": "JOB-ORDER-FULFILLMENT",
-        "name": "Autonomous Order Fulfillment Processor"
-      },
-      "timestamp": "2026-08-08T12:42:23.631Z"
-    },
-    {
-      "id": "EVT-1786192939052-6305",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-8H8LVI",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:19.039Z"
-      },
-      "timestamp": "2026-08-08T12:42:19.052Z"
-    },
-    {
-      "id": "EVT-1786192939006-2176",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-VYU9ML",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:18.994Z"
-      },
-      "timestamp": "2026-08-08T12:42:19.006Z"
-    },
-    {
-      "id": "EVT-1786192938951-7796",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-UJ36CH",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:18.937Z"
-      },
-      "timestamp": "2026-08-08T12:42:18.951Z"
-    },
-    {
-      "id": "EVT-1786192938825-4853",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-Z9X9WS",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:18.810Z"
-      },
-      "timestamp": "2026-08-08T12:42:18.825Z"
-    },
-    {
-      "id": "EVT-1786192934051-8147",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-N79JL9",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:14.038Z"
-      },
-      "timestamp": "2026-08-08T12:42:14.051Z"
-    },
-    {
-      "id": "EVT-1786192934006-5179",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-7Y2I1L",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:13.993Z"
-      },
-      "timestamp": "2026-08-08T12:42:14.006Z"
-    },
-    {
-      "id": "EVT-1786192933951-2785",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-SX7EJ0",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:13.937Z"
-      },
-      "timestamp": "2026-08-08T12:42:13.951Z"
-    },
-    {
-      "id": "EVT-1786192933822-9636",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-D76QG8",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:13.810Z"
-      },
-      "timestamp": "2026-08-08T12:42:13.822Z"
-    },
-    {
-      "id": "EVT-1786192929050-5081",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-W1R0U2",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:09.038Z"
-      },
-      "timestamp": "2026-08-08T12:42:09.050Z"
-    },
-    {
-      "id": "EVT-1786192929011-1478",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-P5B934",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:08.992Z"
-      },
-      "timestamp": "2026-08-08T12:42:09.011Z"
-    },
-    {
-      "id": "EVT-1786192928946-1858",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-9OJDK7",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:08.932Z"
-      },
-      "timestamp": "2026-08-08T12:42:08.946Z"
-    },
-    {
-      "id": "EVT-1786192928825-4549",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-45LJ5X",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:08.810Z"
-      },
-      "timestamp": "2026-08-08T12:42:08.825Z"
-    },
-    {
-      "id": "EVT-1786192924051-4455",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-4FAFX5",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:04.037Z"
-      },
-      "timestamp": "2026-08-08T12:42:04.051Z"
-    },
-    {
-      "id": "EVT-1786192924004-7143",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-0KVEHT",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:03.992Z"
-      },
-      "timestamp": "2026-08-08T12:42:04.004Z"
-    },
-    {
-      "id": "EVT-1786192923945-2098",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-DHO63W",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:03.933Z"
-      },
-      "timestamp": "2026-08-08T12:42:03.945Z"
-    },
-    {
-      "id": "EVT-1786192923824-9495",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-LF37BU",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:42:03.810Z"
-      },
-      "timestamp": "2026-08-08T12:42:03.824Z"
-    },
-    {
-      "id": "EVT-1786192919049-2699",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-DZCCDT",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:59.036Z"
-      },
-      "timestamp": "2026-08-08T12:41:59.049Z"
-    },
-    {
-      "id": "EVT-1786192919003-5363",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-1OYTIK",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:58.991Z"
-      },
-      "timestamp": "2026-08-08T12:41:59.003Z"
-    },
-    {
-      "id": "EVT-1786192918944-1042",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-HC6N4S",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:58.932Z"
-      },
-      "timestamp": "2026-08-08T12:41:58.944Z"
-    },
-    {
-      "id": "EVT-1786192918824-4838",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-UGZ9MB",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:58.810Z"
-      },
-      "timestamp": "2026-08-08T12:41:58.824Z"
-    },
-    {
-      "id": "EVT-1786192914048-3335",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-14TVM6",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:54.035Z"
-      },
-      "timestamp": "2026-08-08T12:41:54.048Z"
-    },
-    {
-      "id": "EVT-1786192914001-5966",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-YMCSKF",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:53.989Z"
-      },
-      "timestamp": "2026-08-08T12:41:54.001Z"
-    },
-    {
-      "id": "EVT-1786192913945-6413",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-RCQNVB",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:53.931Z"
-      },
-      "timestamp": "2026-08-08T12:41:53.945Z"
-    },
-    {
-      "id": "EVT-1786192913822-2536",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-D40AKP",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:53.809Z"
-      },
-      "timestamp": "2026-08-08T12:41:53.823Z"
-    },
-    {
-      "id": "EVT-1786192913644-8140",
-      "topic": "SCHEDULER.JOB.COMPLETED",
-      "source": "SchedulerEngine",
-      "traceId": "TR-8UIXJU",
-      "payload": {
-        "jobId": "JOB-HEALTH-HEARTBEAT"
-      },
-      "timestamp": "2026-08-08T12:41:53.644Z"
-    },
-    {
-      "id": "EVT-1786192913631-2383",
-      "topic": "SCHEDULER.JOB.STARTED",
-      "source": "SchedulerEngine",
-      "traceId": "TR-6CK2R0",
-      "payload": {
-        "jobId": "JOB-HEALTH-HEARTBEAT",
-        "name": "Core System Health & Heartbeat Checker"
-      },
-      "timestamp": "2026-08-08T12:41:53.631Z"
-    },
-    {
-      "id": "EVT-1786192909046-2484",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-PRZTHN",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:49.034Z"
-      },
-      "timestamp": "2026-08-08T12:41:49.046Z"
-    },
-    {
-      "id": "EVT-1786192909001-7249",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-LRIYO4",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:48.988Z"
-      },
-      "timestamp": "2026-08-08T12:41:49.001Z"
-    },
-    {
-      "id": "EVT-1786192908943-2405",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-YI779F",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:48.930Z"
-      },
-      "timestamp": "2026-08-08T12:41:48.943Z"
-    },
-    {
-      "id": "EVT-1786192908821-8400",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-AN48CA",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:48.808Z"
-      },
-      "timestamp": "2026-08-08T12:41:48.821Z"
-    },
-    {
-      "id": "EVT-1786192904046-4623",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-8VD6QJ",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:44.033Z"
-      },
-      "timestamp": "2026-08-08T12:41:44.046Z"
-    },
-    {
-      "id": "EVT-1786192904001-8546",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-RLEWYS",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:43.988Z"
-      },
-      "timestamp": "2026-08-08T12:41:44.001Z"
-    },
-    {
-      "id": "EVT-1786192903941-8887",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-AROJPQ",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:43.929Z"
-      },
-      "timestamp": "2026-08-08T12:41:43.941Z"
-    },
-    {
-      "id": "EVT-1786192903820-3132",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-JG1Q29",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:43.807Z"
-      },
-      "timestamp": "2026-08-08T12:41:43.820Z"
-    },
-    {
-      "id": "EVT-1786192899047-2565",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-6S6LNR",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:39.033Z"
-      },
-      "timestamp": "2026-08-08T12:41:39.047Z"
-    },
-    {
-      "id": "EVT-1786192899003-6004",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-U6L9D1",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:38.988Z"
-      },
-      "timestamp": "2026-08-08T12:41:39.003Z"
-    },
-    {
-      "id": "EVT-1786192898941-1093",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-03RAW0",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:38.928Z"
-      },
-      "timestamp": "2026-08-08T12:41:38.941Z"
-    },
-    {
-      "id": "EVT-1786192898819-597",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-VP2GUQ",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:38.807Z"
-      },
-      "timestamp": "2026-08-08T12:41:38.819Z"
-    },
-    {
-      "id": "EVT-1786192894047-8694",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-GI0AY4",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:34.032Z"
-      },
-      "timestamp": "2026-08-08T12:41:34.047Z"
-    },
-    {
-      "id": "EVT-1786192894002-7223",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-YARS3G",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:33.987Z"
-      },
-      "timestamp": "2026-08-08T12:41:34.002Z"
-    },
-    {
-      "id": "EVT-1786192893941-7963",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-P3JGU9",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:33.928Z"
-      },
-      "timestamp": "2026-08-08T12:41:33.941Z"
-    },
-    {
-      "id": "EVT-1786192893818-8457",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-Y31MCX",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:33.806Z"
-      },
-      "timestamp": "2026-08-08T12:41:33.818Z"
-    },
-    {
-      "id": "EVT-1786192889037-4115",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-WV2AZ7",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:29.019Z"
-      },
-      "timestamp": "2026-08-08T12:41:29.037Z"
-    },
-    {
-      "id": "EVT-1786192888999-6672",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-SSCXXR",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:28.986Z"
-      },
-      "timestamp": "2026-08-08T12:41:28.999Z"
-    },
-    {
-      "id": "EVT-1786192888940-3178",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-5PAM4P",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:28.927Z"
-      },
-      "timestamp": "2026-08-08T12:41:28.940Z"
-    },
-    {
-      "id": "EVT-1786192888818-6289",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-90JA9T",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:28.805Z"
-      },
-      "timestamp": "2026-08-08T12:41:28.818Z"
-    },
-    {
-      "id": "EVT-1786192884030-2367",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-KQ84HP",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:24.019Z"
-      },
-      "timestamp": "2026-08-08T12:41:24.030Z"
-    },
-    {
-      "id": "EVT-1786192883992-791",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-4IQVHU",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:23.977Z"
-      },
-      "timestamp": "2026-08-08T12:41:23.992Z"
-    },
-    {
-      "id": "EVT-1786192883940-4510",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-6YXZWC",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:23.927Z"
-      },
-      "timestamp": "2026-08-08T12:41:23.940Z"
-    },
-    {
-      "id": "EVT-1786192883820-3163",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-6MAGU9",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:23.805Z"
-      },
-      "timestamp": "2026-08-08T12:41:23.820Z"
-    },
-    {
-      "id": "EVT-1786192879034-5325",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-JPALOB",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:19.019Z"
-      },
-      "timestamp": "2026-08-08T12:41:19.034Z"
-    },
-    {
-      "id": "EVT-1786192878989-7137",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-DQQ8T3",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:18.976Z"
-      },
-      "timestamp": "2026-08-08T12:41:18.989Z"
-    },
-    {
-      "id": "EVT-1786192878939-6152",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-WTI2OW",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:18.926Z"
-      },
-      "timestamp": "2026-08-08T12:41:18.939Z"
-    },
-    {
-      "id": "EVT-1786192878817-3523",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-8GMHOA",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:18.804Z"
-      },
-      "timestamp": "2026-08-08T12:41:18.817Z"
-    },
-    {
-      "id": "EVT-1786192874024-2033",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-M3Y1BU",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:14.009Z"
-      },
-      "timestamp": "2026-08-08T12:41:14.024Z"
-    },
-    {
-      "id": "EVT-1786192873987-3964",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-YCOGZ0",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:13.975Z"
-      },
-      "timestamp": "2026-08-08T12:41:13.987Z"
-    },
-    {
-      "id": "EVT-1786192873939-6572",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-YZGQ20",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:13.925Z"
-      },
-      "timestamp": "2026-08-08T12:41:13.939Z"
-    },
-    {
-      "id": "EVT-1786192873817-9011",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-V5OTQR",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:13.804Z"
-      },
-      "timestamp": "2026-08-08T12:41:13.817Z"
-    },
-    {
-      "id": "EVT-1786192873687-9941",
-      "topic": "SCHEDULER.JOB.COMPLETED",
-      "source": "SchedulerEngine",
-      "traceId": "TR-JM6F2A",
-      "payload": {
-        "jobId": "JOB-HEALTH-HEARTBEAT"
-      },
-      "timestamp": "2026-08-08T12:41:13.687Z"
-    },
-    {
-      "id": "EVT-1786192873675-1108",
-      "topic": "SCHEDULER.JOB.STARTED",
-      "source": "SchedulerEngine",
-      "traceId": "TR-ERUIUO",
-      "payload": {
-        "jobId": "JOB-HEALTH-HEARTBEAT",
-        "name": "Core System Health & Heartbeat Checker"
-      },
-      "timestamp": "2026-08-08T12:41:13.675Z"
-    },
-    {
-      "id": "EVT-1786192873632-5941",
-      "topic": "SCHEDULER.JOB.COMPLETED",
-      "source": "SchedulerEngine",
-      "traceId": "TR-CJ3152",
-      "payload": {
-        "jobId": "JOB-ORDER-FULFILLMENT"
-      },
-      "timestamp": "2026-08-08T12:41:13.632Z"
-    },
-    {
-      "id": "EVT-1786192873618-6303",
-      "topic": "SCHEDULER.JOB.STARTED",
-      "source": "SchedulerEngine",
-      "traceId": "TR-57VHOF",
-      "payload": {
-        "jobId": "JOB-ORDER-FULFILLMENT",
-        "name": "Autonomous Order Fulfillment Processor"
-      },
-      "timestamp": "2026-08-08T12:41:13.618Z"
-    },
-    {
-      "id": "EVT-1786192869022-3404",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-STJ3UY",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:09.008Z"
-      },
-      "timestamp": "2026-08-08T12:41:09.022Z"
-    },
-    {
-      "id": "EVT-1786192868984-6644",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-S4B7YU",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:08.969Z"
-      },
-      "timestamp": "2026-08-08T12:41:08.984Z"
-    },
-    {
-      "id": "EVT-1786192868937-1538",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-CT044Q",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:08.924Z"
-      },
-      "timestamp": "2026-08-08T12:41:08.937Z"
-    },
-    {
-      "id": "EVT-1786192868816-8388",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-59WFHJ",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:08.803Z"
-      },
-      "timestamp": "2026-08-08T12:41:08.816Z"
-    },
-    {
-      "id": "EVT-1786192864019-7144",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-GU0JKO",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:04.008Z"
-      },
-      "timestamp": "2026-08-08T12:41:04.019Z"
-    },
-    {
-      "id": "EVT-1786192863981-8172",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-GVMIDM",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:03.969Z"
-      },
-      "timestamp": "2026-08-08T12:41:03.981Z"
-    },
-    {
-      "id": "EVT-1786192863926-5941",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-BPYXBG",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:03.912Z"
-      },
-      "timestamp": "2026-08-08T12:41:03.926Z"
-    },
-    {
-      "id": "EVT-1786192863815-3250",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-CT0XEN",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:41:03.803Z"
-      },
-      "timestamp": "2026-08-08T12:41:03.815Z"
-    },
-    {
-      "id": "EVT-1786192859025-2797",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-LF75N8",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:59.007Z"
-      },
-      "timestamp": "2026-08-08T12:40:59.025Z"
-    },
-    {
-      "id": "EVT-1786192858982-6793",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-2BVM2J",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:58.969Z"
-      },
-      "timestamp": "2026-08-08T12:40:58.982Z"
-    },
-    {
-      "id": "EVT-1786192858924-3755",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-XBN2KC",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:58.912Z"
-      },
-      "timestamp": "2026-08-08T12:40:58.924Z"
-    },
-    {
-      "id": "EVT-1786192858816-5681",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-LMQ15D",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:58.802Z"
-      },
-      "timestamp": "2026-08-08T12:40:58.816Z"
-    },
-    {
-      "id": "EVT-1786192854019-9316",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-DBXRET",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:54.007Z"
-      },
-      "timestamp": "2026-08-08T12:40:54.019Z"
-    },
-    {
-      "id": "EVT-1786192853982-8802",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-XGRCW9",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:53.969Z"
-      },
-      "timestamp": "2026-08-08T12:40:53.982Z"
-    },
-    {
-      "id": "EVT-1786192853924-4233",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-DBD18D",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:53.911Z"
-      },
-      "timestamp": "2026-08-08T12:40:53.924Z"
-    },
-    {
-      "id": "EVT-1786192853815-3671",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-MGZT4T",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:53.802Z"
-      },
-      "timestamp": "2026-08-08T12:40:53.815Z"
-    },
-    {
-      "id": "EVT-1786192849020-7049",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-RT63OP",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:49.007Z"
-      },
-      "timestamp": "2026-08-08T12:40:49.020Z"
-    },
-    {
-      "id": "EVT-1786192848980-9520",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-B73K3F",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:48.968Z"
-      },
-      "timestamp": "2026-08-08T12:40:48.980Z"
-    },
-    {
-      "id": "EVT-1786192848924-9629",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-VVZKQ4",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:48.910Z"
-      },
-      "timestamp": "2026-08-08T12:40:48.924Z"
-    },
-    {
-      "id": "EVT-1786192848802-3193",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-FREI5E",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:48.790Z"
-      },
-      "timestamp": "2026-08-08T12:40:48.802Z"
-    },
-    {
-      "id": "EVT-1786192844019-742",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-XPZFW3",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:44.007Z"
-      },
-      "timestamp": "2026-08-08T12:40:44.019Z"
-    },
-    {
-      "id": "EVT-1786192843982-2684",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-47GYUT",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:43.968Z"
-      },
-      "timestamp": "2026-08-08T12:40:43.982Z"
-    },
-    {
-      "id": "EVT-1786192843924-396",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-DZT5OP",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:43.909Z"
-      },
-      "timestamp": "2026-08-08T12:40:43.924Z"
-    },
-    {
-      "id": "EVT-1786192843800-103",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-60TT8X",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:43.789Z"
-      },
-      "timestamp": "2026-08-08T12:40:43.800Z"
-    },
-    {
-      "id": "EVT-1786192839018-7493",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-OE8PP0",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:39.006Z"
-      },
-      "timestamp": "2026-08-08T12:40:39.018Z"
-    },
-    {
-      "id": "EVT-1786192838971-9105",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-NBCWI3",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:38.957Z"
-      },
-      "timestamp": "2026-08-08T12:40:38.971Z"
-    },
-    {
-      "id": "EVT-1786192838920-6231",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-QMNVQA",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:38.908Z"
-      },
-      "timestamp": "2026-08-08T12:40:38.920Z"
-    },
-    {
-      "id": "EVT-1786192838804-4225",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-3HZZW0",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:38.788Z"
-      },
-      "timestamp": "2026-08-08T12:40:38.804Z"
-    },
-    {
-      "id": "EVT-1786192834060-7833",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-ZEQRDZ",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:34.005Z"
-      },
-      "timestamp": "2026-08-08T12:40:34.060Z"
-    },
-    {
-      "id": "EVT-1786192833972-9701",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-HVICZC",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:33.955Z"
-      },
-      "timestamp": "2026-08-08T12:40:33.972Z"
-    },
-    {
-      "id": "EVT-1786192833912-9811",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-8PWSQV",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:33.898Z"
-      },
-      "timestamp": "2026-08-08T12:40:33.912Z"
-    },
-    {
-      "id": "EVT-1786192833801-6044",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-QMJG5K",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:33.788Z"
-      },
-      "timestamp": "2026-08-08T12:40:33.801Z"
-    },
-    {
-      "id": "EVT-1786192833623-4362",
-      "topic": "SCHEDULER.JOB.COMPLETED",
-      "source": "SchedulerEngine",
-      "traceId": "TR-0CU6KS",
-      "payload": {
-        "jobId": "JOB-HEALTH-HEARTBEAT"
-      },
-      "timestamp": "2026-08-08T12:40:33.623Z"
-    },
-    {
-      "id": "EVT-1786192833610-6107",
-      "topic": "SCHEDULER.JOB.STARTED",
-      "source": "SchedulerEngine",
-      "traceId": "TR-E0SMFL",
-      "payload": {
-        "jobId": "JOB-HEALTH-HEARTBEAT",
-        "name": "Core System Health & Heartbeat Checker"
-      },
-      "timestamp": "2026-08-08T12:40:33.610Z"
-    },
-    {
-      "id": "EVT-1786192829069-8648",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-778NGX",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:29.004Z"
-      },
-      "timestamp": "2026-08-08T12:40:29.069Z"
-    },
-    {
-      "id": "EVT-1786192828967-45",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-9VNY1V",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:28.955Z"
-      },
-      "timestamp": "2026-08-08T12:40:28.967Z"
-    },
-    {
-      "id": "EVT-1786192828897-9735",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-KPG3OE",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:28.884Z"
-      },
-      "timestamp": "2026-08-08T12:40:28.897Z"
-    },
-    {
-      "id": "EVT-1786192828794-1401",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-9KZE67",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:28.774Z"
-      },
-      "timestamp": "2026-08-08T12:40:28.794Z"
-    },
-    {
-      "id": "EVT-1786192824056-4298",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-WHPOWW",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:24.003Z"
-      },
-      "timestamp": "2026-08-08T12:40:24.056Z"
-    },
-    {
-      "id": "EVT-1786192823969-9393",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-0MPTTO",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:23.953Z"
-      },
-      "timestamp": "2026-08-08T12:40:23.969Z"
-    },
-    {
-      "id": "EVT-1786192823896-725",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-VXDF2A",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:23.884Z"
-      },
-      "timestamp": "2026-08-08T12:40:23.896Z"
-    },
-    {
-      "id": "EVT-1786192823785-7733",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-0ZDSET",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:23.773Z"
-      },
-      "timestamp": "2026-08-08T12:40:23.785Z"
-    },
-    {
-      "id": "EVT-1786192819014-9130",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-PT7WCG",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:19.002Z"
-      },
-      "timestamp": "2026-08-08T12:40:19.014Z"
-    },
-    {
-      "id": "EVT-1786192818936-33",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-8E59FV",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:18.923Z"
-      },
-      "timestamp": "2026-08-08T12:40:18.936Z"
-    },
-    {
-      "id": "EVT-1786192818884-5653",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-U5FOKV",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:18.871Z"
-      },
-      "timestamp": "2026-08-08T12:40:18.884Z"
-    },
-    {
-      "id": "EVT-1786192818786-3233",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-K95GA4",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:18.773Z"
-      },
-      "timestamp": "2026-08-08T12:40:18.786Z"
-    },
-    {
-      "id": "EVT-1786192814015-3396",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-JZ630F",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:14.002Z"
-      },
-      "timestamp": "2026-08-08T12:40:14.015Z"
-    },
-    {
-      "id": "EVT-1786192813933-5584",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-6Z8ASP",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:13.922Z"
-      },
-      "timestamp": "2026-08-08T12:40:13.933Z"
-    },
-    {
-      "id": "EVT-1786192813882-7484",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-EZP1O4",
-      "payload": {
-        "workerId": "REMOTE-MANUS-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:13.870Z"
-      },
-      "timestamp": "2026-08-08T12:40:13.882Z"
-    },
-    {
-      "id": "EVT-1786192813784-1158",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-8LXN8N",
-      "payload": {
-        "workerId": "REMOTE-GEMINI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:13.772Z"
-      },
-      "timestamp": "2026-08-08T12:40:13.784Z"
-    },
-    {
-      "id": "EVT-1786192809015-756",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-VEVCJL",
-      "payload": {
-        "workerId": "REMOTE-OPENAI-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:09.001Z"
-      },
-      "timestamp": "2026-08-08T12:40:09.015Z"
-    },
-    {
-      "id": "EVT-1786192808954-1263",
-      "topic": "worker_heartbeat",
-      "source": "WORKER_REGISTRY",
-      "traceId": "TR-CVNAY3",
-      "payload": {
-        "workerId": "REMOTE-CLAUDE-WORKER",
-        "status": "ONLINE",
-        "timestamp": "2026-08-08T12:40:08.920Z"
-      },
-      "timestamp": "2026-08-08T12:40:08.954Z"
     }
   ],
   "kccPromptRegistry": {
@@ -6305,7 +6282,7 @@
   },
   "kccMissionControlState": {
     "isBooted": true,
-    "lastBootAt": "2026-08-08T12:46:41.246Z",
+    "lastBootAt": "2026-08-10T10:13:39.750Z",
     "operationalMode": "KCC_CTO_FULL_AUTONOMOUS",
     "status": "ALL_SERVICES_ONLINE"
   },
@@ -6336,10 +6313,10 @@
   "kccProviderHealthHistory": [
     {
       "providerId": "gemini",
-      "status": "RATE_LIMITED",
-      "latencyMs": 523,
-      "message": "Gemini Quota Exceeded: {\"error\":{\"code\":429,\"message\":\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash\\nPlease retry in 18.296558873s.\",\"status\":\"RESOURCE_EXHAUSTED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.Help\",\"links\":[{\"description\":\"Learn more about Gemini API quotas\",\"url\":\"https://ai.google.dev/gemini-api/docs/rate-limits\"}]},{\"@type\":\"type.googleapis.com/google.rpc.QuotaFailure\",\"violations\":[{\"quotaMetric\":\"generativelanguage.googleapis.com/generate_content_free_tier_requests\",\"quotaId\":\"GenerateRequestsPerDayPerProjectPerModel-FreeTier\",\"quotaDimensions\":{\"model\":\"gemini-3.6-flash\",\"location\":\"global\"},\"quotaValue\":\"20\"}]},{\"@type\":\"type.googleapis.com/google.rpc.RetryInfo\",\"retryDelay\":\"18s\"}]}}",
-      "verifiedAt": "2026-08-08T12:46:41.245Z",
+      "status": "CONNECTED",
+      "latencyMs": 2681,
+      "message": "Gemini 3.6 Flash verified via real API request",
+      "verifiedAt": "2026-08-10T10:13:39.748Z",
       "lastVerifiedRealRequest": true
     },
     {
@@ -6347,7 +6324,7 @@
       "status": "NOT_CONNECTED",
       "latencyMs": 0,
       "message": "OPENAI_API_KEY environment variable is not configured",
-      "verifiedAt": "2026-08-08T12:46:41.768Z",
+      "verifiedAt": "2026-08-10T10:13:42.429Z",
       "lastVerifiedRealRequest": false
     },
     {
@@ -6355,7 +6332,7 @@
       "status": "NOT_CONNECTED",
       "latencyMs": 0,
       "message": "CLAUDE_API_KEY / ANTHROPIC_API_KEY environment variable is not configured",
-      "verifiedAt": "2026-08-08T12:46:41.768Z",
+      "verifiedAt": "2026-08-10T10:13:42.429Z",
       "lastVerifiedRealRequest": false
     },
     {
@@ -6363,7 +6340,7 @@
       "status": "NOT_CONNECTED",
       "latencyMs": 0,
       "message": "MANUS_API_KEY environment variable is not configured",
-      "verifiedAt": "2026-08-08T12:46:41.768Z",
+      "verifiedAt": "2026-08-10T10:13:42.429Z",
       "lastVerifiedRealRequest": false
     },
     {
@@ -6371,7 +6348,7 @@
       "status": "CONNECTED",
       "latencyMs": 1,
       "message": "Zero-latency Deterministic Fallback Engine operational",
-      "verifiedAt": "2026-08-08T12:46:41.768Z",
+      "verifiedAt": "2026-08-10T10:13:42.429Z",
       "lastVerifiedRealRequest": true
     }
   ],
@@ -6516,7 +6493,7 @@
   ],
   "kccSelfDevLoopStats": {
     "isLoopRunning": true,
-    "lastIterationAt": "2026-08-08T12:46:41.393Z",
+    "lastIterationAt": "2026-08-10T10:16:39.768Z",
     "totalTasksObserved": 3,
     "tasksCompletedAndLearned": 1,
     "tasksInFlight": 1,
@@ -6551,7 +6528,7 @@
       "status": "ONLINE",
       "workerType": "REMOTE_AI_WORKER",
       "currentTask": null,
-      "lastHeartbeat": "2026-08-08T12:49:28.096Z",
+      "lastHeartbeat": "2026-08-10T10:16:43.922Z",
       "registeredAt": "2026-08-07T17:43:06.907Z"
     },
     {
@@ -6566,7 +6543,7 @@
       "status": "ONLINE",
       "workerType": "REMOTE_AI_WORKER",
       "currentTask": null,
-      "lastHeartbeat": "2026-08-08T12:49:28.268Z",
+      "lastHeartbeat": "2026-08-10T10:16:43.493Z",
       "registeredAt": "2026-08-07T17:43:06.907Z"
     },
     {
@@ -6580,7 +6557,7 @@
       "status": "ONLINE",
       "workerType": "REMOTE_AI_WORKER",
       "currentTask": null,
-      "lastHeartbeat": "2026-08-08T12:49:28.319Z",
+      "lastHeartbeat": "2026-08-10T10:16:43.803Z",
       "registeredAt": "2026-08-07T17:43:06.908Z"
     },
     {
@@ -6594,7 +6571,7 @@
       "status": "ONLINE",
       "workerType": "REMOTE_AI_WORKER",
       "currentTask": null,
-      "lastHeartbeat": "2026-08-08T12:49:27.856Z",
+      "lastHeartbeat": "2026-08-10T10:16:43.853Z",
       "registeredAt": "2026-08-07T17:43:06.908Z"
     }
   ],
@@ -10095,7 +10072,7 @@
     }
   ],
   "kccConsensusDecisions": [],
-  "updatedAt": "2026-08-08T12:49:28.320Z",
+  "updatedAt": "2026-08-10T10:16:43.922Z",
   "kccBusinessKPIs": {
     "totalRevenue": 18450.75,
     "totalProfit": 12300.5,
