@@ -428,27 +428,31 @@ export interface GitHubCommitResult {
 export class GitHubIntegration {
   public static async commitAndPush(commitMessage: string): Promise<GitHubCommitResult> {
     try {
-      // 0. Remove stale lock file if present
-      await execPromise('rm -f .git/index.lock', { cwd: process.cwd() }).catch(() => {});
+      const clearLocks = () => {
+        try {
+          fs.rmSync(path.join(process.cwd(), '.git', 'index.lock'), { force: true });
+          fs.rmSync(path.join(process.cwd(), '.git', 'rebase-merge'), { recursive: true, force: true });
+          fs.rmSync(path.join(process.cwd(), '.git', 'rebase-apply'), { recursive: true, force: true });
+        } catch (_) {}
+      };
+
+      // 0. Remove stale locks if present
+      clearLocks();
 
       // 1. Stage changes
-      await execPromise('git add server/ server.ts scripts/ src/ package.json data/', { cwd: process.cwd() }).catch(() => {});
+      await execPromise('git add -A', { cwd: process.cwd() }).catch(() => {});
 
       // Check git status
+      clearLocks();
       const { stdout: statusOut } = await execPromise('git status --porcelain', { cwd: process.cwd() });
-      if (!statusOut.trim()) {
-        const { stdout: headSha } = await execPromise('git rev-parse HEAD', { cwd: process.cwd() });
-        return {
-          success: true,
-          commitSha: headSha.trim(),
-          pushed: false,
-          message: 'Workspace clean. No unstaged changes to commit.'
-        };
+      if (statusOut.trim()) {
+        // 2. Commit changes
+        clearLocks();
+        const sanitizedMsg = commitMessage.replace(/"/g, '\\"');
+        await execPromise(`git commit -m "${sanitizedMsg}"`, { cwd: process.cwd() });
       }
 
-      // 2. Commit changes
-      const sanitizedMsg = commitMessage.replace(/"/g, '\\"');
-      await execPromise(`git commit -m "${sanitizedMsg}"`, { cwd: process.cwd() });
+      clearLocks();
       const { stdout: shaOut } = await execPromise('git rev-parse HEAD', { cwd: process.cwd() });
       const commitSha = shaOut.trim();
 
@@ -463,6 +467,7 @@ export class GitHubIntegration {
         };
       }
 
+      clearLocks();
       const { stdout: remoteOut } = await execPromise('git remote get-url origin', { cwd: process.cwd() });
       const remoteUrl = remoteOut.trim();
       let authRemoteUrl = remoteUrl;
@@ -472,13 +477,26 @@ export class GitHubIntegration {
         authRemoteUrl = `https://${token}@${cleanBody}`;
       }
 
+      // Sync remote main
+      clearLocks();
+      await execPromise(`git fetch ${authRemoteUrl} main`, { cwd: process.cwd() }).catch(() => {});
+
+      clearLocks();
+      await execPromise('git rebase FETCH_HEAD --autostash -X ours', { cwd: process.cwd() }).catch(() => {});
+
+      // Push to remote main
+      clearLocks();
       await execPromise(`git push ${authRemoteUrl} main`, { cwd: process.cwd() });
+
+      clearLocks();
+      const { stdout: finalShaOut } = await execPromise('git rev-parse HEAD', { cwd: process.cwd() });
+      const finalCommitSha = finalShaOut.trim();
 
       return {
         success: true,
-        commitSha,
+        commitSha: finalCommitSha,
         pushed: true,
-        message: `Successfully committed (${commitSha.substring(0, 7)}) and pushed to GitHub main.`
+        message: `Successfully committed (${finalCommitSha.substring(0, 7)}) and pushed to GitHub main.`
       };
     } catch (err: any) {
       return {
