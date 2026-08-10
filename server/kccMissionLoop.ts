@@ -136,15 +136,13 @@ export class KCCMissionLoop {
         const depsMet = (task.dependencies || []).every(depId => completedTaskIds.has(depId));
         if (!depsMet) continue;
 
-        if (task.status === 'PENDING') {
+        if (task.status === 'PENDING' || task.status === 'IN_PROGRESS') {
           task.status = 'IN_PROGRESS';
           task.updatedAt = new Date().toISOString();
           mission.currentStep = `Executing Task: ${task.title} (${task.assignedProvider})`;
           modified = true;
 
-          this.executeTask(mission, task).catch(err => {
-            console.error(`[KCC Mission Loop] Unhandled error executing task ${task.taskId}:`, err);
-          });
+          await this.executeTask(mission, task);
         }
       }
 
