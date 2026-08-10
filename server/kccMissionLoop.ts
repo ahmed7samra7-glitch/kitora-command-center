@@ -10,6 +10,7 @@ import { kccExecutiveReasoningEngine } from './kccExecutiveReasoningEngine.js';
 import { cjDropshippingRuntime } from './cjDropshipping.js';
 import { payPalRuntime } from './paypal.js';
 import { kitoraStoreAdapter } from './kitoraStoreAdapter.js';
+import { GitHubIntegration } from './autonomousCodeExecution.js';
 import {
   circuitBreakerRegistry,
   executeWithExponentialBackoff,
@@ -164,12 +165,17 @@ export class KCCMissionLoop {
             mission.status = 'COMPLETED';
             mission.currentStep = `Mission Objective Achieved & Verified: LAUNCH_READY (${completedCount}/${totalCount} tasks completed).`;
             (mission as any).launchReady = true;
+
+            // Trigger GitHub Commit & Push Automation
+            const gitRes = await GitHubIntegration.commitAndPush(`KCC Mission Complete [${mission.missionId}]: ${mission.goal}`);
+            
             mission.finalReport = {
               completedAt: new Date().toISOString(),
               totalTasksCompleted: completedCount,
               replanningCycles: (mission as any).replanningCycles || 0,
               realityVerificationScore: evalResult.verificationScore,
               launchStatus: 'LAUNCH_READY',
+              githubResult: gitRes,
               checklist: evalResult.checklist,
               summary: `All ${completedCount} executive tasks executed and reality-verified across ${(mission as any).replanningCycles || 0} autonomous replanning cycles.`
             };
@@ -231,12 +237,16 @@ export class KCCMissionLoop {
           mission.status = 'COMPLETED';
           mission.currentStep = `Mission Objective Achieved & Verified: LAUNCH_READY (${completedCount}/${totalCount} tasks completed).`;
           (mission as any).launchReady = true;
+
+          const gitRes = await GitHubIntegration.commitAndPush(`KCC Mission Complete [${mission.missionId}]: ${mission.goal}`);
+
           mission.finalReport = {
             completedAt: new Date().toISOString(),
             totalTasksCompleted: completedCount,
             replanningCycles: (mission as any).replanningCycles || 0,
             realityVerificationScore: evalResult.verificationScore,
             launchStatus: 'LAUNCH_READY',
+            githubResult: gitRes,
             checklist: evalResult.checklist,
             summary: `All ${completedCount} executive tasks executed and reality-verified across ${(mission as any).replanningCycles || 0} autonomous replanning cycles.`
           };

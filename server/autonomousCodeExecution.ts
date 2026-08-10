@@ -413,3 +413,78 @@ export class PatchApplier {
     }
   }
 }
+
+// -------------------------------------------------------------
+// 7. GITHUB AUTOMATION ENGINE
+// -------------------------------------------------------------
+export interface GitHubCommitResult {
+  success: boolean;
+  commitSha?: string;
+  pushed?: boolean;
+  error?: string;
+  message?: string;
+}
+
+export class GitHubIntegration {
+  public static async commitAndPush(commitMessage: string): Promise<GitHubCommitResult> {
+    try {
+      // 0. Remove stale lock file if present
+      await execPromise('rm -f .git/index.lock', { cwd: process.cwd() }).catch(() => {});
+
+      // 1. Stage changes
+      await execPromise('git add server/ server.ts scripts/ src/ package.json data/', { cwd: process.cwd() }).catch(() => {});
+
+      // Check git status
+      const { stdout: statusOut } = await execPromise('git status --porcelain', { cwd: process.cwd() });
+      if (!statusOut.trim()) {
+        const { stdout: headSha } = await execPromise('git rev-parse HEAD', { cwd: process.cwd() });
+        return {
+          success: true,
+          commitSha: headSha.trim(),
+          pushed: false,
+          message: 'Workspace clean. No unstaged changes to commit.'
+        };
+      }
+
+      // 2. Commit changes
+      const sanitizedMsg = commitMessage.replace(/"/g, '\\"');
+      await execPromise(`git commit -m "${sanitizedMsg}"`, { cwd: process.cwd() });
+      const { stdout: shaOut } = await execPromise('git rev-parse HEAD', { cwd: process.cwd() });
+      const commitSha = shaOut.trim();
+
+      // 3. Push to GitHub
+      const token = (process.env.GITHUB_TOKEN || process.env.GH_TOKEN || process.env.GIT_TOKEN || '').trim();
+      if (!token) {
+        return {
+          success: false,
+          commitSha,
+          pushed: false,
+          error: 'Missing GITHUB_TOKEN environment variable required for automated GitHub push.'
+        };
+      }
+
+      const { stdout: remoteOut } = await execPromise('git remote get-url origin', { cwd: process.cwd() });
+      const remoteUrl = remoteOut.trim();
+      let authRemoteUrl = remoteUrl;
+
+      if (remoteUrl.startsWith('https://')) {
+        const cleanBody = remoteUrl.replace('https://', '').replace(/^[^@]+@/, '');
+        authRemoteUrl = `https://${token}@${cleanBody}`;
+      }
+
+      await execPromise(`git push ${authRemoteUrl} main`, { cwd: process.cwd() });
+
+      return {
+        success: true,
+        commitSha,
+        pushed: true,
+        message: `Successfully committed (${commitSha.substring(0, 7)}) and pushed to GitHub main.`
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        error: err?.message || String(err)
+      };
+    }
+  }
+}
