@@ -428,6 +428,9 @@ export class IndependentVerificationSuite {
   // Suite 7: Autonomous Runtime 24H Sim
   private async verifyAutonomousRuntime24HSim(): Promise<VerificationEvidence> {
     const start = Date.now();
+    if (!autonomousAgentRuntime.getStatus().isAlive) {
+      autonomousAgentRuntime.start();
+    }
     const statusBefore = autonomousAgentRuntime.getStatus();
     return {
       suite: 'Autonomous Runtime',

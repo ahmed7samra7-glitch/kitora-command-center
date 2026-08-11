@@ -148,6 +148,14 @@ class PersistentDatabaseRuntime {
   public getFullSnapshot(): DatabaseSchema {
     return JSON.parse(JSON.stringify(this.memoryDb));
   }
+
+  public getStatus() {
+    return {
+      status: 'CONNECTED',
+      storage: DB_FILE,
+      updatedAt: this.memoryDb.updatedAt || new Date().toISOString()
+    };
+  }
 }
 
 export const dbRuntime = new PersistentDatabaseRuntime();

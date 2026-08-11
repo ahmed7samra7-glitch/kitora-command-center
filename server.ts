@@ -64,15 +64,11 @@ import {
   OrchestrationAuditLogger
 } from './server/orchestrationEngine.js';
 
-const currentFilename = typeof __filename !== 'undefined'
-  ? __filename
-  : (import.meta && import.meta.url ? fileURLToPath(import.meta.url) : '');
-const currentDirname = typeof __dirname !== 'undefined'
-  ? __dirname
-  : (currentFilename ? path.dirname(currentFilename) : process.cwd());
+const currentFilename = typeof __filename !== 'undefined' ? __filename : '';
+const currentDirname = typeof __dirname !== 'undefined' ? __dirname : process.cwd();
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 // Security Middlewares & Single Owner Boot Initialization
 app.use(helmet({
@@ -185,6 +181,7 @@ app.use((req: Request, res: Response, next) => {
     path === '/api/auth/signup' ||
     path === '/api/admin/signup' ||
     path === '/api/openapi.json' ||
+    path === '/api/health' ||
     path === '/api/kcc/health' ||
     path === '/api/kcc/openapi.json' ||
     path.startsWith('/api/phase4/store/catalog') ||
@@ -2264,34 +2261,148 @@ app.post('/api/kcc/chatgpt/order', async (req, res) => {
 });
 
 // 2. KCC Health & System Status Endpoint
-app.get('/api/kcc/health', (req, res) => {
-  try {
-    const missions = kccMissionEngine.getMissions();
-    const activeMissions = missions.filter(m => m.status === 'PLANNING' || m.status === 'ACTIVE');
-    const completedMissions = missions.filter(m => m.status === 'COMPLETED');
-    const failedMissions = missions.filter(m => m.status === 'FAILED');
+function getKccHealthPayload() {
+  const uptimeSeconds = Math.floor(process.uptime());
+  const timestamp = new Date().toISOString();
 
-    res.json({
-      success: true,
-      status: 'HEALTHY',
-      timestamp: new Date().toISOString(),
-      brain: {
-        executiveReasoningEngine: 'ONLINE',
-        autonomousLoop: 'ACTIVE',
-        singleOwnerAuth: 'ENFORCED',
-        chatGptBridge: 'AUTHENTICATED'
-      },
-      telemetry: {
-        totalMissions: missions.length,
-        activeMissions: activeMissions.length,
-        completedMissions: completedMissions.length,
-        failedMissions: failedMissions.length
-      }
-    });
+  // 1. Database Status
+  let dbStatus: any = { status: 'CONNECTED', storage: 'data/db.json' };
+  try {
+    dbStatus = dbRuntime.getStatus ? dbRuntime.getStatus() : { status: 'CONNECTED', storage: 'data/db.json' };
   } catch (err: any) {
-    res.status(500).json({ success: false, error: err.message || String(err) });
+    dbStatus = { status: 'DISCONNECTED', error: err.message };
   }
-});
+
+  // 2. Autonomous Agent Runtime Status
+  let agentRuntimeStatus = 'STOPPED';
+  let agentRuntimeDetails: any = null;
+  try {
+    agentRuntimeDetails = autonomousAgentRuntime.getStatus();
+    agentRuntimeStatus = agentRuntimeDetails.isAlive ? 'RUNNING' : 'STOPPED';
+  } catch (err: any) {
+    agentRuntimeStatus = 'FAILED';
+    agentRuntimeDetails = { error: err.message };
+  }
+
+  // 3. Async Worker Manager Status
+  let workerManagerStatus = 'STOPPED';
+  let workers: any[] = [];
+  try {
+    workers = asyncWorkerManager.getWorkersStatus() || [];
+    workerManagerStatus = workers.length > 0 ? 'ACTIVE' : 'STOPPED';
+  } catch (err: any) {
+    workerManagerStatus = 'FAILED';
+  }
+
+  // 4. KCC Mission Loop Status
+  let missionLoopStatus = 'STOPPED';
+  try {
+    const loopStatus = kccMissionLoop.getStatus();
+    missionLoopStatus = loopStatus.isRunning ? 'RUNNING' : 'STOPPED';
+  } catch (err: any) {
+    missionLoopStatus = 'FAILED';
+  }
+
+  // 5. AI Providers Status
+  const geminiKey = !!process.env.GEMINI_API_KEY;
+  const openAiKey = !!process.env.OPENAI_API_KEY;
+  const claudeKey = !!(process.env.CLAUDE_API_KEY || process.env.ANTHROPIC_API_KEY);
+
+  const geminiStatus = geminiKey ? 'ONLINE' : 'UNCONFIGURED';
+  const openAiStatus = openAiKey ? 'ONLINE' : 'FALLBACK_PROXY_AVAILABLE';
+  const claudeStatus = claudeKey ? 'ONLINE' : 'UNCONFIGURED';
+
+  let aiOverallStatus: 'ONLINE' | 'DEGRADED' | 'DOWN' = 'ONLINE';
+  if (!geminiKey && !openAiKey) {
+    aiOverallStatus = 'DEGRADED';
+  }
+
+  // 6. Telemetry
+  let missions: any[] = [];
+  try {
+    missions = kccMissionEngine.getMissions();
+  } catch {}
+  const activeMissions = missions.filter(m => m.status === 'PLANNING' || m.status === 'ACTIVE');
+  const completedMissions = missions.filter(m => m.status === 'COMPLETED');
+  const failedMissions = missions.filter(m => m.status === 'FAILED');
+
+  // 7. Overall System Status
+  let overallStatus: 'HEALTHY' | 'DEGRADED' | 'UNHEALTHY' = 'HEALTHY';
+
+  if (dbStatus.status !== 'CONNECTED') {
+    overallStatus = 'UNHEALTHY';
+  } else if (
+    agentRuntimeStatus !== 'RUNNING' ||
+    workerManagerStatus !== 'ACTIVE' ||
+    missionLoopStatus !== 'RUNNING' ||
+    aiOverallStatus !== 'ONLINE'
+  ) {
+    overallStatus = 'DEGRADED';
+  }
+
+  return {
+    success: true,
+    status: overallStatus,
+    serverStatus: 'UP',
+    uptimeSeconds,
+    timestamp,
+    version: '1.0.0-production',
+    commit: process.env.GIT_COMMIT || '2a17423c',
+    brain: {
+      executiveReasoningEngine: 'ONLINE',
+      autonomousLoop: missionLoopStatus === 'RUNNING' ? 'ACTIVE' : 'INACTIVE',
+      singleOwnerAuth: 'ENFORCED',
+      chatGptBridge: 'AUTHENTICATED'
+    },
+    subsystems: {
+      server: { status: 'UP', port: 3000, host: '0.0.0.0' },
+      database: dbStatus,
+      autonomousAgentRuntime: {
+        status: agentRuntimeStatus,
+        details: agentRuntimeDetails
+      },
+      asyncWorkerManager: {
+        status: workerManagerStatus,
+        activeWorkersCount: workers.length
+      },
+      kccMissionLoop: {
+        status: missionLoopStatus
+      },
+      aiProviders: {
+        status: aiOverallStatus,
+        gemini: geminiStatus,
+        openai: openAiStatus,
+        claude: claudeStatus,
+        deterministicFallback: 'ONLINE'
+      }
+    },
+    telemetry: {
+      totalMissions: missions.length,
+      activeMissions: activeMissions.length,
+      completedMissions: completedMissions.length,
+      failedMissions: failedMissions.length
+    }
+  };
+}
+
+const handleKccHealthRequest = (req: express.Request, res: express.Response) => {
+  try {
+    const healthPayload = getKccHealthPayload();
+    const statusCode = healthPayload.status === 'UNHEALTHY' ? 503 : 200;
+    res.status(statusCode).json(healthPayload);
+  } catch (err: any) {
+    res.status(503).json({
+      success: false,
+      status: 'UNHEALTHY',
+      serverStatus: 'UP',
+      error: err.message || String(err),
+      timestamp: new Date().toISOString()
+    });
+  }
+};
+
+app.get('/api/kcc/health', handleKccHealthRequest);
+app.get('/api/health', handleKccHealthRequest);
 
 // 3. OpenAPI 3.0 Spec Endpoint for Custom GPT Actions
 const openApiSchemaHandler = (req: express.Request, res: express.Response) => {
@@ -3278,9 +3389,23 @@ app.post('/api/admin/signup', disableRegistrationHandler);
 async function startServer() {
 
   // Boot 24/7 Zero-Touch Autonomous Agent Runtime & Async Remote AI Worker Daemons
-  autonomousAgentRuntime.start();
-  asyncWorkerManager.initializeDefaultWorkers();
-  kccMissionLoop.startLoop(3000);
+  try {
+    autonomousAgentRuntime.start();
+  } catch (bootErr) {
+    console.error('[KCC Core Runtime] autonomousAgentRuntime boot warning:', bootErr);
+  }
+
+  try {
+    asyncWorkerManager.initializeDefaultWorkers();
+  } catch (bootErr) {
+    console.error('[KCC Core Runtime] asyncWorkerManager boot warning:', bootErr);
+  }
+
+  try {
+    kccMissionLoop.startLoop(3000);
+  } catch (bootErr) {
+    console.error('[KCC Core Runtime] kccMissionLoop boot warning:', bootErr);
+  }
 
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
@@ -3296,9 +3421,26 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`[KCC Core Runtime] KITORA Command Center online at http://0.0.0.0:${PORT}`);
   });
+
+  const gracefulShutdown = (signal: string) => {
+    console.log(`[KCC Core Runtime] Received ${signal}. Initiating graceful shutdown...`);
+    try {
+      kccMissionLoop.stopLoop();
+      autonomousAgentRuntime.stop();
+    } catch (err) {
+      console.error('[KCC Core Runtime] Error during daemon shutdown:', err);
+    }
+    server.close(() => {
+      console.log('[KCC Core Runtime] HTTP server closed. Exiting process.');
+      process.exit(0);
+    });
+  };
+
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 }
 
 startServer();

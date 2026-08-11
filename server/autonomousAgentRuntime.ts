@@ -115,6 +115,19 @@ class PermanentAutonomousAgentRuntime {
     console.log('[Autonomous Runtime] ✅ 24/7 Zero-Touch Autonomous Agent Runtime is ACTIVE.');
   }
 
+  public stop() {
+    this.isLoopRunning = false;
+    if (this.loopTimer) {
+      clearInterval(this.loopTimer);
+      this.loopTimer = null;
+    }
+    if (this.scheduleTimer) {
+      clearInterval(this.scheduleTimer);
+      this.scheduleTimer = null;
+    }
+    console.log('[Autonomous Runtime] Stopped 24/7 Permanent Autonomous Agent Runtime.');
+  }
+
   private saveQueue() {
     dbRuntime.set('taskQueue', this.queue);
   }

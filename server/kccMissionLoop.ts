@@ -59,6 +59,13 @@ export class KCCMissionLoop {
     console.log('[KCC Mission Loop] Stopped Mission Loop.');
   }
 
+  public getStatus() {
+    return {
+      isRunning: this.isRunning,
+      status: this.isRunning ? 'RUNNING' : 'STOPPED'
+    };
+  }
+
   public gatherTelemetry(): ObservationTelemetry {
     const cjProducts = cjDropshippingRuntime.getProducts();
     const cjOrders = cjDropshippingRuntime.getOrders();
