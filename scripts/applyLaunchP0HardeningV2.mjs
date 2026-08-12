@@ -98,6 +98,23 @@ if (!server.includes("if (process.env.ENABLE_CONTINUOUS_LOOP === 'true') {\n    
     'boot loop gating'
   );
 }
+if (!server.includes('const kccBatchMode = process.env.ENABLE_CONTINUOUS_LOOP !== \'true\';')) {
+  const healthAnchor = "  let overallStatus: 'HEALTHY' | 'DEGRADED' | 'UNHEALTHY' = 'HEALTHY';\n\n  if (dbStatus.status !== 'CONNECTED') {\n    overallStatus = 'UNHEALTHY';\n  } else if (\n    agentRuntimeStatus !== 'RUNNING' ||\n    workerManagerStatus !== 'ACTIVE' ||\n    missionLoopStatus !== 'RUNNING' ||\n    aiOverallStatus !== 'ONLINE'\n  ) {\n    overallStatus = 'DEGRADED';\n  }";
+  server = replaceRequired(
+    server,
+    healthAnchor,
+    "  let overallStatus: 'HEALTHY' | 'DEGRADED' | 'UNHEALTHY' = 'HEALTHY';\n  const kccBatchMode = process.env.ENABLE_CONTINUOUS_LOOP !== 'true';\n\n  if (dbStatus.status !== 'CONNECTED') {\n    overallStatus = 'UNHEALTHY';\n  } else if (\n    (!kccBatchMode && (agentRuntimeStatus !== 'RUNNING' || workerManagerStatus !== 'ACTIVE' || missionLoopStatus !== 'RUNNING')) ||\n    aiOverallStatus !== 'ONLINE'\n  ) {\n    overallStatus = 'DEGRADED';\n  }",
+    'batch-aware health semantics'
+  );
+}
+if (!server.includes("executionMode: kccBatchMode ? 'BATCH' : 'CONTINUOUS'")) {
+  server = replaceRequired(
+    server,
+    "      autonomousLoop: missionLoopStatus === 'RUNNING' ? 'ACTIVE' : 'INACTIVE',",
+    "      autonomousLoop: missionLoopStatus === 'RUNNING' ? 'ACTIVE' : 'INACTIVE',\n      executionMode: kccBatchMode ? 'BATCH' : 'CONTINUOUS',",
+    'health execution mode'
+  );
+}
 write('server.ts', server);
 
 console.log('KCC P0 hardening v2 applied.');
