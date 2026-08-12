@@ -35,5 +35,6 @@ jobs:
         run: |
           grep -q "Brain OS remains persistent through durable state" server.ts
           grep -q "ENABLE_CONTINUOUS_LOOP" server.ts
+          grep -q "Continuous daemon disabled" server/kccMissionLoop.ts
           grep -q "processQueueBatch" server/autonomousAgentRuntime.ts
           echo "KCC Brain OS boundary verified."
