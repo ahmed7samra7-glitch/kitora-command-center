@@ -1,0 +1,40 @@
+name: KCC Brain Scale-to-Zero Verification
+
+on:
+  push:
+    branches: [kcc/launch-v2]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.3'
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Apply Brain scale-to-zero patch in workspace
+        run: node scripts/applyBrainScaleZero.mjs
+
+      - name: Type-check
+        run: bun run lint
+
+      - name: Production build
+        run: bun run build
+
+      - name: Verify Brain/worker separation
+        run: |
+          grep -q "Brain OS remains persistent through durable state" server.ts
+          grep -q "ENABLE_CONTINUOUS_LOOP" server.ts
+          grep -q "executeMissionTick" server/kccMissionLoop.ts
+          grep -q "processQueueBatch" server/autonomousAgentRuntime.ts
+          echo "KCC Brain OS boundary verified."
