@@ -30,12 +30,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Authenticate to Google Cloud
+      - name: Validate WIF configuration
+        env:
+          WIF_PROVIDER: ${{ vars.WIF_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ vars.WIF_SERVICE_ACCOUNT }}
+        run: |
+          set -euo pipefail
+          test -n "${WIF_PROVIDER}" || { echo "Missing repository variable WIF_PROVIDER"; exit 1; }
+          test -n "${WIF_SERVICE_ACCOUNT}" || { echo "Missing repository variable WIF_SERVICE_ACCOUNT"; exit 1; }
+          echo "WIF configuration is present."
+
+      - name: Authenticate to Google Cloud with OIDC/WIF
         id: auth
         uses: google-github-actions/auth@v3
         with:
-          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
           project_id: '${{ env.GCP_PROJECT_ID }}'
+          workload_identity_provider: '${{ vars.WIF_PROVIDER }}'
+          service_account: '${{ vars.WIF_SERVICE_ACCOUNT }}'
 
       - name: Deploy to Cloud Run
         id: deploy
