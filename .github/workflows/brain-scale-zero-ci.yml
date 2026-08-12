@@ -32,15 +32,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          allowed=$'server.ts\nserver/kccMissionLoop.ts\nserver/autonomousAgentRuntime.ts'
-          git diff --check
-          while IFS= read -r file; do
-            [ -z "$file" ] && continue
-            case "\n${allowed}\n" in
-              *"\n${file}\n"*) ;;
+          for file in $(git diff --name-only); do
+            case "$file" in
+              server.ts|server/kccMissionLoop.ts|server/autonomousAgentRuntime.ts) ;;
               *) echo "Unexpected workspace mutation: ${file}" >&2; exit 1 ;;
             esac
-          done < <(git diff --name-only)
+          done
+          git diff --check
 
       - name: Type-check
         run: bun run lint
