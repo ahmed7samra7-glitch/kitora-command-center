@@ -43,6 +43,9 @@ jobs:
       - name: Run P0 smoke tests
         run: npx tsx scripts/runP0SmokeTests.ts
 
+      - name: Run payment router tests
+        run: npx tsx scripts/testPaymentRouter.ts
+
       - name: Verify launch guards and payment routing
         run: |
           grep -q "requireExecutionSecret" server.ts
@@ -70,7 +73,7 @@ jobs:
         run: |
           git config user.name "KCC Release Automation"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add server.ts server/dbStorage.ts server/kccMissionLoop.ts server/autonomousAgentRuntime.ts server/scheduler.ts server/paypal.ts server/durableTaskQueue.ts server/paymentRouter.ts .env.example scripts/applyLaunchP0HardeningV2.mjs scripts/applyPaymentRouter.mjs scripts/runP0SmokeTests.ts supabase/migrations/001_kcc_runtime_state.sql supabase/migrations/002_kcc_task_queue.sql server/storageAdapter.ts server/supabaseStorage.ts docs/STORAGE_PRODUCTION.md .github/workflows/apply-p0-hardening.yml
+          git add server.ts server/dbStorage.ts server/kccMissionLoop.ts server/autonomousAgentRuntime.ts server/scheduler.ts server/paypal.ts server/durableTaskQueue.ts server/paymentRouter.ts .env.example scripts/applyLaunchP0HardeningV2.mjs scripts/applyPaymentRouter.mjs scripts/runP0SmokeTests.ts scripts/testPaymentRouter.ts supabase/migrations/001_kcc_runtime_state.sql supabase/migrations/002_kcc_task_queue.sql server/storageAdapter.ts server/supabaseStorage.ts docs/STORAGE_PRODUCTION.md .github/workflows/apply-p0-hardening.yml
           if git diff --cached --quiet; then
             echo "No changes to commit."
             exit 0
