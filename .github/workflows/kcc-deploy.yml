@@ -56,16 +56,22 @@ jobs:
           region: '${{ env.GCP_REGION }}'
           project_id: '${{ env.GCP_PROJECT_ID }}'
           source: '.'
-          flags: '--allow-unauthenticated --port=3000 --min=1 --memory=1Gi --cpu=1'
+          flags: '--allow-unauthenticated --port=3000 --min=0 --max=3 --memory=1Gi --cpu=1'
           env_vars: |
             NODE_ENV=production
+            STORAGE_DRIVER=supabase
+            ENABLE_CONTINUOUS_LOOP=false
+            AGENT_QUEUE_BATCH_SIZE=3
+            MISSION_TICK_MAX_MISSIONS=3
           secrets: |
             GEMINI_API_KEY=GEMINI_API_KEY:latest
             JWT_SECRET=JWT_SECRET:latest
             KCC_CHATGPT_SECRET=KCC_CHATGPT_SECRET:latest
+            KCC_EXECUTION_SECRET=KCC_EXECUTION_SECRET:latest
             PAYPAL_CLIENT_ID=PAYPAL_CLIENT_ID:latest
             PAYPAL_CLIENT_SECRET=PAYPAL_CLIENT_SECRET:latest
             PAYPAL_MODE=PAYPAL_MODE:latest
+            PAYPAL_WEBHOOK_ID=PAYPAL_WEBHOOK_ID:latest
             CJ_DROPSHIPPING_EMAIL=CJ_DROPSHIPPING_EMAIL:latest
             CJ_DROPSHIPPING_API_KEY=CJ_DROPSHIPPING_API_KEY:latest
             WHATSAPP_TOKEN=WHATSAPP_TOKEN:latest
@@ -98,4 +104,6 @@ jobs:
           echo "KCC deployed successfully"
           echo "Service: ${CLOUD_RUN_SERVICE}"
           echo "Region: ${GCP_REGION}"
+          echo "Scaling: min=0 max=3"
+          echo "Execution mode: batch/scale-to-zero"
           echo "URL: ${SERVICE_URL}"
