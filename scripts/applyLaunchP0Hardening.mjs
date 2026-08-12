@@ -22,7 +22,11 @@ write(dbPath, db);
 
 let mission = read(missionLoopPath);
 mission = replaceOnce(mission, "  public async tick() {", "  public async executeMissionTick(maxMissions: number = Number.parseInt(process.env.MISSION_TICK_MAX_MISSIONS || '3', 10)) {\n    const limit = Number.isFinite(maxMissions) && maxMissions > 0 ? Math.min(Math.floor(maxMissions), 10) : 3;\n    return this.tick(limit);\n  }\n\n  public async tick(maxMissions: number = 10) {", 'explicit mission tick');
-mission = replaceOnce(mission, /  public async tick\(maxMissions: number = 10\) \{([\s\S]*?)    const activeMissions = missions\.filter\(m => m\.status === 'PLANNING' \|\| m\.status === 'ACTIVE'\');/, (match, prefix) => `  public async tick(maxMissions: number = 10) {${prefix}    const activeMissions = missions.filter(m => m.status === 'PLANNING' || m.status === 'ACTIVE').slice(0, Math.max(1, Math.min(maxMissions, 10)));`, 'bounded mission selection in tick');
+const tickStart = mission.indexOf("  public async tick(maxMissions: number = 10) {");
+const tickActiveAnchor = "    const activeMissions = missions.filter(m => m.status === 'PLANNING' || m.status === 'ACTIVE');";
+const tickActiveIndex = mission.indexOf(tickActiveAnchor, tickStart);
+if (tickStart < 0 || tickActiveIndex < 0) throw new Error('Patch anchor not found: bounded mission selection in tick');
+mission = mission.slice(0, tickActiveIndex) + "    const activeMissions = missions.filter(m => m.status === 'PLANNING' || m.status === 'ACTIVE').slice(0, Math.max(1, Math.min(maxMissions, 10)));" + mission.slice(tickActiveIndex + tickActiveAnchor.length);
 mission = replaceOnce(mission, "    this.intervalId = setInterval(() => {", "    if (process.env.ENABLE_CONTINUOUS_LOOP !== 'true') {\n      this.isRunning = false;\n      console.log('[KCC Mission Loop] Continuous loop disabled; use executeMissionTick() via external trigger.');\n      return;\n    }\n\n    this.intervalId = setInterval(() => {", 'mission loop feature flag');
 write(missionLoopPath, mission);
 
