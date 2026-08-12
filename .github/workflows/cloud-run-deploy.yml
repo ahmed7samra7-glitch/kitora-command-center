@@ -1,0 +1,74 @@
+name: KCC Cloud Run Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: kcc-production-deploy
+  cancel-in-progress: false
+
+env:
+  GCP_PROJECT_ID: ais-europe-west2-116319078cfc4
+  GCP_REGION: europe-west2
+  CLOUD_RUN_SERVICE: kitora-command-center
+
+jobs:
+  deploy:
+    name: Deploy KCC to Cloud Run
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Validate deployment inputs
+        env:
+          WIF_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+        run: |
+          set -euo pipefail
+          test -n "$WIF_PROVIDER" || { echo "Missing GitHub secret: GCP_WORKLOAD_IDENTITY_PROVIDER" >&2; exit 1; }
+          test -n "$SERVICE_ACCOUNT" || { echo "Missing GitHub secret: GCP_SERVICE_ACCOUNT" >&2; exit 1; }
+          test -f Dockerfile
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          version: '>= 520.0.0'
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "$CLOUD_RUN_SERVICE" \
+            --source . \
+            --project "$GCP_PROJECT_ID" \
+            --region "$GCP_REGION" \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 3000 \
+            --min-instances 1 \
+            --memory 1Gi \
+            --cpu 1
+
+      - name: Verify Cloud Run service
+        run: |
+          set -euo pipefail
+          URL="$(gcloud run services describe "$CLOUD_RUN_SERVICE" --project "$GCP_PROJECT_ID" --region "$GCP_REGION" --format='value(status.url)')"
+          test -n "$URL"
+          echo "Cloud Run URL: $URL"
+          curl --fail --silent --show-error --max-time 30 "$URL/api/kcc/health"
