@@ -25,7 +25,9 @@ class PersistentSchedulerEngine {
 
   constructor() {
     this.initDefaultJobs();
-    this.startLoop();
+    if (process.env.ENABLE_CONTINUOUS_LOOP === 'true') {
+      this.startLoop();
+    }
   }
 
   private initDefaultJobs() {
@@ -41,7 +43,7 @@ class PersistentSchedulerEngine {
         id: 'JOB-ORDER-FULFILLMENT',
         name: 'Autonomous Order Fulfillment Processor',
         cronExpression: '*/1 * * * *',
-        intervalMs: 60000, // 1 minute
+        intervalMs: 60000,
         nextRunAt: new Date(now + 60000).toISOString(),
         status: 'IDLE',
         failureCount: 0,
@@ -53,7 +55,7 @@ class PersistentSchedulerEngine {
         id: 'JOB-CJ-CATALOG-SYNC',
         name: 'CJ Dropshipping Catalog & Margin Sync',
         cronExpression: '*/15 * * * *',
-        intervalMs: 900000, // 15 minutes
+        intervalMs: 900000,
         nextRunAt: new Date(now + 900000).toISOString(),
         status: 'IDLE',
         failureCount: 0,
@@ -65,7 +67,7 @@ class PersistentSchedulerEngine {
         id: 'JOB-INVENTORY-REBALANCE',
         name: 'Inventory Stock & Risk Monitor',
         cronExpression: '*/30 * * * *',
-        intervalMs: 1800000, // 30 minutes
+        intervalMs: 1800000,
         nextRunAt: new Date(now + 1800000).toISOString(),
         status: 'IDLE',
         failureCount: 0,
@@ -77,7 +79,7 @@ class PersistentSchedulerEngine {
         id: 'JOB-HEALTH-HEARTBEAT',
         name: 'Core System Health & Heartbeat Checker',
         cronExpression: '*/30s * * * *',
-        intervalMs: 30000, // 30 seconds
+        intervalMs: 30000,
         nextRunAt: new Date(now + 30000).toISOString(),
         status: 'IDLE',
         failureCount: 0,
@@ -93,8 +95,8 @@ class PersistentSchedulerEngine {
   private startLoop() {
     if (this.timer) clearInterval(this.timer);
     this.timer = setInterval(() => {
-      this.tick();
-    }, 10000); // Tick every 10 seconds
+      void this.tick();
+    }, 10000);
   }
 
   private async tick() {
@@ -131,7 +133,6 @@ class PersistentSchedulerEngine {
 
     try {
       if (job.id === 'JOB-ORDER-FULFILLMENT') {
-        // Auto-fulfill captured PayPal orders that don't have a CJ Order submitted yet
         const paypalOrders = payPalRuntime.getSavedOrders().filter(o => o.status === 'COMPLETED');
         const cjOrders = cjDropshippingRuntime.getOrders();
 
@@ -145,13 +146,7 @@ class PersistentSchedulerEngine {
               shippingCountry: 'US',
               shippingZip: '95134',
               paypalOrderId: ppOrder.id,
-              products: [
-                {
-                  pid: 'CJ-P-889102',
-                  quantity: 1,
-                  unitPrice: ppOrder.amount
-                }
-              ]
+              products: [{ pid: 'CJ-P-889102', quantity: 1, unitPrice: ppOrder.amount }]
             });
           }
         }
@@ -186,14 +181,12 @@ class PersistentSchedulerEngine {
       job.failureCount += 1;
       job.lastError = errorMsg;
       job.status = job.failureCount >= job.maxRetries ? 'FAILED' : 'IDLE';
-
-      eventBus.publish('SCHEDULER.JOB.FAILED', 'SchedulerEngine', { 
-        jobId: job.id, 
-        failureCount: job.failureCount, 
-        error: errorMsg 
+      eventBus.publish('SCHEDULER.JOB.FAILED', 'SchedulerEngine', {
+        jobId: job.id,
+        failureCount: job.failureCount,
+        error: errorMsg
       });
 
-      // Exponential backoff for retries
       if (job.failureCount < job.maxRetries) {
         const backoffMs = Math.pow(2, job.failureCount) * 10000;
         job.nextRunAt = new Date(now + backoffMs).toISOString();
@@ -236,11 +229,8 @@ class PersistentSchedulerEngine {
     if (!job) throw new Error(`Job ${jobId} not found`);
 
     job.enabled = enabled !== undefined ? enabled : !job.enabled;
-    if (job.enabled && job.status === 'PAUSED') {
-      job.status = 'IDLE';
-    } else if (!job.enabled) {
-      job.status = 'PAUSED';
-    }
+    if (job.enabled && job.status === 'PAUSED') job.status = 'IDLE';
+    else if (!job.enabled) job.status = 'PAUSED';
 
     dbRuntime.set('scheduledJobs', this.jobs);
     eventBus.publish('SCHEDULER.JOB.TOGGLED', 'SchedulerEngine', { jobId: job.id, enabled: job.enabled });
