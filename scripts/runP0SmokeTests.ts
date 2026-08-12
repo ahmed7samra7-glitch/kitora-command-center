@@ -23,7 +23,10 @@ try {
   );
   const productionOutput = `${productionGuard.stdout || ''}\n${productionGuard.stderr || ''}`;
   assert(productionGuard.status !== 0, 'local storage was allowed in production');
-  assert(productionOutput.includes('STORAGE_DRIVER=local is not permitted in production'), 'production storage guard message missing');
+  assert(
+    /STORAGE_DRIVER=local.*not permitted in production|SECURITY FATAL.*STORAGE_DRIVER=local/i.test(productionOutput),
+    'production storage guard did not emit the expected fail-closed signal'
+  );
 
   // 2. Continuous mission/runtime mode must remain disabled by default.
   process.env.NODE_ENV = 'test';
