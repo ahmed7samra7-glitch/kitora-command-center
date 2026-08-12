@@ -1,0 +1,59 @@
+name: Apply KCC P0 Launch Hardening
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [kcc/launch-p0-hardening]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: kcc-p0-hardening
+  cancel-in-progress: true
+
+jobs:
+  harden:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Apply P0 patch
+        run: node scripts/applyLaunchP0Hardening.mjs
+
+      - name: Type-check
+        run: npm install && npm run lint
+
+      - name: Production build
+        run: npm run build
+
+      - name: Verify launch guards
+        run: |
+          test "$(grep -c "ENABLE_CONTINUOUS_LOOP" server.ts)" -ge 1
+          grep -q "POST /api/kcc/loop/tick" server.ts || true
+          grep -q "requireExecutionSecret" server.ts
+          grep -q "STORAGE_DRIVER=\"local\"" .env.example
+          grep -q "STORAGE_DRIVER === 'local'" server/dbStorage.ts
+          ! grep -q "path.startsWith('/api/phase4/store/order')" server.ts
+
+      - name: Commit hardened source
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "KCC Release Automation"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add server.ts server/dbStorage.ts server/kccMissionLoop.ts server/autonomousAgentRuntime.ts .env.example scripts/applyLaunchP0Hardening.mjs
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "fix: harden KCC P0 runtime and execution boundaries"
+          git push origin HEAD:kcc/launch-p0-hardening
