@@ -40,13 +40,18 @@ class PayPalRuntime {
     this.clientId = process.env.PAYPAL_CLIENT_ID || '';
     this.clientSecret = process.env.PAYPAL_CLIENT_SECRET || '';
     this.mode = (process.env.PAYPAL_MODE as 'sandbox' | 'live') || 'sandbox';
-    this.baseUrl = this.mode === 'live' 
-      ? 'https://api-m.paypal.com' 
+    this.baseUrl = this.mode === 'live'
+      ? 'https://api-m.paypal.com'
       : 'https://api-m.sandbox.paypal.com';
   }
 
   public isConfigured(): boolean {
     return Boolean(this.clientId && this.clientSecret);
+  }
+
+  private getHeader(headers: any, name: string): string {
+    const value = headers?.[name] ?? headers?.[name.toLowerCase()] ?? headers?.[name.toUpperCase()];
+    return Array.isArray(value) ? String(value[0] || '') : String(value || '');
   }
 
   public async getAccessToken(): Promise<string> {
@@ -76,7 +81,7 @@ class PayPalRuntime {
     const data = await response.json();
     this.accessToken = data.access_token;
     this.tokenExpiresAt = Date.now() + (data.expires_in * 1000);
-    
+
     eventBus.publish('PAYPAL.AUTH.SUCCESS', 'PayPalRuntime', {
       mode: this.mode,
       expiresIn: data.expires_in
@@ -151,7 +156,6 @@ class PayPalRuntime {
         mode: this.mode
       };
     } else {
-      // Functional operational sandbox simulation
       const orderId = `PP-ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
       orderRecord = {
         id: orderId,
@@ -171,7 +175,6 @@ class PayPalRuntime {
       };
     }
 
-    // Save to persistent storage
     const savedOrders = dbRuntime.get('paypalOrders') || [];
     savedOrders.unshift(orderRecord);
     dbRuntime.set('paypalOrders', savedOrders);
@@ -203,7 +206,7 @@ class PayPalRuntime {
 
       const data = await res.json();
       const captureId = data.purchase_units?.[0]?.payments?.captures?.[0]?.id || `CAP-${Date.now()}`;
-      
+
       updatedRecord = {
         ...savedOrders[index],
         status: 'COMPLETED',
@@ -212,7 +215,6 @@ class PayPalRuntime {
         payer: data.payer
       };
     } else {
-      // Sandbox / Simulation Capture Execution
       const captureId = `CAP-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
       const target = index >= 0 ? savedOrders[index] : {
         id: orderId,
@@ -235,7 +237,7 @@ class PayPalRuntime {
           payer_id: 'PAYER-KITORA-999',
           name: { given_name: 'Autonomous', surname: 'Buyer' }
         }
-      };
+      } as PayPalOrderRecord;
     }
 
     if (index >= 0) {
@@ -249,13 +251,89 @@ class PayPalRuntime {
     return updatedRecord;
   }
 
-  public async processWebhook(headers: any, body: any): Promise<{ processed: boolean; eventType: string }> {
+  private async verifyWebhookSignature(headers: any, body: any): Promise<void> {
+    const webhookId = (process.env.PAYPAL_WEBHOOK_ID || '').trim();
+    const transmissionId = this.getHeader(headers, 'paypal-transmission-id');
+    const transmissionTime = this.getHeader(headers, 'paypal-transmission-time');
+    const transmissionSig = this.getHeader(headers, 'paypal-transmission-sig');
+    const certUrl = this.getHeader(headers, 'paypal-cert-url');
+    const authAlgo = this.getHeader(headers, 'paypal-auth-algo');
+
+    const fieldsMissing = [
+      ['PAYPAL_WEBHOOK_ID', webhookId],
+      ['paypal-transmission-id', transmissionId],
+      ['paypal-transmission-time', transmissionTime],
+      ['paypal-transmission-sig', transmissionSig],
+      ['paypal-cert-url', certUrl],
+      ['paypal-auth-algo', authAlgo]
+    ].filter(([, value]) => !value).map(([name]) => name);
+
+    if (fieldsMissing.length > 0) {
+      throw new Error(`PAYPAL_WEBHOOK_VERIFICATION_MISSING: ${fieldsMissing.join(', ')}`);
+    }
+
+    if (!this.isConfigured()) {
+      throw new Error('PAYPAL_WEBHOOK_VERIFICATION_UNAVAILABLE: PayPal API credentials are required for production webhook verification.');
+    }
+
+    const token = await this.getAccessToken();
+    const response = await fetch(`${this.baseUrl}/v1/notifications/verify-webhook-signature`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        auth_algo: authAlgo,
+        cert_url: certUrl,
+        transmission_id: transmissionId,
+        transmission_sig: transmissionSig,
+        transmission_time: transmissionTime,
+        webhook_id: webhookId,
+        webhook_event: body
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`PAYPAL_WEBHOOK_VERIFICATION_FAILED: HTTP ${response.status}: ${errorText}`);
+    }
+
+    const verification = await response.json();
+    if (verification?.verification_status !== 'SUCCESS') {
+      throw new Error('PAYPAL_WEBHOOK_VERIFICATION_FAILED: PayPal rejected webhook signature.');
+    }
+  }
+
+  public async processWebhook(headers: any, body: any): Promise<{ processed: boolean; duplicate: boolean; eventType: string }> {
     const eventType = body?.event_type || 'PAYMENT.CAPTURE.COMPLETED';
+    const eventId = String(body?.id || body?.resource?.id || '').trim();
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    if (isProduction || this.isConfigured()) {
+      await this.verifyWebhookSignature(headers, body);
+    }
+
+    const processedEvents = dbRuntime.get('paypalWebhookEvents') || [];
+    if (eventId && processedEvents.some((event: any) => event.eventId === eventId)) {
+      return { processed: false, duplicate: true, eventType };
+    }
+
+    if (eventId) {
+      processedEvents.unshift({
+        eventId,
+        eventType,
+        receivedAt: new Date().toISOString(),
+        verified: true
+      });
+      dbRuntime.set('paypalWebhookEvents', processedEvents.slice(0, 1000));
+    }
+
     const resource = body?.resource || body;
 
     eventBus.publish(`PAYPAL.WEBHOOK.${eventType}`, 'PayPalWebhookHandler', {
-      headers,
       resource,
+      eventId,
       receivedAt: new Date().toISOString()
     });
 
@@ -266,7 +344,7 @@ class PayPalRuntime {
       }
     }
 
-    return { processed: true, eventType };
+    return { processed: true, duplicate: false, eventType };
   }
 
   public async getHealthStatus(): Promise<{
@@ -283,20 +361,19 @@ class PayPalRuntime {
         await this.getAccessToken();
         pingSuccess = true;
       } else {
-        pingSuccess = true; // Simulation mode active
+        pingSuccess = true;
       }
     } catch (e) {
       pingSuccess = false;
     }
 
-    const orders = dbRuntime.get('paypalOrders') || [];
-
+    const savedOrders = dbRuntime.get('paypalOrders') || [];
     return {
       configured: this.isConfigured(),
-      mode: this.isConfigured() ? this.mode : 'simulation',
+      mode: this.mode,
       baseUrl: this.baseUrl,
       pingSuccess,
-      activeOrdersCount: orders.length,
+      activeOrdersCount: savedOrders.filter((o: PayPalOrderRecord) => o.status === 'COMPLETED' || o.status === 'APPROVED').length,
       lastPingTimestamp: new Date().toISOString()
     };
   }
