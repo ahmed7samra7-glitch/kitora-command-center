@@ -21,12 +21,25 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Apply launch diff from legacy branch
+      - name: Overlay hardened source from legacy launch branch
         run: |
           set -euo pipefail
-          git fetch origin main kcc/launch-p0-hardening
-          git diff 94081a0b6c526b2974f2169315acb4aa322b8692..origin/kcc/launch-p0-hardening > /tmp/kcc-launch.patch
-          git apply --3way --index /tmp/kcc-launch.patch
+          git fetch origin kcc/launch-p0-hardening
+          git checkout origin/kcc/launch-p0-hardening -- \
+            server.ts \
+            server/autonomousAgentRuntime.ts \
+            server/dbStorage.ts \
+            server/durableTaskQueue.ts \
+            server/kccMissionLoop.ts \
+            server/paypal.ts \
+            server/scheduler.ts \
+            server/storageAdapter.ts \
+            server/supabaseStorage.ts \
+            supabase/migrations/001_kcc_runtime_state.sql \
+            supabase/migrations/002_kcc_task_queue.sql \
+            scripts/applyLaunchP0HardeningV2.mjs \
+            scripts/runP0SmokeTests.ts \
+            docs/STORAGE_PRODUCTION.md
 
       - name: Verify source
         run: |
