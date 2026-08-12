@@ -31,6 +31,9 @@ jobs:
       - name: Apply P0 patch v2
         run: node scripts/applyLaunchP0HardeningV2.mjs
 
+      - name: Apply payment router wiring
+        run: node scripts/applyPaymentRouter.mjs
+
       - name: Type-check
         run: npm install && npm run lint
 
@@ -40,7 +43,7 @@ jobs:
       - name: Run P0 smoke tests
         run: npx tsx scripts/runP0SmokeTests.ts
 
-      - name: Verify launch guards
+      - name: Verify launch guards and payment routing
         run: |
           grep -q "requireExecutionSecret" server.ts
           grep -q "app.post('/api/kcc/loop/tick'" server.ts
@@ -56,6 +59,9 @@ jobs:
           test -f server/durableTaskQueue.ts
           grep -q "kcc_claim_task_batch" supabase/migrations/002_kcc_task_queue.sql
           grep -q "STORAGE_DRIVER.*supabase" server/durableTaskQueue.ts
+          grep -q "PaymentRouter" server.ts
+          grep -q "api/payments/create" server.ts
+          grep -q "STRIPE_SECRET_KEY" server/paymentRouter.ts
 
       - name: Commit hardened source
         if: github.event_name != 'pull_request'
@@ -64,10 +70,10 @@ jobs:
         run: |
           git config user.name "KCC Release Automation"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add server.ts server/dbStorage.ts server/kccMissionLoop.ts server/autonomousAgentRuntime.ts server/scheduler.ts server/paypal.ts server/durableTaskQueue.ts .env.example scripts/applyLaunchP0HardeningV2.mjs scripts/runP0SmokeTests.ts supabase/migrations/001_kcc_runtime_state.sql supabase/migrations/002_kcc_task_queue.sql server/storageAdapter.ts server/supabaseStorage.ts docs/STORAGE_PRODUCTION.md .github/workflows/apply-p0-hardening.yml
+          git add server.ts server/dbStorage.ts server/kccMissionLoop.ts server/autonomousAgentRuntime.ts server/scheduler.ts server/paypal.ts server/durableTaskQueue.ts server/paymentRouter.ts .env.example scripts/applyLaunchP0HardeningV2.mjs scripts/applyPaymentRouter.mjs scripts/runP0SmokeTests.ts supabase/migrations/001_kcc_runtime_state.sql supabase/migrations/002_kcc_task_queue.sql server/storageAdapter.ts server/supabaseStorage.ts docs/STORAGE_PRODUCTION.md .github/workflows/apply-p0-hardening.yml
           if git diff --cached --quiet; then
             echo "No changes to commit."
             exit 0
           fi
-          git commit -m "fix: harden KCC P0 runtime and execution boundaries"
+          git commit -m "fix: harden KCC P0 runtime and payment boundaries"
           git push origin HEAD:kcc/launch-p0-hardening
