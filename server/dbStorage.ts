@@ -3,6 +3,11 @@ import path from 'path';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const DB_FILE = path.join(DATA_DIR, 'db.json');
+const STORAGE_DRIVER = (process.env.STORAGE_DRIVER || 'local').trim().toLowerCase();
+
+if (process.env.NODE_ENV === 'production' && STORAGE_DRIVER === 'local') {
+  throw new Error('SECURITY FATAL: STORAGE_DRIVER=local is not permitted in production. Configure a durable production storage driver before launch.');
+}
 
 export interface DatabaseSchema {
   policies: any;
@@ -110,7 +115,7 @@ class PersistentDatabaseRuntime {
         const raw = fs.readFileSync(DB_FILE, 'utf-8');
         const parsed = JSON.parse(raw);
         this.memoryDb = { ...DEFAULT_DB_DATA, ...parsed };
-        console.log(`[DB Runtime] Persistent DB loaded successfully from ${DB_FILE}`);
+        console.log(`[DB Runtime] Local development store loaded from ${DB_FILE}`);
       } else {
         this.saveToDisk();
       }
@@ -151,8 +156,10 @@ class PersistentDatabaseRuntime {
 
   public getStatus() {
     return {
-      status: 'CONNECTED',
-      storage: DB_FILE,
+      status: STORAGE_DRIVER === 'local' ? 'CONNECTED' : 'NOT_CONFIGURED',
+      storage: STORAGE_DRIVER === 'local' ? DB_FILE : STORAGE_DRIVER,
+      driver: STORAGE_DRIVER,
+      persistent: STORAGE_DRIVER !== 'local',
       updatedAt: this.memoryDb.updatedAt || new Date().toISOString()
     };
   }
