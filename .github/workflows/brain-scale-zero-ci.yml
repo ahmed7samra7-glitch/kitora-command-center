@@ -7,13 +7,15 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -38,3 +40,16 @@ jobs:
           grep -q "executeMissionTick" server/kccMissionLoop.ts
           grep -q "processQueueBatch" server/autonomousAgentRuntime.ts
           echo "KCC Brain OS boundary verified."
+
+      - name: Persist verified source changes
+        if: github.event_name == 'push'
+        run: |
+          git config user.name "KCC Release Automation"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add server.ts server/kccMissionLoop.ts server/autonomousAgentRuntime.ts scripts/applyBrainScaleZero.mjs .github/workflows/brain-scale-zero-ci.yml
+          if git diff --cached --quiet; then
+            echo "No generated source changes to persist."
+            exit 0
+          fi
+          git commit -m "feat: separate persistent KCC Brain from ephemeral workers"
+          git push origin HEAD:kcc/launch-v2
