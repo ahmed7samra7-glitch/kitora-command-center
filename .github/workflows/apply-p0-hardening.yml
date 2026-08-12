@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches: [kcc/launch-p0-hardening]
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: write
@@ -38,13 +40,13 @@ jobs:
       - name: Verify launch guards
         run: |
           test "$(grep -c "ENABLE_CONTINUOUS_LOOP" server.ts)" -ge 1
-          grep -q "POST /api/kcc/loop/tick" server.ts || true
           grep -q "requireExecutionSecret" server.ts
           grep -q "STORAGE_DRIVER=\"local\"" .env.example
           grep -q "STORAGE_DRIVER === 'local'" server/dbStorage.ts
           ! grep -q "path.startsWith('/api/phase4/store/order')" server.ts
 
       - name: Commit hardened source
+        if: github.event_name != 'pull_request'
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
