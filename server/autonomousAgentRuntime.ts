@@ -1,6 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import { dbRuntime } from './dbStorage.js';
-import { eventBus, BusEvent } from './eventBus.js';
+import { eventBus } from './eventBus.js';
 import { cjDropshippingRuntime } from './cjDropshipping.js';
 import { payPalRuntime } from './paypal.js';
 import { phase4CommerceEngine } from './phase4AutonomousCommerce.js';
@@ -8,7 +8,7 @@ import { kccBrain } from './kccBrain.js';
 
 export interface AgentTask {
   id: string;
-  type: 
+  type:
     | 'PRODUCT_HUNT'
     | 'INVENTORY_SYNC'
     | 'COMPETITOR_SCAN'
@@ -29,6 +29,14 @@ export interface AgentTask {
   updatedAt: string;
 }
 
+export interface QueueBatchResult {
+  processed: number;
+  succeeded: number;
+  failed: number;
+  retried: number;
+  remaining: number;
+}
+
 export interface RuntimeStatus {
   isAlive: boolean;
   zeroTouchMode: boolean;
@@ -38,6 +46,7 @@ export interface RuntimeStatus {
   completedTasksCount: number;
   failedTasksCount: number;
   lastScheduleCheck: string;
+  continuousLoopEnabled: boolean;
   aiProviderHealth: {
     primary: 'ONLINE' | 'DEGRADED' | 'OFFLINE';
     secondary: 'ONLINE' | 'DEGRADED' | 'OFFLINE';
@@ -55,13 +64,29 @@ class PermanentAutonomousAgentRuntime {
   private failedCount = 0;
   private activeRunningCount = 0;
   private lastScheduleCheck = new Date().toISOString();
+  private subscriptionsInitialized = false;
 
-  // AI Client Lazy Instantiation
   private primaryAiClient: GoogleGenAI | null = null;
   private quotaCooloffUntil = 0;
 
   constructor() {
     this.initAiClients();
+    this.recoverPersistedQueue();
+    this.subscribeToEventBus();
+  }
+
+  private isContinuousLoopEnabled(): boolean {
+    return process.env.ENABLE_CONTINUOUS_LOOP === 'true';
+  }
+
+  private getBatchSize(): number {
+    const value = Number.parseInt(process.env.AGENT_QUEUE_BATCH_SIZE || '3', 10);
+    return Number.isFinite(value) && value > 0 ? Math.min(value, 25) : 3;
+  }
+
+  private getTaskTimeoutMs(): number {
+    const value = Number.parseInt(process.env.AGENT_TASK_TIMEOUT_MS || '30000', 10);
+    return Number.isFinite(value) && value > 0 ? Math.min(value, 300000) : 30000;
   }
 
   private initAiClients() {
@@ -74,45 +99,50 @@ class PermanentAutonomousAgentRuntime {
     }
   }
 
-  // 1. Boot-time Auto-Start & Queue Recovery
+  private recoverPersistedQueue() {
+    const savedQueue = dbRuntime.get('taskQueue');
+    if (!Array.isArray(savedQueue)) return;
+
+    this.queue = savedQueue;
+    for (const task of this.queue) {
+      if (task.status === 'RUNNING' || task.status === 'RETRYING') {
+        task.status = 'QUEUED';
+        task.updatedAt = new Date().toISOString();
+      }
+    }
+    this.saveQueue();
+  }
+
+  // Legacy continuous mode is retained for development/controlled operation only.
   public start() {
-    if (this.isLoopRunning) {
-      console.log('[Autonomous Runtime] Background runner is already active 24/7.');
+    if (this.isLoopRunning) return;
+
+    this.recoverPersistedQueue();
+    this.subscribeToEventBus();
+
+    if (!this.isContinuousLoopEnabled()) {
+      this.isLoopRunning = false;
+      console.log('[Autonomous Runtime] Continuous loop disabled. Runtime is batch/event driven.');
+      eventBus.publish('RUNTIME.BOOT.SUCCESS', 'AutonomousAgentRuntime', {
+        zeroTouchMode: true,
+        executionMode: 'BATCH_EVENT_DRIVEN',
+        timestamp: new Date().toISOString()
+      });
       return;
     }
 
-    console.log('[Autonomous Runtime] 🚀 Booting 24/7 Permanent Autonomous Agent Runtime...');
-    
-    // Load persisted tasks from dbStorage
-    const savedQueue = dbRuntime.get('taskQueue');
-    if (Array.isArray(savedQueue) && savedQueue.length > 0) {
-      this.queue = savedQueue;
-      // Resume unfinished tasks
-      for (const t of this.queue) {
-        if (t.status === 'RUNNING' || t.status === 'RETRYING') {
-          t.status = 'QUEUED';
-        }
-      }
-      this.saveQueue();
-      console.log(`[Autonomous Runtime] Resumed ${this.queue.length} tasks from disk queue.`);
-    }
-
-    // Subscribe to all eventBus topics for zero-touch event-driven execution
-    this.subscribeToEventBus();
-
-    // Start background processing loop (runs every 3 seconds)
+    console.log('[Autonomous Runtime] Continuous background mode enabled.');
     this.isLoopRunning = true;
-    this.loopTimer = setInterval(() => this.processNextQueueTask(), 3000);
-
-    // Start Autonomous Scheduler (15m, 1h, 6h, 24h cron checks)
+    this.loopTimer = setInterval(() => {
+      void this.processQueueBatch(this.getBatchSize());
+    }, 3000);
     this.startAutonomousScheduler();
 
     eventBus.publish('RUNTIME.BOOT.SUCCESS', 'AutonomousAgentRuntime', {
       zeroTouchMode: true,
+      executionMode: 'CONTINUOUS',
       timestamp: new Date().toISOString()
     });
-
-    console.log('[Autonomous Runtime] ✅ 24/7 Zero-Touch Autonomous Agent Runtime is ACTIVE.');
   }
 
   public stop() {
@@ -125,14 +155,12 @@ class PermanentAutonomousAgentRuntime {
       clearInterval(this.scheduleTimer);
       this.scheduleTimer = null;
     }
-    console.log('[Autonomous Runtime] Stopped 24/7 Permanent Autonomous Agent Runtime.');
   }
 
   private saveQueue() {
     dbRuntime.set('taskQueue', this.queue);
   }
 
-  // 2. Self-Healing AI & Provider Fallback Execution via KCC Brain
   public async executeWithFallbackAI(
     prompt: string,
     systemInstruction: string,
@@ -140,14 +168,16 @@ class PermanentAutonomousAgentRuntime {
     agentId: string = 'EXECUTIVE_AUDITOR'
   ): Promise<{ result: any; provider: string }> {
     const decision = await kccBrain.executeAgentTask(agentId, prompt, fallbackOutput);
-    return {
-      result: decision.output,
-      provider: decision.selectedModel
-    };
+    return { result: decision.output, provider: decision.selectedModel };
   }
 
-  // 3. Task Enqueue & Persistence
   public enqueueTask(type: AgentTask['type'], payload: any = {}): AgentTask {
+    const requestedKey = typeof payload?.idempotencyKey === 'string' ? payload.idempotencyKey : undefined;
+    if (requestedKey) {
+      const existing = this.queue.find(task => task.payload?.idempotencyKey === requestedKey);
+      if (existing) return existing;
+    }
+
     const task: AgentTask = {
       id: `TASK-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`,
       type,
@@ -161,95 +191,120 @@ class PermanentAutonomousAgentRuntime {
 
     this.queue.push(task);
     this.saveQueue();
-
-    eventBus.publish('AGENT.TASK.QUEUED', 'AutonomousAgentRuntime', { taskId: task.id, type: task.type });
+    eventBus.publish('AGENT.TASK.QUEUED', 'AutonomousAgentRuntime', {
+      taskId: task.id,
+      type: task.type,
+      idempotencyKey: requestedKey
+    });
     return task;
   }
 
-  // 4. Background Queue Processor Loop
-  private async processNextQueueTask() {
-    if (this.activeRunningCount > 0) return; // Process one at a time sequentially to guarantee consistency
+  public async processQueueBatch(maxTasks: number = this.getBatchSize()): Promise<QueueBatchResult> {
+    const limit = Number.isFinite(maxTasks) && maxTasks > 0 ? Math.min(Math.floor(maxTasks), 25) : this.getBatchSize();
+    let processed = 0;
+    let succeeded = 0;
+    let failed = 0;
+    let retried = 0;
 
-    const nextTask = this.queue.find(t => t.status === 'QUEUED');
-    if (!nextTask) return;
+    while (processed < limit) {
+      const task = this.queue.find(candidate => candidate.status === 'QUEUED');
+      if (!task) break;
 
-    nextTask.status = 'RUNNING';
-    nextTask.attempts += 1;
-    nextTask.updatedAt = new Date().toISOString();
+      processed += 1;
+      const outcome = await this.processNextQueueTask(task);
+      if (outcome === 'SUCCEEDED') succeeded += 1;
+      else if (outcome === 'FAILED') failed += 1;
+      else if (outcome === 'RETRYING') retried += 1;
+    }
+
+    return {
+      processed,
+      succeeded,
+      failed,
+      retried,
+      remaining: this.queue.filter(task => task.status === 'QUEUED' || task.status === 'RETRYING').length
+    };
+  }
+
+  private async processNextQueueTask(task: AgentTask): Promise<'SUCCEEDED' | 'FAILED' | 'RETRYING'> {
+    if (this.activeRunningCount > 0) return 'RETRYING';
+
+    task.status = 'RUNNING';
+    task.attempts += 1;
+    task.updatedAt = new Date().toISOString();
     this.activeRunningCount = 1;
     this.saveQueue();
 
-    eventBus.publish('AGENT.TASK.STARTED', 'AutonomousAgentRuntime', { taskId: nextTask.id, type: nextTask.type });
+    eventBus.publish('AGENT.TASK.STARTED', 'AutonomousAgentRuntime', {
+      taskId: task.id,
+      type: task.type,
+      attempt: task.attempts
+    });
 
     try {
-      const provider = await this.executeTaskLogic(nextTask);
-      nextTask.status = 'COMPLETED';
-      nextTask.providerUsed = provider;
-      nextTask.updatedAt = new Date().toISOString();
-      this.completedCount += 1;
+      const provider = await Promise.race([
+        this.executeTaskLogic(task),
+        new Promise<string>((_, reject) => {
+          setTimeout(() => reject(new Error(`Task timeout after ${this.getTaskTimeoutMs()}ms`)), this.getTaskTimeoutMs());
+        })
+      ]);
 
+      task.status = 'COMPLETED';
+      task.providerUsed = provider;
+      task.updatedAt = new Date().toISOString();
+      this.completedCount += 1;
       eventBus.publish('AGENT.TASK.COMPLETED', 'AutonomousAgentRuntime', {
-        taskId: nextTask.id,
-        type: nextTask.type,
+        taskId: task.id,
+        type: task.type,
         provider
       });
+      return 'SUCCEEDED';
     } catch (err: any) {
-      console.error(`[Autonomous Runtime] Task ${nextTask.id} failed (Attempt ${nextTask.attempts}/${nextTask.maxRetries}):`, err?.message);
-      
-      if (nextTask.attempts < nextTask.maxRetries) {
-        nextTask.status = 'RETRYING';
-        nextTask.lastError = err?.message;
-        nextTask.updatedAt = new Date().toISOString();
-        // Re-queue after backoff
-        setTimeout(() => {
-          nextTask.status = 'QUEUED';
-          this.saveQueue();
-        }, 3000 * nextTask.attempts);
-      } else {
-        nextTask.status = 'FAILED';
-        nextTask.lastError = err?.message;
-        nextTask.updatedAt = new Date().toISOString();
-        this.failedCount += 1;
+      task.lastError = err?.message || String(err);
+      task.updatedAt = new Date().toISOString();
 
-        eventBus.publish('AGENT.TASK.FAILED', 'AutonomousAgentRuntime', {
-          taskId: nextTask.id,
-          type: nextTask.type,
-          error: err?.message
-        });
+      if (task.attempts < task.maxRetries) {
+        // Retries are persisted and picked up by the next external batch invocation.
+        task.status = 'QUEUED';
+        this.saveQueue();
+        return 'RETRYING';
       }
+
+      task.status = 'FAILED';
+      this.failedCount += 1;
+      this.saveQueue();
+      eventBus.publish('AGENT.TASK.FAILED', 'AutonomousAgentRuntime', {
+        taskId: task.id,
+        type: task.type,
+        error: task.lastError,
+        attempt: task.attempts
+      });
+      return 'FAILED';
     } finally {
       this.activeRunningCount = 0;
       this.saveQueue();
     }
   }
 
-  // 5. Core Autonomous Task Execution Routines
   private async executeTaskLogic(task: AgentTask): Promise<string> {
     switch (task.type) {
       case 'PRODUCT_HUNT': {
-        // Discover product, run AI Hunter, calculate dynamic pricing & auto publish
         const hunted = await phase4CommerceEngine.discoverAndHuntProducts();
         eventBus.publish('COMMERCE.PRODUCT.HUNTED.AUTO', 'AutonomousRuntime', { count: hunted.length });
         return 'gemini-3.6-flash';
       }
-
-      case 'INVENTORY_SYNC': {
+      case 'INVENTORY_SYNC':
         await cjDropshippingRuntime.syncInventory();
         return 'cj-sync-engine';
-      }
-
-      case 'COMPETITOR_SCAN': {
+      case 'COMPETITOR_SCAN':
         await phase4CommerceEngine.runAutonomousGrowthEngine();
         return 'autonomous-growth-engine';
-      }
-
       case 'ORDER_FULFILLMENT': {
         if (task.payload?.customerName) {
           await phase4CommerceEngine.processCompleteOrderPipeline(task.payload);
         } else {
           const paypalOrders = payPalRuntime.getSavedOrders().filter(o => o.status === 'COMPLETED');
           const cjOrders = cjDropshippingRuntime.getOrders();
-
           for (const order of paypalOrders) {
             const exists = cjOrders.some(cjo => cjo.paypalOrderId === order.id);
             if (!exists) {
@@ -268,94 +323,69 @@ class PermanentAutonomousAgentRuntime {
         }
         return 'paypal-cj-bridge-engine';
       }
-
-      case 'CUSTOMER_NOTIFY': {
+      case 'CUSTOMER_NOTIFY':
         await phase4CommerceEngine.triggerCustomerAutomation(task.payload?.orderId || 'ORD-991', task.payload?.event || 'ORDER_PLACED');
         return 'whatsapp-dispatch-engine';
-      }
-
       case 'DAILY_FINANCIAL_REPORT':
       case 'DAILY_EXECUTIVE_REPORT':
       case 'STORE_HEALTH_CHECK': {
         const overview = phase4CommerceEngine.getExecutiveOverview();
         eventBus.publish('COMMERCE.REPORT.GENERATED', 'AutonomousRuntime', { type: task.type, overview });
-
-        // Dispatch Daily Report to Owner Isolation Layer
         phase4CommerceEngine.sendOwnerNotificationIfRequired({
           type: 'DAILY_EXECUTIVE_REPORT',
-          title: `Daily Executive & Financial Performance Report`,
+          title: 'Daily Executive & Financial Performance Report',
           message: `Net Profit: $${overview.financials.netProfit} (${overview.financials.profitMarginPercent}% margin). Total Products Published: ${overview.totalCatalogProducts}. Zero intervention required.`,
           severity: 'LOW',
           payload: overview
         });
         return 'executive-intelligence-engine';
       }
-
       default:
         return 'system';
     }
   }
 
-  // 6. Event-Driven Subscriptions (Reacting automatically to events)
   private subscribeToEventBus() {
-    // React to new CJ products
+    if (this.subscriptionsInitialized) return;
+    this.subscriptionsInitialized = true;
+
     eventBus.subscribe('CJ.PRODUCT.NEW', async (evt) => {
-      console.log('[Event-Driven Runtime] Auto-reacting to new CJ product discovery...');
-      this.enqueueTask('PRODUCT_HUNT', evt.payload);
+      this.enqueueTask('PRODUCT_HUNT', { ...evt.payload, idempotencyKey: `CJ.PRODUCT.NEW:${evt.id}` });
     });
 
-    // React to PayPal Payment Captured -> Auto Fulfill
     eventBus.subscribe('PAYPAL.ORDER.COMPLETED', async (evt) => {
-      console.log('[Event-Driven Runtime] Payment captured! Auto-submitting CJ order & notifying customer...');
-      this.enqueueTask('ORDER_FULFILLMENT', evt.payload);
-      this.enqueueTask('CUSTOMER_NOTIFY', { orderId: evt.payload?.id, event: 'ORDER_PLACED' });
+      const eventKey = `PAYPAL.ORDER.COMPLETED:${evt.id}`;
+      this.enqueueTask('ORDER_FULFILLMENT', { ...evt.payload, idempotencyKey: `${eventKey}:FULFILL` });
+      this.enqueueTask('CUSTOMER_NOTIFY', { orderId: evt.payload?.id, event: 'ORDER_PLACED', idempotencyKey: `${eventKey}:NOTIFY` });
     });
 
-    // React to Shipment Updates -> Auto WhatsApp Customer Notification
     eventBus.subscribe('CJ.SHIPMENT.UPDATED', async (evt) => {
-      console.log('[Event-Driven Runtime] Shipment update received. Auto-notifying customer...');
-      this.enqueueTask('CUSTOMER_NOTIFY', { orderId: evt.payload?.orderId, event: 'SHIPPED' });
+      this.enqueueTask('CUSTOMER_NOTIFY', {
+        orderId: evt.payload?.orderId,
+        event: 'SHIPPED',
+        idempotencyKey: `CJ.SHIPMENT.UPDATED:${evt.id}`
+      });
     });
   }
 
-  // 7. Autonomous Scheduler Intervals (15m, 1h, 6h, 24h)
   private startAutonomousScheduler() {
     let tickCounter = 0;
-
-    // Check interval every 1 minute
     this.scheduleTimer = setInterval(() => {
-      tickCounter++;
+      tickCounter += 1;
       this.lastScheduleCheck = new Date().toISOString();
 
-      // Every 15 minutes: Autonomous Product Hunter
-      if (tickCounter % 15 === 0) {
-        console.log('[Autonomous Scheduler] [15 Min] Running Product Hunter routine...');
-        this.enqueueTask('PRODUCT_HUNT');
-      }
-
-      // Every 60 minutes (1 Hour): Inventory Sync
-      if (tickCounter % 60 === 0) {
-        console.log('[Autonomous Scheduler] [1 Hour] Running Inventory Sync routine...');
-        this.enqueueTask('INVENTORY_SYNC');
-      }
-
-      // Every 360 minutes (6 Hours): Competitor & Price Scan
-      if (tickCounter % 360 === 0) {
-        console.log('[Autonomous Scheduler] [6 Hours] Running Competitor & Price Scan routine...');
-        this.enqueueTask('COMPETITOR_SCAN');
-      }
-
-      // Every 1440 minutes (24 Hours / Daily): Financial, Executive Report & Health Check
+      if (tickCounter % 15 === 0) this.enqueueTask('PRODUCT_HUNT', { idempotencyKey: `SCHEDULE:PRODUCT_HUNT:${Math.floor(tickCounter / 15)}` });
+      if (tickCounter % 60 === 0) this.enqueueTask('INVENTORY_SYNC', { idempotencyKey: `SCHEDULE:INVENTORY_SYNC:${Math.floor(tickCounter / 60)}` });
+      if (tickCounter % 360 === 0) this.enqueueTask('COMPETITOR_SCAN', { idempotencyKey: `SCHEDULE:COMPETITOR_SCAN:${Math.floor(tickCounter / 360)}` });
       if (tickCounter % 1440 === 0) {
-        console.log('[Autonomous Scheduler] [Daily 24h] Running Daily Executive & Financial Reports...');
-        this.enqueueTask('DAILY_FINANCIAL_REPORT');
-        this.enqueueTask('DAILY_EXECUTIVE_REPORT');
-        this.enqueueTask('STORE_HEALTH_CHECK');
+        const day = Math.floor(tickCounter / 1440);
+        this.enqueueTask('DAILY_FINANCIAL_REPORT', { idempotencyKey: `SCHEDULE:DAILY_FINANCIAL_REPORT:${day}` });
+        this.enqueueTask('DAILY_EXECUTIVE_REPORT', { idempotencyKey: `SCHEDULE:DAILY_EXECUTIVE_REPORT:${day}` });
+        this.enqueueTask('STORE_HEALTH_CHECK', { idempotencyKey: `SCHEDULE:STORE_HEALTH_CHECK:${day}` });
       }
-    }, 60000); // 1 minute tick
+    }, 60000);
   }
 
-  // 8. Runtime Status API Methods
   public getStatus(): RuntimeStatus {
     return {
       isAlive: this.isLoopRunning,
@@ -366,6 +396,7 @@ class PermanentAutonomousAgentRuntime {
       completedTasksCount: this.completedCount,
       failedTasksCount: this.failedCount,
       lastScheduleCheck: this.lastScheduleCheck,
+      continuousLoopEnabled: this.isContinuousLoopEnabled(),
       aiProviderHealth: {
         primary: this.primaryAiClient ? 'ONLINE' : 'DEGRADED',
         secondary: this.primaryAiClient ? 'ONLINE' : 'DEGRADED',
