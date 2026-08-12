@@ -9,4 +9,4 @@ This document tracks the guarded migration from boot-time background loops to ex
 - `AGENT_TASK_TIMEOUT_MS=30000` bounds individual agent task execution time.
 
 ## Safety
-Production should use externally triggered `/api/kcc/loop/tick` and `/api/kcc/agent/process-queue` calls. Existing `startLoop()` and `start()` remain available for development/legacy operation until migration verification is complete.
+Production should use externally triggered `/api/kcc/loop/tick` and `/api/kcc/agent/process-queue` calls. Existing background loops are only allowed when `ENABLE_CONTINUOUS_LOOP=true`.
