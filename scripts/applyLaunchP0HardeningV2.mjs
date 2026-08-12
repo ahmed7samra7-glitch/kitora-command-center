@@ -37,12 +37,28 @@ if (!mission.includes("Continuous loop disabled; use executeMissionTick()")) {
 write('server/kccMissionLoop.ts', mission);
 
 let runtime = read('server/autonomousAgentRuntime.ts');
+if (!runtime.includes("import { durableTaskQueue } from './durableTaskQueue.js';")) {
+  runtime = replaceRequired(
+    runtime,
+    "import { kccBrain } from './kccBrain.js';",
+    "import { kccBrain } from './kccBrain.js';\nimport { durableTaskQueue } from './durableTaskQueue.js';",
+    'durable task queue import'
+  );
+}
 if (!runtime.includes('processQueueBatch(')) {
   runtime = replaceRequired(
     runtime,
     '  private async processNextQueueTask() {',
-    "  public async processQueueBatch(maxTasks: number = Number.parseInt(process.env.AGENT_QUEUE_BATCH_SIZE || '3', 10)) {\n    const limit = Number.isFinite(maxTasks) && maxTasks > 0 ? Math.min(Math.floor(maxTasks), 10) : 3;\n    let processed = 0;\n    while (processed < limit) {\n      const before = this.queue.find(t => t.status === 'QUEUED');\n      if (!before) break;\n      await this.processNextQueueTask();\n      processed += 1;\n    }\n    return {\n      processed,\n      queued: this.queue.filter(t => t.status === 'QUEUED').length,\n      running: this.queue.filter(t => t.status === 'RUNNING').length,\n      completed: this.queue.filter(t => t.status === 'COMPLETED').length,\n      failed: this.queue.filter(t => t.status === 'FAILED').length\n    };\n  }\n\n  private async processNextQueueTask() {",
+    "  public async processQueueBatch(maxTasks: number = Number.parseInt(process.env.AGENT_QUEUE_BATCH_SIZE || '3', 10)) {\n    const limit = Number.isFinite(maxTasks) && maxTasks > 0 ? Math.min(Math.floor(maxTasks), 10) : 3;\n    if ((process.env.STORAGE_DRIVER || 'local').trim().toLowerCase() === 'supabase') {\n      return this.processDurableQueueBatch(limit);\n    }\n    let processed = 0;\n    while (processed < limit) {\n      const before = this.queue.find(t => t.status === 'QUEUED');\n      if (!before) break;\n      await this.processNextQueueTask();\n      processed += 1;\n    }\n    return {\n      processed,\n      queued: this.queue.filter(t => t.status === 'QUEUED').length,\n      running: this.queue.filter(t => t.status === 'RUNNING').length,\n      completed: this.queue.filter(t => t.status === 'COMPLETED').length,\n      failed: this.queue.filter(t => t.status === 'FAILED').length\n    };\n  }\n\n  private async processDurableQueueBatch(limit: number) {\n    const claimed = await durableTaskQueue.claimBatch(limit);\n    let completed = 0;\n    let failed = 0;\n    for (const rawTask of claimed) {\n      const task = rawTask as AgentTask;\n      try {\n        const provider = await this.executeTaskLogic(task);\n        await durableTaskQueue.complete(task.id, task.result ?? { status: 'COMPLETED' }, provider);\n        completed += 1;\n        eventBus.publish('AGENT.TASK.COMPLETED', 'AutonomousAgentRuntime', { taskId: task.id, type: task.type, provider });\n      } catch (err: any) {\n        const retry = task.attempts < task.maxRetries;\n        await durableTaskQueue.fail(task.id, err?.message || 'Execution failed', retry);\n        failed += 1;\n        eventBus.publish('AGENT.TASK.FAILED', 'AutonomousAgentRuntime', { taskId: task.id, type: task.type, error: err?.message });\n      }\n    }\n    return { processed: claimed.length, completed, failed, queued: 0, running: 0 };\n  }\n\n  private async processNextQueueTask() {",
     'queue batch API'
+  );
+}
+if (!runtime.includes('durableTaskQueue.enqueue(task)')) {
+  runtime = replaceRequired(
+    runtime,
+    '    eventBus.publish(\'AGENT.TASK.QUEUED\', \'AutonomousAgentRuntime\', { taskId: task.id, type: task.type });',
+    "    void durableTaskQueue.enqueue(task).catch((err) => console.error('[Durable Queue] enqueue failed:', err?.message || err));\n    eventBus.publish('AGENT.TASK.QUEUED', 'AutonomousAgentRuntime', { taskId: task.id, type: task.type });",
+    'durable queue enqueue'
   );
 }
 if (!runtime.includes("Continuous loop disabled; use processQueueBatch()")) {
