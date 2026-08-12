@@ -10,10 +10,13 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -25,6 +28,20 @@ jobs:
       - name: Apply Brain scale-to-zero patch in workspace
         run: node scripts/applyBrainScaleZero.mjs
 
+      - name: Validate patch did not mutate unrelated files
+        shell: bash
+        run: |
+          set -euo pipefail
+          allowed=$'server.ts\nserver/kccMissionLoop.ts\nserver/autonomousAgentRuntime.ts'
+          git diff --check
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            case "\n${allowed}\n" in
+              *"\n${file}\n"*) ;;
+              *) echo "Unexpected workspace mutation: ${file}" >&2; exit 1 ;;
+            esac
+          done < <(git diff --name-only)
+
       - name: Type-check
         run: bun run lint
 
@@ -32,7 +49,9 @@ jobs:
         run: bun run build
 
       - name: Verify Brain/worker separation
+        shell: bash
         run: |
+          set -euo pipefail
           grep -q "Brain OS remains persistent through durable state" server.ts
           grep -q "ENABLE_CONTINUOUS_LOOP" server.ts
           grep -q "Continuous daemon disabled" server/kccMissionLoop.ts
