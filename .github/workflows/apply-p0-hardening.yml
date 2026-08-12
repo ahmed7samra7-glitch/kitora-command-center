@@ -53,6 +53,9 @@ jobs:
           grep -q "ENABLE_CONTINUOUS_LOOP" server/scheduler.ts
           grep -q "verifyWebhookSignature" server/paypal.ts
           grep -q "paypalWebhookEvents" server/paypal.ts
+          test -f server/durableTaskQueue.ts
+          grep -q "kcc_claim_task_batch" supabase/migrations/002_kcc_task_queue.sql
+          grep -q "STORAGE_DRIVER.*supabase" server/durableTaskQueue.ts
 
       - name: Commit hardened source
         if: github.event_name != 'pull_request'
@@ -61,7 +64,7 @@ jobs:
         run: |
           git config user.name "KCC Release Automation"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add server.ts server/dbStorage.ts server/kccMissionLoop.ts server/autonomousAgentRuntime.ts server/scheduler.ts server/paypal.ts .env.example scripts/applyLaunchP0HardeningV2.mjs scripts/runP0SmokeTests.ts
+          git add server.ts server/dbStorage.ts server/kccMissionLoop.ts server/autonomousAgentRuntime.ts server/scheduler.ts server/paypal.ts server/durableTaskQueue.ts .env.example scripts/applyLaunchP0HardeningV2.mjs scripts/runP0SmokeTests.ts supabase/migrations/001_kcc_runtime_state.sql supabase/migrations/002_kcc_task_queue.sql server/storageAdapter.ts server/supabaseStorage.ts docs/STORAGE_PRODUCTION.md .github/workflows/apply-p0-hardening.yml
           if git diff --cached --quiet; then
             echo "No changes to commit."
             exit 0
