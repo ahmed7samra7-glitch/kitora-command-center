@@ -87,6 +87,14 @@ export function generateWorkerToken(workerId: string): string {
   return crypto.createHmac('sha256', getJwtSecret()).update(`KCC_WORKER_${workerId}`).digest('hex');
 }
 
+function requireExecutionSecret(req: Request, res: Response, next: Function) {
+  const configured = (process.env.KCC_EXECUTION_SECRET || '').trim();
+  const provided = String(req.headers['x-kcc-execution-secret'] || '').trim();
+  if (!configured) return res.status(503).json({ success: false, error: 'Execution trigger is not configured.' });
+  if (!provided || provided !== configured) return res.status(401).json({ success: false, error: 'Unauthorized execution trigger.' });
+  next();
+}
+
 export function verifyWorkerAuth(req: Request): { valid: boolean; workerId?: string; error?: string } {
   // 1. If valid owner auth is provided, allow access
   let token = req.cookies?.kcc_admin_token;
@@ -185,7 +193,6 @@ app.use((req: Request, res: Response, next) => {
     path === '/api/kcc/health' ||
     path === '/api/kcc/openapi.json' ||
     path.startsWith('/api/phase4/store/catalog') ||
-    path.startsWith('/api/phase4/store/order') ||
     path.startsWith('/api/paypal/webhook');
 
   if (isPublicApi) {
@@ -1941,6 +1948,26 @@ app.post('/api/kcc/conversations/loop', async (req, res) => {
   }
 });
 
+app.post('/api/kcc/loop/tick', requireExecutionSecret, async (req, res) => {
+  try {
+    const limit = Number(req.body?.maxMissions) || undefined;
+    const result = await kccMissionLoop.executeMissionTick(limit);
+    res.json({ success: true, mode: 'BATCH', result });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+app.post('/api/kcc/agent/process-queue', requireExecutionSecret, async (req, res) => {
+  try {
+    const limit = Number(req.body?.maxTasks) || undefined;
+    const result = await autonomousAgentRuntime.processQueueBatch(limit);
+    res.json({ success: true, mode: 'BATCH', result });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+  }
+});
+
 app.post('/api/kcc/events', async (req, res) => {
   try {
     const { missionId, eventType, payload } = req.body;
@@ -3388,23 +3415,12 @@ app.post('/api/admin/signup', disableRegistrationHandler);
 // START SERVER / VITE MIDDLEWARE
 async function startServer() {
 
-  // Boot 24/7 Zero-Touch Autonomous Agent Runtime & Async Remote AI Worker Daemons
-  try {
-    autonomousAgentRuntime.start();
-  } catch (bootErr) {
-    console.error('[KCC Core Runtime] autonomousAgentRuntime boot warning:', bootErr);
-  }
-
-  try {
-    asyncWorkerManager.initializeDefaultWorkers();
-  } catch (bootErr) {
-    console.error('[KCC Core Runtime] asyncWorkerManager boot warning:', bootErr);
-  }
-
-  try {
-    kccMissionLoop.startLoop(3000);
-  } catch (bootErr) {
-    console.error('[KCC Core Runtime] kccMissionLoop boot warning:', bootErr);
+  if (process.env.ENABLE_CONTINUOUS_LOOP === 'true') {
+    try { autonomousAgentRuntime.start(); } catch (bootErr) { console.error('[KCC Core Runtime] autonomousAgentRuntime boot warning:', bootErr); }
+    try { asyncWorkerManager.initializeDefaultWorkers(); } catch (bootErr) { console.error('[KCC Core Runtime] asyncWorkerManager boot warning:', bootErr); }
+    try { kccMissionLoop.startLoop(3000); } catch (bootErr) { console.error('[KCC Core Runtime] kccMissionLoop boot warning:', bootErr); }
+  } else {
+    console.log('[KCC Core Runtime] Continuous execution disabled; using scale-to-zero batch triggers.');
   }
 
   if (process.env.NODE_ENV !== 'production') {

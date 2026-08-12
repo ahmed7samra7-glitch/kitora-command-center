@@ -44,6 +44,12 @@ export class KCCMissionLoop {
     this.isRunning = true;
 
     console.log('[KCC Mission Loop] Starting Autonomous Business Operating Loop (Observe -> Think -> Plan -> Execute -> Verify -> Learn)...');
+    if (process.env.ENABLE_CONTINUOUS_LOOP !== 'true') {
+      this.isRunning = false;
+      console.log('[KCC Mission Loop] Continuous loop disabled; use executeMissionTick() via external trigger.');
+      return;
+    }
+
     this.intervalId = setInterval(() => {
       this.tick().catch(err => console.error('[KCC Mission Loop] Error in loop tick:', err));
       kccMissionScheduler.checkScheduledJobs().catch(err => console.error('[KCC Scheduler] Error checking jobs:', err));
@@ -88,11 +94,16 @@ export class KCCMissionLoop {
     };
   }
 
-  public async tick() {
+  public async executeMissionTick(maxMissions: number = Number.parseInt(process.env.MISSION_TICK_MAX_MISSIONS || '3', 10)) {
+    const limit = Number.isFinite(maxMissions) && maxMissions > 0 ? Math.min(Math.floor(maxMissions), 10) : 3;
+    return this.tick(limit);
+  }
+
+  public async tick(maxMissions: number = 10) {
     // 1. CONTINUOUS OBSERVATION LAYER
     const telemetry = this.gatherTelemetry();
     const missions: KCCMission[] = kccMissionEngine.getMissions();
-    const activeMissions = missions.filter(m => m.status === 'PLANNING' || m.status === 'ACTIVE');
+    const activeMissions = missions.filter(m => m.status === 'PLANNING' || m.status === 'ACTIVE').slice(0, Math.max(1, Math.min(maxMissions, 10)));
 
     if (activeMissions.length === 0) return;
 

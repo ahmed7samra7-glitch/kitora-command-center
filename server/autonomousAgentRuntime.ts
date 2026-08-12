@@ -100,7 +100,12 @@ class PermanentAutonomousAgentRuntime {
     // Subscribe to all eventBus topics for zero-touch event-driven execution
     this.subscribeToEventBus();
 
-    // Start background processing loop (runs every 3 seconds)
+    if (process.env.ENABLE_CONTINUOUS_LOOP !== 'true') {
+      this.isLoopRunning = false;
+      console.log('[Autonomous Runtime] Continuous loop disabled; use processQueueBatch() via external trigger.');
+      return;
+    }
+
     this.isLoopRunning = true;
     this.loopTimer = setInterval(() => this.processNextQueueTask(), 3000);
 
@@ -167,6 +172,24 @@ class PermanentAutonomousAgentRuntime {
   }
 
   // 4. Background Queue Processor Loop
+  public async processQueueBatch(maxTasks: number = Number.parseInt(process.env.AGENT_QUEUE_BATCH_SIZE || '3', 10)) {
+    const limit = Number.isFinite(maxTasks) && maxTasks > 0 ? Math.min(Math.floor(maxTasks), 10) : 3;
+    let processed = 0;
+    while (processed < limit) {
+      const before = this.queue.find(t => t.status === 'QUEUED');
+      if (!before) break;
+      await this.processNextQueueTask();
+      processed += 1;
+    }
+    return {
+      processed,
+      queued: this.queue.filter(t => t.status === 'QUEUED').length,
+      running: this.queue.filter(t => t.status === 'RUNNING').length,
+      completed: this.queue.filter(t => t.status === 'COMPLETED').length,
+      failed: this.queue.filter(t => t.status === 'FAILED').length
+    };
+  }
+
   private async processNextQueueTask() {
     if (this.activeRunningCount > 0) return; // Process one at a time sequentially to guarantee consistency
 
