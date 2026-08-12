@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: kcc-p0-hardening
+  group: kcc-p0-hardening-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -28,8 +28,8 @@ jobs:
         with:
           node-version: 22
 
-      - name: Apply P0 patch
-        run: node scripts/applyLaunchP0Hardening.mjs
+      - name: Apply P0 patch v2
+        run: node scripts/applyLaunchP0HardeningV2.mjs
 
       - name: Type-check
         run: npm install && npm run lint
@@ -39,11 +39,15 @@ jobs:
 
       - name: Verify launch guards
         run: |
-          test "$(grep -c "ENABLE_CONTINUOUS_LOOP" server.ts)" -ge 1
           grep -q "requireExecutionSecret" server.ts
+          grep -q "app.post('/api/kcc/loop/tick'" server.ts
+          grep -q "app.post('/api/kcc/agent/process-queue'" server.ts
           grep -q "STORAGE_DRIVER=\"local\"" .env.example
           grep -q "STORAGE_DRIVER === 'local'" server/dbStorage.ts
           ! grep -q "path.startsWith('/api/phase4/store/order')" server.ts
+          grep -q "ENABLE_CONTINUOUS_LOOP" server/kccMissionLoop.ts
+          grep -q "ENABLE_CONTINUOUS_LOOP" server/autonomousAgentRuntime.ts
+          grep -q "ENABLE_CONTINUOUS_LOOP" server/scheduler.ts
 
       - name: Commit hardened source
         if: github.event_name != 'pull_request'
@@ -52,7 +56,7 @@ jobs:
         run: |
           git config user.name "KCC Release Automation"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add server.ts server/dbStorage.ts server/kccMissionLoop.ts server/autonomousAgentRuntime.ts .env.example scripts/applyLaunchP0Hardening.mjs
+          git add server.ts server/dbStorage.ts server/kccMissionLoop.ts server/autonomousAgentRuntime.ts server/scheduler.ts .env.example scripts/applyLaunchP0HardeningV2.mjs
           if git diff --cached --quiet; then
             echo "No changes to commit."
             exit 0
