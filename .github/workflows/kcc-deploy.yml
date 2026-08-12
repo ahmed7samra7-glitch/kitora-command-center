@@ -1,0 +1,90 @@
+name: KCC Cloud Run Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'DEPLOYMENT.md'
+      - '.github/workflows/kcc-deploy.yml'
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: kcc-deploy-main
+  cancel-in-progress: false
+
+env:
+  GCP_PROJECT_ID: ais-europe-west2-116319078cfc4
+  GCP_REGION: europe-west2
+  CLOUD_RUN_SERVICE: kitora-command-center
+
+jobs:
+  deploy:
+    name: Deploy KCC to Cloud Run
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+          project_id: '${{ env.GCP_PROJECT_ID }}'
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v3
+        with:
+          service: '${{ env.CLOUD_RUN_SERVICE }}'
+          region: '${{ env.GCP_REGION }}'
+          project_id: '${{ env.GCP_PROJECT_ID }}'
+          source: '.'
+          flags: '--allow-unauthenticated --port=3000 --min=1 --memory=1Gi --cpu=1'
+          env_vars: |
+            NODE_ENV=production
+          secrets: |
+            GEMINI_API_KEY=GEMINI_API_KEY:latest
+            JWT_SECRET=JWT_SECRET:latest
+            KCC_CHATGPT_SECRET=KCC_CHATGPT_SECRET:latest
+            PAYPAL_CLIENT_ID=PAYPAL_CLIENT_ID:latest
+            PAYPAL_CLIENT_SECRET=PAYPAL_CLIENT_SECRET:latest
+            PAYPAL_MODE=PAYPAL_MODE:latest
+            CJ_DROPSHIPPING_EMAIL=CJ_DROPSHIPPING_EMAIL:latest
+            CJ_DROPSHIPPING_API_KEY=CJ_DROPSHIPPING_API_KEY:latest
+            WHATSAPP_TOKEN=WHATSAPP_TOKEN:latest
+            WHATSAPP_PHONE_NUMBER_ID=WHATSAPP_PHONE_NUMBER_ID:latest
+            SUPABASE_URL=SUPABASE_URL:latest
+            SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY:latest
+            GITHUB_TOKEN=GITHUB_TOKEN:latest
+
+      - name: Verify Cloud Run health
+        env:
+          SERVICE_URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          set -euo pipefail
+          echo "Checking ${SERVICE_URL}/api/kcc/health"
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            if curl --fail --silent --show-error --max-time 15 "${SERVICE_URL}/api/kcc/health" | tee /tmp/kcc-health.json; then
+              echo
+              exit 0
+            fi
+            echo "Health check attempt ${attempt}/10 failed; retrying..."
+            sleep 10
+          done
+          echo "Cloud Run health check failed"
+          exit 1
+
+      - name: Deployment summary
+        env:
+          SERVICE_URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          echo "KCC deployed successfully"
+          echo "Service: ${CLOUD_RUN_SERVICE}"
+          echo "Region: ${GCP_REGION}"
+          echo "URL: ${SERVICE_URL}"
