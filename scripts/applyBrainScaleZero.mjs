@@ -15,13 +15,6 @@ patch(
 
 patch(
   'server/kccMissionLoop.ts',
-  `  public startLoop(intervalMs = 10000) {`,
-  `  public startLoop(intervalMs = 10000) {`,
-  'mission start anchor'
-);
-
-patch(
-  'server/kccMissionLoop.ts',
   `    this.isRunning = true;\n\n    console.log('[KCC Mission Loop] Starting Autonomous Business Operating Loop (Observe -> Think -> Plan -> Execute -> Verify -> Learn)...');`,
   `    if (process.env.ENABLE_CONTINUOUS_LOOP !== 'true') {\n      this.isRunning = false;\n      console.log('[KCC Mission Loop] Continuous daemon disabled; executeMissionTick() is the scale-to-zero execution path.');\n      return;\n    }\n\n    this.isRunning = true;\n\n    console.log('[KCC Mission Loop] Starting Autonomous Business Operating Loop (Observe -> Think -> Plan -> Execute -> Verify -> Learn)...');`,
   'mission loop guard'
