@@ -1,4 +1,4 @@
-# Multi-stage Dockerfile for Cloud Run Production Deployment
+# Multi-stage Dockerfile for production deployment on supported Docker hosts
 FROM node:22-alpine AS builder
 
 WORKDIR /app
