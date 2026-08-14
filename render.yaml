@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: kitora-command-center
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/kcc/health
+    autoDeployTrigger: checksPass
