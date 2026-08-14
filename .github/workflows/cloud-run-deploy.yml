@@ -1,8 +1,6 @@
 name: KCC Cloud Run Deploy
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -13,3 +11,10 @@ env:
   GCP_PROJECT_ID: ais-europe-west2-116319078cfc4
   GCP_REGION: europe-west2
   CLOUD_RUN_SERVICE: kitora-command-center
+
+jobs:
+  disabled:
+    name: GCP deployment intentionally disabled
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "GCP deployment disabled by KCC $0/no-card policy"
