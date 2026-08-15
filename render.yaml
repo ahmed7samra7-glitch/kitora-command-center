@@ -1,0 +1,11 @@
+# Zero-cost/no-card deployment target: staging/demo only.
+# Render Free may spin down after inactivity and does not provide durable local filesystem storage.
+services:
+  - type: web
+    name: kitora-command-center-staging
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/kcc/health
+    autoDeployTrigger: checksPass

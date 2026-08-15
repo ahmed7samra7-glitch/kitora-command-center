@@ -1,4 +1,4 @@
-# Multi-stage Dockerfile for Cloud Run Production Deployment
+# Multi-stage Dockerfile for deployment on supported Docker hosts
 FROM node:22-alpine AS builder
 
 WORKDIR /app
@@ -22,6 +22,10 @@ RUN npm ci --omit=dev || npm install --omit=dev
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/data ./data
 COPY --from=builder /app/.env.example ./.env.example
+
+# Render Free and similar no-card hosts run the service as a non-root user.
+RUN chown -R node:node /app
+USER node
 
 EXPOSE 3000
 
