@@ -7,6 +7,10 @@ COPY package*.json ./
 RUN npm ci || npm install
 
 COPY . .
+
+# Apply the KCC Brain scale-to-zero guards before the production build.
+# Railway builds directly from main and does not execute GitHub CI patch steps.
+RUN node scripts/applyBrainScaleZero.mjs
 RUN npm run build
 
 FROM node:22-alpine AS runner
