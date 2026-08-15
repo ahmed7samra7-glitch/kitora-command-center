@@ -49,6 +49,12 @@ const changes = [
     replacement: `    if (process.env.ENABLE_CONTINUOUS_LOOP !== 'true') {\n      this.isLoopRunning = false;\n      console.log('[Autonomous Runtime] Continuous daemon disabled; processQueueBatch() is the scale-to-zero execution path.');\n      return;\n    }\n\n    this.isLoopRunning = true;\n    this.loopTimer = setInterval(() => this.processNextQueueTask(), 3000);`,
     label: 'agent runtime guard',
   },
+  {
+    file: 'server.ts',
+    anchor: `  if (dbStatus.status !== 'CONNECTED') {\n    overallStatus = 'UNHEALTHY';\n  } else if (\n    agentRuntimeStatus !== 'RUNNING' ||\n    workerManagerStatus !== 'ACTIVE' ||\n    missionLoopStatus !== 'RUNNING' ||\n    aiOverallStatus !== 'ONLINE'\n  ) {\n    overallStatus = 'DEGRADED';\n  }`,
+    replacement: `  const continuousLoopEnabled = process.env.ENABLE_CONTINUOUS_LOOP === 'true';\n\n  if (dbStatus.status !== 'CONNECTED') {\n    overallStatus = 'UNHEALTHY';\n  } else if (aiOverallStatus !== 'ONLINE') {\n    overallStatus = 'DEGRADED';\n  } else if (continuousLoopEnabled && (\n    agentRuntimeStatus !== 'RUNNING' ||\n    workerManagerStatus !== 'ACTIVE' ||\n    missionLoopStatus !== 'RUNNING'\n  )) {\n    overallStatus = 'DEGRADED';\n  }`,
+    label: 'scale-zero health status',
+  },
 ];
 
 let applied = 0;
