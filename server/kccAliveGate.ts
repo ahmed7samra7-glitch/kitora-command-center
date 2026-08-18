@@ -30,7 +30,6 @@ type AttestedEvidence<T> = {
 export type KccAliveInput = {
   fulfillment?: AttestedEvidence<Partial<LiveFulfillmentEvidence>> | null;
   notification?: AttestedEvidence<Partial<LiveNotificationEvidence>> | null;
-  referenceTime?: string;
 };
 
 export type KccAliveResult = {
@@ -95,10 +94,7 @@ function isValidTimestamp(value: unknown, referenceTime: Date): boolean {
   return delta <= MAX_EVIDENCE_AGE_MS && delta >= -MAX_FUTURE_SKEW_MS;
 }
 
-function validateFulfillment(
-  attestation: KccAliveInput['fulfillment'],
-  referenceTime: Date,
-): string[] {
+function validateFulfillment(attestation: KccAliveInput['fulfillment'], referenceTime: Date): string[] {
   const blockers = verifyAttestation('fulfillment', attestation);
   if (blockers.length > 0) return blockers;
   const evidence = attestation!.evidence;
@@ -112,10 +108,7 @@ function validateFulfillment(
   return blockers;
 }
 
-function validateNotification(
-  attestation: KccAliveInput['notification'],
-  referenceTime: Date,
-): string[] {
+function validateNotification(attestation: KccAliveInput['notification'], referenceTime: Date): string[] {
   const blockers = verifyAttestation('notification', attestation);
   if (blockers.length > 0) return blockers;
   const evidence = attestation!.evidence;
@@ -130,10 +123,9 @@ function validateNotification(
 }
 
 export function evaluateKccAlive(input: KccAliveInput): KccAliveResult {
-  const referenceTime = input.referenceTime ? new Date(input.referenceTime) : new Date();
-  const safeReferenceTime = Number.isNaN(referenceTime.getTime()) ? new Date(0) : referenceTime;
-  const fulfillmentBlockers = validateFulfillment(input.fulfillment, safeReferenceTime);
-  const notificationBlockers = validateNotification(input.notification, safeReferenceTime);
+  const referenceTime = new Date();
+  const fulfillmentBlockers = validateFulfillment(input.fulfillment, referenceTime);
+  const notificationBlockers = validateNotification(input.notification, referenceTime);
   const blockers = [
     ...fulfillmentBlockers.map((blocker) => `fulfillment: ${blocker}`),
     ...notificationBlockers.map((blocker) => `notification: ${blocker}`),
