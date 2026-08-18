@@ -1,6 +1,7 @@
 import { dbRuntime } from './dbStorage.js';
 import { payPalRuntime } from './paypal.js';
 import { cjDropshippingRuntime } from './cjDropshipping.js';
+import { evaluateKccAlive } from './kccAliveGate.js';
 
 export interface SubsystemStatus {
   subsystem: string;
@@ -25,7 +26,7 @@ export interface LaunchChecklistItem {
 
 export interface ProductionAuditReport {
   timestamp: string;
-  overallStatus: 'FUNCTIONAL_PENDING_LIVE_CREDENTIALS';
+  overallStatus: 'PRODUCTION_BLOCKED' | 'FUNCTIONAL_PENDING_LIVE_CREDENTIALS';
   mockEliminationSummary: {
     totalSubsystemsAudited: number;
     mockFreeSubsystemsCount: number;
@@ -34,6 +35,7 @@ export interface ProductionAuditReport {
   subsystems: SubsystemStatus[];
   launchChecklist: LaunchChecklistItem[];
   backlogRecommendations: Array<{ priority: string; title: string; impact: string }>;
+  kccAlive: ReturnType<typeof evaluateKccAlive>;
 }
 
 export class ProductionReadinessAuditEngine {
@@ -419,9 +421,13 @@ export class ProductionReadinessAuditEngine {
       { priority: 'P2', title: 'Attach Live CJ Dropshipping API Key', impact: 'Enables real automated wallet deduction for fulfillment' }
     ];
 
+    const kccAlive = evaluateKccAlive({
+      fulfillment: null,
+      notification: null,
+    });
     return {
       timestamp: new Date().toISOString(),
-      overallStatus: 'FUNCTIONAL_PENDING_LIVE_CREDENTIALS',
+      overallStatus: kccAlive.kccAlive ? 'FUNCTIONAL_PENDING_LIVE_CREDENTIALS' : 'PRODUCTION_BLOCKED',
       mockEliminationSummary: {
         totalSubsystemsAudited: subsystems.length,
         mockFreeSubsystemsCount: subsystems.length,
@@ -429,7 +435,8 @@ export class ProductionReadinessAuditEngine {
       },
       subsystems,
       launchChecklist: this.getLaunchReadinessChecklist(),
-      backlogRecommendations
+      backlogRecommendations,
+      kccAlive
     };
   }
 }
