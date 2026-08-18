@@ -38,6 +38,14 @@ const forged = evaluateKccAlive({
 assert.equal(forged.kccAlive, false);
 assert.match(forged.blockers.join('\n'), /attestation signature is invalid/);
 
+const malformed = evaluateKccAlive({
+  referenceTime,
+  fulfillment: { kind: 'fulfillment', evidence: null as never, signature: '00'.repeat(32) },
+  notification: createKccAliveAttestation('notification', realNotification),
+});
+assert.equal(malformed.kccAlive, false);
+assert.match(malformed.blockers.join('\n'), /fulfillment: fulfillment evidence attestation payload is invalid/);
+
 const sandbox = evaluateKccAlive({
   referenceTime,
   fulfillment: createKccAliveAttestation('fulfillment', { ...realFulfillment, source: 'contract' as never }),

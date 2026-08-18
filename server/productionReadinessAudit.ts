@@ -26,7 +26,7 @@ export interface LaunchChecklistItem {
 
 export interface ProductionAuditReport {
   timestamp: string;
-  overallStatus: 'FUNCTIONAL_PENDING_LIVE_CREDENTIALS';
+  overallStatus: 'PRODUCTION_BLOCKED' | 'FUNCTIONAL_PENDING_LIVE_CREDENTIALS';
   mockEliminationSummary: {
     totalSubsystemsAudited: number;
     mockFreeSubsystemsCount: number;
@@ -427,7 +427,7 @@ export class ProductionReadinessAuditEngine {
     });
     return {
       timestamp: new Date().toISOString(),
-      overallStatus: 'FUNCTIONAL_PENDING_LIVE_CREDENTIALS',
+      overallStatus: kccAlive.kccAlive ? 'FUNCTIONAL_PENDING_LIVE_CREDENTIALS' : 'PRODUCTION_BLOCKED',
       mockEliminationSummary: {
         totalSubsystemsAudited: subsystems.length,
         mockFreeSubsystemsCount: subsystems.length,

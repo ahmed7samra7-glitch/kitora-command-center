@@ -73,7 +73,12 @@ function verifyAttestation<T>(kind: EvidenceKind, attestation: AttestedEvidence<
   if (!secret) return ['KCC ALIVE attestation secret is not configured'];
   if (attestation.kind !== kind) return [`${kind} evidence attestation kind is invalid`];
   if (!hasText(attestation.signature)) return [`${kind} evidence attestation signature is missing`];
-  const expected = sign(kind, attestation.evidence, secret);
+  let expected: string;
+  try {
+    expected = sign(kind, attestation.evidence, secret);
+  } catch {
+    return [`${kind} evidence attestation payload is invalid`];
+  }
   const supplied = Buffer.from(attestation.signature, 'hex');
   const expectedBuffer = Buffer.from(expected, 'hex');
   if (supplied.length !== expectedBuffer.length || !timingSafeEqual(supplied, expectedBuffer)) {
