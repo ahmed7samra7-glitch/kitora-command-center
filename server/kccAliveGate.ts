@@ -1,3 +1,5 @@
+import { createHmac, timingSafeEqual } from 'node:crypto';
+
 export type LiveFulfillmentEvidence = {
   source: 'live-provider';
   provider: 'CJ_DROPSHIPPING';
@@ -18,9 +20,17 @@ export type LiveNotificationEvidence = {
   observedAt: string;
 };
 
+type EvidenceKind = 'fulfillment' | 'notification';
+type AttestedEvidence<T> = {
+  kind: EvidenceKind;
+  evidence: T;
+  signature: string;
+};
+
 export type KccAliveInput = {
-  fulfillment?: Partial<LiveFulfillmentEvidence> | null;
-  notification?: Partial<LiveNotificationEvidence> | null;
+  fulfillment?: AttestedEvidence<Partial<LiveFulfillmentEvidence>> | null;
+  notification?: AttestedEvidence<Partial<LiveNotificationEvidence>> | null;
+  referenceTime?: string;
 };
 
 export type KccAliveResult = {
@@ -32,43 +42,93 @@ export type KccAliveResult = {
   };
 };
 
+const MAX_EVIDENCE_AGE_MS = 15 * 60 * 1000;
+const MAX_FUTURE_SKEW_MS = 60 * 1000;
+
 function hasText(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
-function isValidTimestamp(value: unknown): boolean {
-  return hasText(value) && !Number.isNaN(Date.parse(value));
+function getSecret(): string | null {
+  const secret = process.env.KCC_ALIVE_ATTESTATION_SECRET;
+  return hasText(secret) ? secret : null;
 }
 
-function validateFulfillment(evidence: KccAliveInput['fulfillment']): string[] {
-  if (!evidence) return ['real fulfillment evidence is missing'];
-  const blockers: string[] = [];
+function canonicalize(value: unknown): string {
+  return JSON.stringify(value, Object.keys(value as object).sort());
+}
+
+function sign(kind: EvidenceKind, evidence: unknown, secret: string): string {
+  return createHmac('sha256', secret).update(`${kind}:${canonicalize(evidence)}`).digest('hex');
+}
+
+export function createKccAliveAttestation<T>(kind: EvidenceKind, evidence: T, secret = getSecret()): AttestedEvidence<T> {
+  if (!secret) throw new Error('KCC_ALIVE_ATTESTATION_SECRET is required to create evidence attestations');
+  return { kind, evidence, signature: sign(kind, evidence, secret) };
+}
+
+function verifyAttestation<T>(kind: EvidenceKind, attestation: AttestedEvidence<T> | null | undefined): string[] {
+  if (!attestation) return [`real ${kind} evidence is missing`];
+  const secret = getSecret();
+  if (!secret) return ['KCC ALIVE attestation secret is not configured'];
+  if (attestation.kind !== kind) return [`${kind} evidence attestation kind is invalid`];
+  if (!hasText(attestation.signature)) return [`${kind} evidence attestation signature is missing`];
+  const expected = sign(kind, attestation.evidence, secret);
+  const supplied = Buffer.from(attestation.signature, 'hex');
+  const expectedBuffer = Buffer.from(expected, 'hex');
+  if (supplied.length !== expectedBuffer.length || !timingSafeEqual(supplied, expectedBuffer)) {
+    return [`${kind} evidence attestation signature is invalid`];
+  }
+  return [];
+}
+
+function isValidTimestamp(value: unknown, referenceTime: Date): boolean {
+  if (!hasText(value)) return false;
+  const observed = Date.parse(value);
+  if (Number.isNaN(observed)) return false;
+  const delta = referenceTime.getTime() - observed;
+  return delta <= MAX_EVIDENCE_AGE_MS && delta >= -MAX_FUTURE_SKEW_MS;
+}
+
+function validateFulfillment(
+  attestation: KccAliveInput['fulfillment'],
+  referenceTime: Date,
+): string[] {
+  const blockers = verifyAttestation('fulfillment', attestation);
+  if (blockers.length > 0) return blockers;
+  const evidence = attestation!.evidence;
   if (evidence.source !== 'live-provider') blockers.push('fulfillment evidence is not marked live-provider');
   if (evidence.provider !== 'CJ_DROPSHIPPING') blockers.push('fulfillment provider is not CJ_DROPSHIPPING');
   if (!hasText(evidence.providerOrderId)) blockers.push('provider fulfillment order ID is missing');
   if (!hasText(evidence.providerRequestId)) blockers.push('provider fulfillment request ID is missing');
   if (!hasText(evidence.trackingNumber)) blockers.push('real tracking number is missing');
   if (!['SUBMITTED', 'SHIPPED', 'DELIVERED'].includes(String(evidence.status))) blockers.push('fulfillment status is not a live-provider status');
-  if (!isValidTimestamp(evidence.observedAt)) blockers.push('fulfillment observation timestamp is missing or invalid');
+  if (!isValidTimestamp(evidence.observedAt, referenceTime)) blockers.push('fulfillment observation timestamp is missing, invalid, stale, or too far in the future');
   return blockers;
 }
 
-function validateNotification(evidence: KccAliveInput['notification']): string[] {
-  if (!evidence) return ['real notification evidence is missing'];
-  const blockers: string[] = [];
+function validateNotification(
+  attestation: KccAliveInput['notification'],
+  referenceTime: Date,
+): string[] {
+  const blockers = verifyAttestation('notification', attestation);
+  if (blockers.length > 0) return blockers;
+  const evidence = attestation!.evidence;
   if (evidence.source !== 'live-provider') blockers.push('notification evidence is not marked live-provider');
   if (!['WHATSAPP', 'EMAIL'].includes(String(evidence.channel))) blockers.push('notification channel is not supported');
   if (!hasText(evidence.providerMessageId)) blockers.push('provider notification message ID is missing');
   if (!hasText(evidence.providerRequestId)) blockers.push('provider notification request ID is missing');
   if (!['SENT', 'DELIVERED'].includes(String(evidence.status))) blockers.push('notification status is not a live-provider status');
   if (evidence.recipientConfirmed !== true) blockers.push('notification recipient confirmation is missing');
-  if (!isValidTimestamp(evidence.observedAt)) blockers.push('notification observation timestamp is missing or invalid');
+  if (!isValidTimestamp(evidence.observedAt, referenceTime)) blockers.push('notification observation timestamp is missing, invalid, stale, or too far in the future');
   return blockers;
 }
 
 export function evaluateKccAlive(input: KccAliveInput): KccAliveResult {
-  const fulfillmentBlockers = validateFulfillment(input.fulfillment);
-  const notificationBlockers = validateNotification(input.notification);
+  const referenceTime = input.referenceTime ? new Date(input.referenceTime) : new Date();
+  const safeReferenceTime = Number.isNaN(referenceTime.getTime()) ? new Date(0) : referenceTime;
+  const fulfillmentBlockers = validateFulfillment(input.fulfillment, safeReferenceTime);
+  const notificationBlockers = validateNotification(input.notification, safeReferenceTime);
   const blockers = [
     ...fulfillmentBlockers.map((blocker) => `fulfillment: ${blocker}`),
     ...notificationBlockers.map((blocker) => `notification: ${blocker}`),
