@@ -53,3 +53,6 @@ jobs:
 
       - name: Verify production server entrypoint and webhook runtime
         run: npm run verify:server-entry-runtime
+
+      - name: Verify security startup and authentication fail-closed behavior
+        run: npm run verify:security-fail-closed
