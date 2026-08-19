@@ -1,4 +1,4 @@
-import type { Request, Response, Express } from 'express';
+import type { Application, Request, Response } from 'express';
 import {
   getWhatsAppWebhookVerifyToken,
   recordWhatsAppDeliveryEvidence,
@@ -24,7 +24,7 @@ function extractStatuses(body: any): Array<{ id: string; status: string; recipie
   return statuses;
 }
 
-export function registerWhatsAppWebhook(app: Express): void {
+export function registerWhatsAppWebhook(app: Application): void {
   app.get('/api/whatsapp/webhook', (req: Request, res: Response) => {
     const mode = String(req.query['hub.mode'] || '');
     const token = String(req.query['hub.verify_token'] || '');
