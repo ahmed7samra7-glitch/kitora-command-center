@@ -11,7 +11,7 @@ export interface SubsystemStatus {
   autonomouslyVerified: boolean;
   description: string;
   evidenceMissing: string;
-  details: any;
+  details: Record<string, unknown>;
 }
 
 export interface LaunchChecklistItem {
@@ -38,11 +38,34 @@ export interface ProductionAuditReport {
   kccAlive: ReturnType<typeof evaluateKccAlive>;
 }
 
+function hasWhatsAppEvidence(): boolean {
+  const history = dbRuntime.get('notificationEvidence') || [];
+  return Array.isArray(history) && history.some((item: any) =>
+    item?.provider === 'WHATSAPP_CLOUD_API' &&
+    item?.deliveryConfirmed === true &&
+    item?.signatureValid === true &&
+    item?.source === 'whatsapp-webhook'
+  );
+}
+
+function hasCJLiveEvidence(): boolean {
+  const orders = cjDropshippingRuntime.getOrders();
+  return Array.isArray(orders) && orders.some((order: any) =>
+    order?.status === 'SUBMITTED' ||
+    order?.status === 'PROCESSING' ||
+    order?.status === 'DISPATCHED' ||
+    order?.status === 'DELIVERED'
+  ) && cjDropshippingRuntime.isConfigured();
+}
+
 export class ProductionReadinessAuditEngine {
-  // Purge any demo / simulated test orders from persistent store
   public purgeDemoData() {
     const orders = dbRuntime.get('liveOrders') || [];
-    const realOrdersOnly = orders.filter((o: any) => o.customer && !o.customer.email.includes('test') && !o.customer.name.includes('Audit'));
+    const realOrdersOnly = orders.filter((order: any) => {
+      const email = String(order?.customer?.email || '').toLowerCase();
+      const name = String(order?.customer?.name || '').toLowerCase();
+      return !email.includes('test') && !name.includes('audit');
+    });
     dbRuntime.set('liveOrders', realOrdersOnly);
     return {
       purgedCount: orders.length - realOrdersOnly.length,
@@ -51,88 +74,109 @@ export class ProductionReadinessAuditEngine {
     };
   }
 
-  // 1. Priority 1: Mock Elimination Audit Report
   public getMockEliminationReport() {
     const catalog = dbRuntime.get('storeCatalog') || [];
     const orders = dbRuntime.get('liveOrders') || [];
     const paypalOrders = payPalRuntime.getSavedOrders();
     const cjOrders = cjDropshippingRuntime.getOrders();
+    const whatsappConfigured = Boolean(
+      process.env.META_WHATSAPP_LIVE_BEARER_TOKEN?.trim() &&
+      process.env.META_WHATSAPP_PHONE_NUMBER_ID?.trim()
+    );
 
     return {
       timestamp: new Date().toISOString(),
-      mockEliminationStatus: '100% REAL IMPLEMENTATIONS ACTIVE (SANDBOX / STAGING VERIFIED)',
+      mockEliminationStatus: 'EVIDENCE_BASED',
       auditResults: [
         {
-          workflow: 'Live Store Database Catalog',
-          hasMock: false,
+          workflow: 'Store Catalog Persistence',
           liveRecordCount: catalog.length,
-          verification: 'Real dbStorage persistent storage with live catalog items purchasable via /checkout'
+          status: catalog.length > 0 ? 'OBSERVED' : 'MISSING_EVIDENCE',
+          verification: 'Persistent storeCatalog records observed in dbStorage'
         },
         {
-          workflow: 'Order Pipeline & Checkout',
-          hasMock: false,
+          workflow: 'Order Pipeline Persistence',
           liveRecordCount: orders.length,
-          verification: 'Full pipeline connects PayPal payment verification to CJ order submission'
+          status: orders.length > 0 ? 'OBSERVED' : 'MISSING_EVIDENCE',
+          verification: 'liveOrders records observed in dbStorage'
         },
         {
-          workflow: 'PayPal Payment Gateway Engine',
-          hasMock: false,
+          workflow: 'PayPal Runtime',
           liveRecordCount: paypalOrders.length,
-          verification: 'Native REST OAuth2 Client Credential token handshake & order capture'
+          status: paypalOrders.length > 0 ? 'OBSERVED' : 'MISSING_EVIDENCE',
+          verification: 'Saved PayPal order records observed; live-mode claim requires live provider evidence'
         },
         {
-          workflow: 'CJ Dropshipping Fulfillment Engine',
-          hasMock: false,
+          workflow: 'CJ Fulfillment Runtime',
           liveRecordCount: cjOrders.length,
-          verification: 'Live SKU mapping, inventory sync, and tracking number generation'
+          status: hasCJLiveEvidence() ? 'LIVE_PROVIDER_EVIDENCE' : 'BLOCKED',
+          verification: hasCJLiveEvidence() ? 'Configured CJ runtime with provider-backed order evidence' : 'No provider-backed CJ fulfillment evidence is present'
         },
         {
-          workflow: 'WhatsApp & Email Automated Dispatch',
-          hasMock: false,
-          verification: 'Direct EventBus-triggered dispatch with live order tracking URLs'
+          workflow: 'WhatsApp Customer Notification',
+          status: whatsappConfigured && hasWhatsAppEvidence() ? 'DELIVERY_EVIDENCE_PRESENT' : 'BLOCKED',
+          verification: whatsappConfigured && hasWhatsAppEvidence() ? 'Signed webhook delivery evidence observed' : 'Provider configuration and signed delivery evidence are incomplete'
         },
         {
-          workflow: '24/7 Autonomous Background Runtime',
-          hasMock: false,
-          verification: 'Booted on server start, self-healing Gemini AI fallback, task recovery queue'
+          workflow: 'Autonomous Background Runtime',
+          status: 'NOT_SELF_ATTESTING',
+          verification: 'Runtime health is reported separately; readiness does not self-certify as production proof'
         }
       ]
     };
   }
 
-  // 2. Priority 2: Autonomous Validation Engine
-  public async verifyExecutionStep(actionType: string, payload: any): Promise<{ verified: boolean; step: string; verificationDetails: any }> {
+  public async verifyExecutionStep(actionType: string, payload: any): Promise<{ verified: boolean; step: string; verificationDetails: unknown }> {
     switch (actionType) {
       case 'PRODUCT_PUBLISHED': {
         const catalog = dbRuntime.get('storeCatalog') || [];
         const found = catalog.find((item: any) => item.id === payload.productId || item.cjProductId === payload.cjProductId);
-        const verified = !!found && found.status === 'PUBLISHED_ACTIVE' && found.isPurchasable === true;
+        const verified = Boolean(found && found.status === 'PUBLISHED_ACTIVE' && found.isPurchasable === true);
         return {
           verified,
-          step: 'Store Catalog DB Verification',
+          step: 'Store Catalog Persistence Verification',
           verificationDetails: found ? { title: found.title, price: found.priceUSD, status: found.status } : null
         };
       }
 
       case 'PAYPAL_PAYMENT_CAPTURED': {
         const orders = payPalRuntime.getSavedOrders();
-        const found = orders.find((o: any) => o.id === payload.paypalOrderId);
-        const verified = !!found && found.status === 'COMPLETED';
+        const found = orders.find((order: any) => order.id === payload.paypalOrderId);
+        const verified = Boolean(found && found.status === 'COMPLETED');
         return {
           verified,
-          step: 'PayPal REST Gateway Verification',
+          step: 'PayPal Order Record Verification',
           verificationDetails: found ? { amount: found.amount, currency: found.currency, status: found.status } : null
         };
       }
 
       case 'CJ_ORDER_FULFILLED': {
-        const cjOrders = cjDropshippingRuntime.getOrders();
-        const found = cjOrders.find((cjo: any) => cjo.orderId === payload.cjOrderId || cjo.paypalOrderId === payload.paypalOrderId);
-        const verified = !!found && !!found.trackingNumber;
+        const orders = cjDropshippingRuntime.getOrders();
+        const found = orders.find((order: any) => order.cjOrderId === payload.cjOrderId || order.orderId === payload.cjOrderId);
+        const verified = Boolean(found && cjDropshippingRuntime.isConfigured() && found.status !== 'PENDING_SUBMISSION');
         return {
           verified,
-          step: 'CJ Dropshipping Fulfillment Verification',
-          verificationDetails: found ? { trackingNumber: found.trackingNumber, status: found.status } : null
+          step: 'CJ Provider Fulfillment Verification',
+          verificationDetails: found ? {
+            cjOrderId: found.cjOrderId,
+            status: found.status,
+            providerRequestId: found.providerRequestId
+          } : null
+        };
+      }
+
+      case 'WHATSAPP_DELIVERY_CONFIRMED': {
+        const history = dbRuntime.get('notificationEvidence') || [];
+        const found = history.find((item: any) =>
+          item?.providerMessageId === payload.providerMessageId &&
+          item?.deliveryConfirmed === true &&
+          item?.signatureValid === true &&
+          item?.source === 'whatsapp-webhook'
+        );
+        return {
+          verified: Boolean(found),
+          step: 'Signed WhatsApp Delivery Evidence Verification',
+          verificationDetails: found || null
         };
       }
 
@@ -141,297 +185,176 @@ export class ProductionReadinessAuditEngine {
         const verified = Array.isArray(data) && data.length > 0;
         return {
           verified,
-          step: 'dbStorage Persistent Disk Verification',
-          verificationDetails: { recordCount: data.length, table: payload.table }
+          step: 'dbStorage Persistence Verification',
+          verificationDetails: { recordCount: data.length, table: payload.table || 'storeCatalog' }
         };
       }
 
       default:
-        return { verified: true, step: 'System Step Verification', verificationDetails: payload };
+        return { verified: false, step: 'Unknown Verification Step', verificationDetails: payload };
     }
   }
 
-  // 3. Strict Launch Readiness Checklist (20 Items)
   public getLaunchReadinessChecklist(): LaunchChecklistItem[] {
+    const whatsappReady = Boolean(
+      process.env.META_WHATSAPP_LIVE_BEARER_TOKEN?.trim() &&
+      process.env.META_WHATSAPP_PHONE_NUMBER_ID?.trim() &&
+      process.env.META_WHATSAPP_APP_SECRET?.trim() &&
+      hasWhatsAppEvidence()
+    );
+    const cjReady = cjDropshippingRuntime.isConfigured() && hasCJLiveEvidence();
+
     return [
       {
         id: 1,
-        category: 'Core Agent Runtime',
-        title: '24/7 Permanent Background Loop',
-        status: 'READY',
-        reason: 'Runs continuously in Cloud Run container upon server startup.',
-        whatIsMissing: 'None',
-        verificationMethod: 'GET /api/phase4/agent-runtime/status returns isAlive: true'
+        category: 'Core Runtime',
+        title: 'Background Runtime',
+        status: 'NOT READY',
+        reason: 'Runtime operation is not equivalent to production-readiness proof.',
+        whatIsMissing: 'Independent production execution evidence',
+        verificationMethod: 'Independent telemetry and uninterrupted production evidence'
       },
       {
         id: 2,
-        category: 'Core Agent Runtime',
-        title: 'Task Queue Disk Persistence',
+        category: 'Persistence',
+        title: 'Task Queue Persistence',
         status: 'READY',
-        reason: 'Saves uncompleted tasks to dbStorage and auto-resumes after restart.',
-        whatIsMissing: 'None',
-        verificationMethod: 'Verified state persistence across server restarts'
+        reason: 'Persistent queue storage is implemented.',
+        whatIsMissing: 'None for implementation-level readiness',
+        verificationMethod: 'Inspect persisted taskQueue records and recovery tests'
       },
       {
         id: 3,
-        category: 'Core Agent Runtime',
-        title: 'Self-Healing AI Provider Switch',
+        category: 'Store',
+        title: 'Catalog Persistence',
         status: 'READY',
-        reason: 'Tiers Gemini 3.6 Flash -> Gemini 3.1 Pro -> Deterministic Fallback.',
-        whatIsMissing: 'None',
-        verificationMethod: 'Tested failure injection and automatic provider switch'
+        reason: 'Persistent catalog records are available.',
+        whatIsMissing: 'None for implementation-level readiness',
+        verificationMethod: 'GET /api/phase4/store/catalog'
       },
       {
         id: 4,
-        category: 'Store & Catalog',
-        title: 'Live Product Catalog Database',
-        status: 'READY',
-        reason: 'Store displays active products with prices, images, SEO, and checkout URLs.',
-        whatIsMissing: 'None',
-        verificationMethod: 'GET /api/phase4/store/catalog returns active published SKUs'
+        category: 'Checkout',
+        title: 'Order Pipeline',
+        status: 'NOT READY',
+        reason: 'End-to-end production evidence is incomplete.',
+        whatIsMissing: 'Live PayPal + CJ + notification evidence',
+        verificationMethod: 'Real order trace from payment through notification delivery'
       },
       {
         id: 5,
-        category: 'Store & Checkout',
-        title: 'Direct Store Checkout UI',
-        status: 'READY',
-        reason: 'Functional /checkout route accepts shipping address and triggers order pipeline.',
-        whatIsMissing: 'None',
-        verificationMethod: 'POST /api/phase4/store/order processes orders cleanly'
+        category: 'CJ Fulfillment',
+        title: 'Real Provider Fulfillment',
+        status: cjReady ? 'READY' : 'NOT READY',
+        reason: cjReady ? 'Configured provider-backed CJ order evidence exists.' : 'No validated live CJ fulfillment evidence.',
+        whatIsMissing: cjReady ? 'None' : 'CJ credentials plus provider-backed fulfillment evidence',
+        verificationMethod: 'CJ provider response linked to persisted order evidence'
       },
       {
         id: 6,
-        category: 'Payment Gateway',
-        title: 'PayPal REST OAuth2 Integration',
-        status: 'READY',
-        reason: 'Acquires bearer tokens and communicates with PayPal REST API endpoints.',
-        whatIsMissing: 'None',
-        verificationMethod: 'PayPal client authentication handshake verified'
+        category: 'Customer Communication',
+        title: 'WhatsApp Provider + Delivery Evidence',
+        status: whatsappReady ? 'READY' : 'NOT READY',
+        reason: whatsappReady ? 'Provider credentials and signed delivery evidence exist.' : 'Provider acceptance and signed delivery webhook evidence are incomplete.',
+        whatIsMissing: whatsappReady ? 'None' : 'Meta credentials, webhook secret, signed delivery confirmation',
+        verificationMethod: 'Signed Meta webhook -> notificationEvidence -> deliveryConfirmed=true'
       },
       {
         id: 7,
-        category: 'Supplier Fulfillment',
-        title: 'CJ Dropshipping SKU Bridge',
-        status: 'READY',
-        reason: 'Maps store SKUs to CJ product IDs and submits fulfillment orders.',
-        whatIsMissing: 'None',
-        verificationMethod: 'CJ order submission & tracking assignment verified'
+        category: 'Production',
+        title: 'KCC ALIVE Gate',
+        status: 'NOT READY',
+        reason: 'ALIVE remains fail-closed until all required real evidence is present.',
+        whatIsMissing: 'Fulfillment and notification evidence accepted by kccAliveGate',
+        verificationMethod: 'evaluateKccAlive() returns kccAlive=true with fresh signed evidence'
       },
       {
         id: 8,
-        category: 'Customer Communication',
-        title: 'Automated WhatsApp Dispatch',
-        status: 'READY',
-        reason: 'Sends order confirmation and tracking links via EventBus.',
-        whatIsMissing: 'None',
-        verificationMethod: 'Order pipeline returns DISPATCHED_LIVE_WHATSAPP'
-      },
-      {
-        id: 9,
-        category: 'Customer Communication',
-        title: 'Automated Email Confirmation',
-        status: 'READY',
-        reason: 'Constructs and dispatches branded HTML order receipt emails.',
-        whatIsMissing: 'None',
-        verificationMethod: 'Email subject & body text generated and dispatched'
-      },
-      {
-        id: 10,
-        category: 'Owner Isolation',
-        title: 'Owner Notification Guard',
-        status: 'READY',
-        reason: 'Suppresses routine alerts; only escalates critical policy or high-value issues.',
-        whatIsMissing: 'None',
-        verificationMethod: 'Executive overview dispatches clean daily digest'
-      },
-      {
-        id: 11,
-        category: 'Growth Engine',
-        title: 'Autonomous Product Hunter',
-        status: 'READY',
-        reason: 'Hunts winning dropshipping products based on viral potential and margin.',
-        whatIsMissing: 'None',
-        verificationMethod: 'Growth cycle executes catalog expansion'
-      },
-      {
-        id: 12,
-        category: 'Growth Engine',
-        title: 'Dynamic Margin & Pricing Engine',
-        status: 'READY',
-        reason: 'Recalculates retail prices based on supplier cost and target profit margins.',
-        whatIsMissing: 'None',
-        verificationMethod: 'Calculates dynamic net margins accurately'
-      },
-      {
-        id: 13,
-        category: 'Payment Gateway',
-        title: 'PayPal Live Production API Keys',
+        category: 'Infrastructure',
+        title: 'Public Production Deployment',
         status: 'NOT READY',
-        reason: 'System running on sandbox credentials; live credit card capture requires live keys.',
-        whatIsMissing: 'PAYPAL_LIVE_CLIENT_ID and PAYPAL_LIVE_CLIENT_SECRET environment variables',
-        verificationMethod: 'Submit $1.00 real credit card transaction on live PayPal endpoint'
-      },
-      {
-        id: 14,
-        category: 'Supplier Fulfillment',
-        title: 'CJ Dropshipping Production Account Access',
-        status: 'NOT READY',
-        reason: 'Running on staging bridge; requires production API key for live wallet deduction.',
-        whatIsMissing: 'CJ_PRODUCTION_API_KEY environment variable',
-        verificationMethod: 'Execute live fulfillment order against real CJ account balance'
-      },
-      {
-        id: 15,
-        category: 'Customer Communication',
-        title: 'WhatsApp Business Live Token Binding',
-        status: 'NOT READY',
-        reason: 'Operating on EventBus dispatcher; requires Meta Cloud API access token for real phone numbers.',
-        whatIsMissing: 'META_WHATSAPP_LIVE_BEARER_TOKEN and PHONE_NUMBER_ID',
-        verificationMethod: 'Receive SMS/WhatsApp on physical mobile handset'
-      },
-      {
-        id: 16,
-        category: 'Domain & Infrastructure',
-        title: 'Custom Domain DNS Binding (kitora.store)',
-        status: 'NOT READY',
-        reason: 'Applet running on Cloud Run development URL; custom domain A record pending.',
-        whatIsMissing: 'DNS A/CNAME record pointing kitora.store to Cloud Run IP',
-        verificationMethod: 'curl -I https://kitora.store returns HTTP 200 OK'
-      },
-      {
-        id: 17,
-        category: 'Marketing & Traffic',
-        title: 'Meta & Google Ads Campaign Spend',
-        status: 'NOT READY',
-        reason: 'Ad copies and keywords generated; campaign budget allocation pending.',
-        whatIsMissing: 'Active Meta Ads Manager payment method and initial $100 ad budget',
-        verificationMethod: 'First inbound ad referral traffic logged in store analytics'
-      },
-      {
-        id: 18,
-        category: 'Verification',
-        title: 'First Real Customer Credit Card Purchase',
-        status: 'NOT READY',
-        reason: 'Requires live domain, live ad traffic, and live PayPal credentials.',
-        whatIsMissing: 'Real external customer placing an order with real money',
-        verificationMethod: 'Real dollar deposit settled into bank account'
-      },
-      {
-        id: 19,
-        category: 'Verification',
-        title: 'First Real CJ Package Delivery',
-        status: 'NOT READY',
-        reason: 'Requires first real customer order to trigger physical CJ shipping.',
-        whatIsMissing: 'Physical tracking number delivered to real customer address',
-        verificationMethod: 'Carrier delivery confirmation status = DELIVERED'
-      },
-      {
-        id: 20,
-        category: 'Operations',
-        title: 'Zero-Touch Permanent Autonomous Operation',
-        status: 'READY',
-        reason: 'All internal code, algorithms, and self-healing systems are 100% complete.',
-        whatIsMissing: 'None (System ready to run autonomously once live credentials attached)',
-        verificationMethod: 'System operates continuously without human intervention'
+        reason: 'Deployment and external infrastructure evidence are not established by this audit.',
+        whatIsMissing: 'Verified production deployment, domain, secrets, and external health evidence',
+        verificationMethod: 'Independent production health + deployment verification'
       }
     ];
   }
 
-  // 4. Evidence-Based Subsystem Classification
   public getProductionReadinessAudit(): ProductionAuditReport {
     const catalog = dbRuntime.get('storeCatalog') || [];
     const orders = dbRuntime.get('liveOrders') || [];
+    const cjLive = hasCJLiveEvidence();
+    const whatsappLive = hasWhatsAppEvidence();
 
     const subsystems: SubsystemStatus[] = [
       {
-        subsystem: '24/7 Permanent Background Runner',
-        category: 'Core Agent Runtime',
-        classification: 'FUNCTIONAL',
-        mockEliminated: true,
-        autonomouslyVerified: true,
-        description: 'Boots automatically on Node server start. Runs continuously in sandbox.',
-        evidenceMissing: 'Requires 30-day uninterrupted live production execution log without restart.',
-        details: { loopActive: true, queueProcessing: 'ACTIVE_3S_INTERVAL' }
-      },
-      {
-        subsystem: 'Persistent Task Queue & Recovery Engine',
-        category: 'Core Agent Runtime',
-        classification: 'FUNCTIONAL',
-        mockEliminated: true,
-        autonomouslyVerified: true,
-        description: 'Tasks saved to disk dbStorage. Auto-resumes unfinished tasks on server reboot.',
-        evidenceMissing: 'Requires high-volume continuous live queue stress proof over 10,000 orders.',
-        details: { storageEngine: 'dbStorage taskQueue', retryBackoff: 'EXPONENTIAL_RETRY' }
-      },
-      {
-        subsystem: 'Self-Healing Multi-Provider AI Runtime',
-        category: 'Growth & Intelligence',
-        classification: 'FUNCTIONAL',
-        mockEliminated: true,
-        autonomouslyVerified: true,
-        description: 'Gemini 3.6 Flash primary -> Gemini 3.1 Pro secondary -> Deterministic Fallback.',
-        evidenceMissing: 'Requires live API key rotation under external network disruption.',
-        details: { primary: 'gemini-3.6-flash', secondary: 'gemini-3.1-pro', timeoutMs: 3500 }
-      },
-      {
-        subsystem: 'Live Store Product Catalog Database',
+        subsystem: 'Persistent Store Catalog',
         category: 'Data & Persistence',
-        classification: 'FUNCTIONAL',
+        classification: catalog.length > 0 ? 'FUNCTIONAL' : 'PARTIAL',
         mockEliminated: true,
-        autonomouslyVerified: true,
-        description: 'Live catalog with real prices, SEO content, and checkout URLs.',
-        evidenceMissing: 'Requires live domain DNS binding (kitora.store) and live customer web hits.',
-        details: { activeProductsCount: catalog.length }
+        autonomouslyVerified: catalog.length > 0,
+        description: 'Persistent catalog records are observable in dbStorage.',
+        evidenceMissing: catalog.length > 0 ? 'No implementation evidence missing.' : 'No catalog records observed.',
+        details: { recordCount: catalog.length }
       },
       {
-        subsystem: 'End-to-End Automated Order Pipeline',
+        subsystem: 'Order Persistence',
         category: 'Payment & Checkout',
-        classification: 'FUNCTIONAL',
+        classification: orders.length > 0 ? 'FUNCTIONAL' : 'PARTIAL',
         mockEliminated: true,
-        autonomouslyVerified: true,
-        description: 'Customer -> PayPal verification -> CJ order submission -> Supabase order record -> WhatsApp.',
-        evidenceMissing: 'Requires first real customer credit card purchase on live production credentials.',
-        details: { sandboxOrdersProcessedCount: orders.length }
+        autonomouslyVerified: orders.length > 0,
+        description: 'Order records are observable in dbStorage.',
+        evidenceMissing: orders.length > 0 ? 'Live transaction proof remains external.' : 'No order records observed.',
+        details: { recordCount: orders.length }
       },
       {
-        subsystem: 'Autonomous Store Growth & Competitor Scan',
-        category: 'Growth & Intelligence',
-        classification: 'FUNCTIONAL',
+        subsystem: 'CJ Fulfillment Provider Boundary',
+        category: 'Supplier Fulfillment',
+        classification: cjLive ? 'FUNCTIONAL' : 'PARTIAL',
         mockEliminated: true,
-        autonomouslyVerified: true,
-        description: 'Auto-hunts products, re-optimizes prices, archives low-conversion listings.',
-        evidenceMissing: 'Requires live ad platform API connectivity and active ad spend.',
-        details: { growthCycleActive: true, schedulerInterval: '15m / 1h / 6h / 24h' }
+        autonomouslyVerified: cjLive,
+        description: 'CJ production path is fail-closed and only counts provider-backed order evidence.',
+        evidenceMissing: cjLive ? 'None observed.' : 'CJ credentials plus provider-backed fulfillment evidence.',
+        details: { configured: cjDropshippingRuntime.isConfigured(), liveEvidence: cjLive }
       },
       {
-        subsystem: 'Owner Isolation & Alert Dispatcher',
+        subsystem: 'WhatsApp Notification Provider Boundary',
         category: 'Customer Communication',
-        classification: 'FUNCTIONAL',
+        classification: whatsappLive ? 'FUNCTIONAL' : 'PARTIAL',
         mockEliminated: true,
-        autonomouslyVerified: true,
-        description: 'Only notifies owner for policy violations, high-value orders (>$1,000), or critical failures.',
-        evidenceMissing: 'Requires real SMS gateway SID for physical phone push notifications.',
-        details: { zeroTouchOwnerMode: true }
+        autonomouslyVerified: whatsappLive,
+        description: 'WhatsApp acceptance and signed webhook delivery are treated as separate evidence states.',
+        evidenceMissing: whatsappLive ? 'None observed.' : 'Signed webhook delivery evidence plus provider configuration.',
+        details: { configured: Boolean(process.env.META_WHATSAPP_LIVE_BEARER_TOKEN && process.env.META_WHATSAPP_PHONE_NUMBER_ID), deliveryEvidence: whatsappLive }
+      },
+      {
+        subsystem: 'KCC ALIVE Gate',
+        category: 'Core Agent Runtime',
+        classification: 'PARTIAL',
+        mockEliminated: true,
+        autonomouslyVerified: false,
+        description: 'Fail-closed readiness gate is active.',
+        evidenceMissing: 'Required fresh fulfillment and notification evidence.',
+        details: { kccAlive: false }
       }
     ];
 
+    const kccAlive = evaluateKccAlive({ fulfillment: null, notification: null });
     const backlogRecommendations = [
-      { priority: 'P1', title: 'Attach Live PayPal REST Client ID & Secret', impact: 'Enables real credit card processing' },
-      { priority: 'P1', title: 'Bind Custom Domain DNS for kitora.store', impact: 'Directs public organic and ad traffic to live store' },
-      { priority: 'P2', title: 'Attach Live CJ Dropshipping API Key', impact: 'Enables real automated wallet deduction for fulfillment' }
+      { priority: 'P0', title: 'Wire Meta webhook endpoint into server.ts', impact: 'Turns signed delivery evidence from an isolated module into a reachable production callback path.' },
+      { priority: 'P0', title: 'Obtain fresh provider-backed CJ fulfillment evidence', impact: 'Required for kccAlive=true.' },
+      { priority: 'P0', title: 'Obtain fresh signed WhatsApp delivery evidence', impact: 'Required for kccAlive=true.' },
+      { priority: 'P1', title: 'Remove legacy simulated readiness wording outside this audit', impact: 'Prevents stale dashboards from overstating production readiness.' }
     ];
 
-    const kccAlive = evaluateKccAlive({
-      fulfillment: null,
-      notification: null,
-    });
+    const mockFreeSubsystemsCount = subsystems.filter((s) => s.mockEliminated && s.autonomouslyVerified).length;
     return {
       timestamp: new Date().toISOString(),
       overallStatus: kccAlive.kccAlive ? 'FUNCTIONAL_PENDING_LIVE_CREDENTIALS' : 'PRODUCTION_BLOCKED',
       mockEliminationSummary: {
         totalSubsystemsAudited: subsystems.length,
-        mockFreeSubsystemsCount: subsystems.length,
-        mockFreePercentage: 100
+        mockFreeSubsystemsCount,
+        mockFreePercentage: subsystems.length === 0 ? 0 : Number(((mockFreeSubsystemsCount / subsystems.length) * 100).toFixed(1))
       },
       subsystems,
       launchChecklist: this.getLaunchReadinessChecklist(),
@@ -442,4 +365,3 @@ export class ProductionReadinessAuditEngine {
 }
 
 export const productionReadinessAuditEngine = new ProductionReadinessAuditEngine();
-
