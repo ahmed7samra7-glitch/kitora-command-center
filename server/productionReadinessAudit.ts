@@ -51,11 +51,13 @@ function hasWhatsAppEvidence(): boolean {
 function hasCJLiveEvidence(): boolean {
   const orders = cjDropshippingRuntime.getOrders();
   return Array.isArray(orders) && orders.some((order: any) =>
-    order?.status === 'SUBMITTED' ||
-    order?.status === 'PROCESSING' ||
-    order?.status === 'DISPATCHED' ||
-    order?.status === 'DELIVERED'
-  ) && cjDropshippingRuntime.isConfigured();
+    cjDropshippingRuntime.isConfigured() &&
+    typeof order?.providerRequestId === 'string' &&
+    order.providerRequestId.trim().length > 0 &&
+    typeof order?.trackingNumber === 'string' &&
+    order.trackingNumber.trim().length > 0 &&
+    ['SUBMITTED', 'PROCESSING', 'DISPATCHED', 'DELIVERED'].includes(String(order.status))
+  );
 }
 
 export class ProductionReadinessAuditEngine {
@@ -110,7 +112,7 @@ export class ProductionReadinessAuditEngine {
           workflow: 'CJ Fulfillment Runtime',
           liveRecordCount: cjOrders.length,
           status: hasCJLiveEvidence() ? 'LIVE_PROVIDER_EVIDENCE' : 'BLOCKED',
-          verification: hasCJLiveEvidence() ? 'Configured CJ runtime with provider-backed order evidence' : 'No provider-backed CJ fulfillment evidence is present'
+          verification: hasCJLiveEvidence() ? 'Configured CJ runtime with provider-backed request and tracking evidence' : 'No provider-backed CJ fulfillment evidence with request ID and tracking is present'
         },
         {
           workflow: 'WhatsApp Customer Notification',
@@ -153,14 +155,21 @@ export class ProductionReadinessAuditEngine {
       case 'CJ_ORDER_FULFILLED': {
         const orders = cjDropshippingRuntime.getOrders();
         const found = orders.find((order: any) => order.cjOrderId === payload.cjOrderId || order.orderId === payload.cjOrderId);
-        const verified = Boolean(found && cjDropshippingRuntime.isConfigured() && found.status !== 'PENDING_SUBMISSION');
+        const verified = Boolean(
+          found &&
+          cjDropshippingRuntime.isConfigured() &&
+          typeof found.providerRequestId === 'string' && found.providerRequestId.trim().length > 0 &&
+          typeof found.trackingNumber === 'string' && found.trackingNumber.trim().length > 0 &&
+          found.status !== 'PENDING_SUBMISSION'
+        );
         return {
           verified,
           step: 'CJ Provider Fulfillment Verification',
           verificationDetails: found ? {
             cjOrderId: found.cjOrderId,
             status: found.status,
-            providerRequestId: found.providerRequestId
+            providerRequestId: found.providerRequestId,
+            trackingNumber: found.trackingNumber
           } : null
         };
       }
@@ -247,8 +256,8 @@ export class ProductionReadinessAuditEngine {
         title: 'Real Provider Fulfillment',
         status: cjReady ? 'READY' : 'NOT READY',
         reason: cjReady ? 'Configured provider-backed CJ order evidence exists.' : 'No validated live CJ fulfillment evidence.',
-        whatIsMissing: cjReady ? 'None' : 'CJ credentials plus provider-backed fulfillment evidence',
-        verificationMethod: 'CJ provider response linked to persisted order evidence'
+        whatIsMissing: cjReady ? 'None' : 'CJ credentials plus provider-backed fulfillment request and tracking evidence',
+        verificationMethod: 'CJ provider response linked to persisted order evidence with request ID and tracking'
       },
       {
         id: 6,
@@ -313,8 +322,8 @@ export class ProductionReadinessAuditEngine {
         classification: cjLive ? 'FUNCTIONAL' : 'PARTIAL',
         mockEliminated: true,
         autonomouslyVerified: cjLive,
-        description: 'CJ production path is fail-closed and only counts provider-backed order evidence.',
-        evidenceMissing: cjLive ? 'None observed.' : 'CJ credentials plus provider-backed fulfillment evidence.',
+        description: 'CJ production path is fail-closed and only counts provider-backed order evidence with request ID and tracking.',
+        evidenceMissing: cjLive ? 'None observed.' : 'CJ credentials plus provider-backed fulfillment evidence with request ID and tracking.',
         details: { configured: cjDropshippingRuntime.isConfigured(), liveEvidence: cjLive }
       },
       {
@@ -341,7 +350,6 @@ export class ProductionReadinessAuditEngine {
 
     const kccAlive = evaluateKccAlive({ fulfillment: null, notification: null });
     const backlogRecommendations = [
-      { priority: 'P0', title: 'Wire Meta webhook endpoint into server.ts', impact: 'Turns signed delivery evidence from an isolated module into a reachable production callback path.' },
       { priority: 'P0', title: 'Obtain fresh provider-backed CJ fulfillment evidence', impact: 'Required for kccAlive=true.' },
       { priority: 'P0', title: 'Obtain fresh signed WhatsApp delivery evidence', impact: 'Required for kccAlive=true.' },
       { priority: 'P1', title: 'Remove legacy simulated readiness wording outside this audit', impact: 'Prevents stale dashboards from overstating production readiness.' }
