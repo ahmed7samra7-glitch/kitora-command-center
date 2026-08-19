@@ -21,4 +21,7 @@ express.application.listen = function patchedListen(this: express.Application, .
   return expressListen.apply(app, args as any);
 };
 
-await import('./server.ts');
+void import('./server.ts').catch((error) => {
+  console.error('[KCC Entrypoint] Failed to load server.ts:', error);
+  process.exitCode = 1;
+});
