@@ -27,7 +27,7 @@ const failedLoginAttempts: Map<string, number[]> = new Map();
 export interface SecurityAuditEvent {
   id: string;
   timestamp: string;
-  eventType: 'LOGIN_SUCCESS' | 'LOGIN_FAILED' | 'LOGOUT' | 'UNAUTHORIZED_ACCESS' | 'BLOCKED_REQUEST' | 'SESSION_EXPIRED' | 'LOCKDOWN';
+  eventType: 'LOGIN_SUCCESS' | 'LOGIN_FAILED' | 'LOGOUT' | 'UNAUTHORIZED_ACCESS' | 'BLOCKED_REQUEST' | 'SESSION_EXPIRED' | 'LOCKDOWN' | 'SYSTEM_BOOT';
   ip: string;
   userAgent: string;
   path: string;
@@ -66,7 +66,7 @@ export function initializeSingleOwnerSecurity() {
   }
 
   logSecurityEvent({
-    eventType: 'LOGIN_SUCCESS',
+    eventType: 'SYSTEM_BOOT',
     ip: '127.0.0.1',
     userAgent: 'SYSTEM_BOOT',
     path: '/system/boot',
@@ -244,8 +244,8 @@ export function getSecurityAuditSummary(protectedRouteCount: number = 32) {
     demoAccessRemoved: true,
     jwt: 'ACTIVE',
     helmet: true,
-    rateLimit: true,
-    csrf: true,
+    rateLimit: 'LOGIN_ONLY',
+    csrf: false,
     lockdownEndpoint: true,
     ownerTransferSupported: true,
     activeJwtVersion
