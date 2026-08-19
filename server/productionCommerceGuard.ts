@@ -43,3 +43,15 @@ phase4CommerceEngine.triggerCustomerAutomation = async function guardedTriggerCu
   assertProductionCommerceReady('triggerCustomerAutomation');
   return originalTriggerCustomerAutomation(...args);
 };
+
+const originalGetFinancialIntelligence = phase4CommerceEngine.getFinancialIntelligence.bind(phase4CommerceEngine);
+phase4CommerceEngine.getFinancialIntelligence = function guardedGetFinancialIntelligence(...args) {
+  assertProductionCommerceReady('getFinancialIntelligence');
+  return originalGetFinancialIntelligence(...args);
+};
+
+const originalGetExecutiveOverview = phase4CommerceEngine.getExecutiveOverview.bind(phase4CommerceEngine);
+phase4CommerceEngine.getExecutiveOverview = function guardedGetExecutiveOverview(...args) {
+  assertProductionCommerceReady('getExecutiveOverview');
+  return originalGetExecutiveOverview(...args);
+};
