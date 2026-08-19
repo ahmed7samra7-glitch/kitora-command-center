@@ -17,6 +17,7 @@ async function expectBlocked(label: string, operation: () => unknown | Promise<u
 }
 
 async function main() {
+  await import('../server/productionCommerceGuard.js');
   const { phase4CommerceEngine } = await import('../server/phase4AutonomousCommerce.js');
 
   await expectBlocked('autonomous product publishing', () => phase4CommerceEngine.publishProductToLiveStore({
