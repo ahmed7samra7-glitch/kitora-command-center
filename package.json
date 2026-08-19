@@ -10,13 +10,14 @@
     "clean": "rm -rf dist server.cjs",
     "lint": "tsc --noEmit",
     "verify:real-provider-boundary": "tsx scripts/verifyRealProviderBoundary.ts",
-    "verify:real-notification-boundary": "tsx scripts/verifyRealNotificationBoundary.ts"
+    "verify:real-notification-boundary": "tsx scripts/verifyRealNotificationBoundary.ts",
+    "verify:whatsapp-delivery-evidence": "tsx scripts/verifyWhatsAppDeliveryEvidence.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
     "@tailwindcss/vite": "^4.1.14",
     "@types/bcryptjs": "^3.0.0",
-    "@types/cookie-parser": "^1.4.10",
+    "@types/cookie-parser": "^1.4.7",
     "@types/jsonwebtoken": "^9.0.10",
     "@vitejs/plugin-react": "^5.0.4",
     "bcryptjs": "^3.0.3",
