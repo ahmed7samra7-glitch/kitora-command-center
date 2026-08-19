@@ -14,7 +14,8 @@
     "verify:whatsapp-delivery-evidence": "tsx scripts/verifyWhatsAppDeliveryEvidence.ts",
     "verify:production-readiness-truth": "tsx scripts/verifyProductionReadinessTruth.ts",
     "verify:server-entry-runtime": "tsx scripts/verifyServerEntryRuntime.ts",
-    "verify:security-fail-closed": "tsx scripts/verifySecurityFailClosed.ts"
+    "verify:security-fail-closed": "tsx scripts/verifySecurityFailClosed.ts",
+    "verify:production-commerce-guard": "tsx scripts/verifyProductionCommerceGuard.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
