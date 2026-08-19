@@ -10,6 +10,12 @@ export interface WhatsAppDeliveryEvidence {
   signatureValid: boolean;
 }
 
+export function getWhatsAppWebhookVerifyToken(): string {
+  const token = process.env.META_WHATSAPP_WEBHOOK_VERIFY_TOKEN?.trim();
+  if (!token) throw new Error('META_WHATSAPP_WEBHOOK_VERIFY_TOKEN is required for webhook verification');
+  return token;
+}
+
 function requireWebhookSecret(): string {
   const secret = process.env.META_WHATSAPP_APP_SECRET?.trim();
   if (!secret) throw new Error('META_WHATSAPP_APP_SECRET is required for webhook evidence verification');
