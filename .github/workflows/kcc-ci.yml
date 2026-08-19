@@ -50,3 +50,6 @@ jobs:
 
       - name: Verify production-readiness truthfulness
         run: npm run verify:production-readiness-truth
+
+      - name: Verify production server entrypoint and webhook runtime
+        run: npm run verify:server-entry-runtime
