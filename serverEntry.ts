@@ -17,18 +17,16 @@ function moveWhatsAppWebhookBeforeProtectedApiGuard(app: express.Application): v
   const stack = router?.stack;
   if (!Array.isArray(stack)) throw new Error('KCC Express router stack unavailable; refusing unsafe webhook registration');
 
-  const webhookLayers = stack.filter((layer: any) =>
-    layer?.route?.path === '/api/whatsapp/webhook'
-  );
+  const webhookLayers = stack.filter((layer: any) => layer?.route?.path === '/api/whatsapp/webhook');
   if (webhookLayers.length !== 2) {
     throw new Error(`Expected exactly 2 WhatsApp webhook route layers, found ${webhookLayers.length}`);
   }
 
-  const firstMiddlewareIndex = stack.findIndex((layer: any) =>
-    !layer?.route && typeof layer?.handle === 'function' && String(layer.handle).includes('GLOBAL ADMINISTRATIVE ROUTE AUTHORIZATION GUARD MIDDLEWARE')
+  const protectedApiGuardIndex = stack.findIndex((layer: any) =>
+    !layer?.route && typeof layer?.handle === 'function' && String(layer.handle).includes('requireOwnerAuth(req, res, next)')
   );
 
-  if (firstMiddlewareIndex < 0) {
+  if (protectedApiGuardIndex < 0) {
     throw new Error('Protected API authorization middleware not found; refusing ambiguous webhook ordering');
   }
 
@@ -37,13 +35,21 @@ function moveWhatsAppWebhookBeforeProtectedApiGuard(app: express.Application): v
     if (index >= 0) stack.splice(index, 1);
   }
 
-  const insertAt = Math.max(0, stack.findIndex((layer: any) =>
+  const jsonParserIndex = stack.findIndex((layer: any) =>
     layer?.name === 'jsonParser' || layer?.name === 'bodyParser'
-  ) + 1);
+  );
+  if (jsonParserIndex < 0) {
+    throw new Error('Express JSON parser middleware not found; refusing to place webhook before raw-body capture');
+  }
 
-  stack.splice(insertAt, 0, ...webhookLayers);
+  stack.splice(jsonParserIndex + 1, 0, ...webhookLayers);
 
-  if (stack.indexOf(webhookLayers[0]) >= firstMiddlewareIndex) {
+  const firstWebhookIndex = stack.indexOf(webhookLayers[0]);
+  const updatedGuardIndex = stack.findIndex((layer: any) =>
+    !layer?.route && typeof layer?.handle === 'function' && String(layer.handle).includes('requireOwnerAuth(req, res, next)')
+  );
+
+  if (firstWebhookIndex < 0 || updatedGuardIndex < 0 || firstWebhookIndex >= updatedGuardIndex) {
     throw new Error('WhatsApp webhook route was not placed before protected API authorization middleware');
   }
 }
