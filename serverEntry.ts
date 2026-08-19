@@ -1,4 +1,5 @@
 import express from 'express';
+import './server/productionCommerceGuard.js';
 import { registerWhatsAppWebhook } from './server/kccWhatsAppWebhook.js';
 
 const expressJson = express.json.bind(express);
