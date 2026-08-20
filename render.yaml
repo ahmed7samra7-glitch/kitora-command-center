@@ -5,6 +5,7 @@ services:
     name: kitora-command-center-staging
     runtime: docker
     plan: free
+    branch: main
     region: frankfurt
     dockerfilePath: ./Dockerfile
     healthCheckPath: /api/kcc/health
