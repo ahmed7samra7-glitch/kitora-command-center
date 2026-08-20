@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   verify:
-    name: Build and type-check
+    name: Build, type-check, and production-boundary verification
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -38,3 +38,24 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+      - name: Verify real CJ provider boundary
+        run: npm run verify:real-provider-boundary
+
+      - name: Verify real notification provider boundary
+        run: npm run verify:real-notification-boundary
+
+      - name: Verify WhatsApp delivery evidence boundary
+        run: npm run verify:whatsapp-delivery-evidence
+
+      - name: Verify production-readiness truthfulness
+        run: npm run verify:production-readiness-truth
+
+      - name: Verify production server entrypoint and webhook runtime
+        run: npm run verify:server-entry-runtime
+
+      - name: Verify security startup and authentication fail-closed behavior
+        run: npm run verify:security-fail-closed
+
+      - name: Verify autonomous production commerce guard
+        run: npm run verify:production-commerce-guard

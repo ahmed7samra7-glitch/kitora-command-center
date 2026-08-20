@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
 import { dbRuntime } from './dbStorage.js';
+import { isRealWhatsAppConfigured, sendRealWhatsAppText } from './realNotificationProvider.js';
 
 export interface BusEvent {
   id: string;
@@ -12,6 +13,18 @@ export interface BusEvent {
 
 export type EventSubscriber = (event: BusEvent) => Promise<void> | void;
 
+function buildNotificationBody(event: BusEvent, trackingNumber?: string): string {
+  const orderId = String(event.payload?.orderId || 'UNKNOWN');
+  const eventType = String(event.payload?.event || 'ORDER_UPDATE');
+  if (eventType === 'SHIPPED' && trackingNumber) {
+    return `Your KITORA order #${orderId} has shipped. Tracking: ${trackingNumber}`;
+  }
+  if (eventType === 'DELIVERED') {
+    return `Your KITORA order #${orderId} was delivered.`;
+  }
+  return `Your KITORA order #${orderId} update: ${eventType}.`;
+}
+
 class InternalEventBus {
   private emitter: EventEmitter;
   private history: BusEvent[] = [];
@@ -19,7 +32,6 @@ class InternalEventBus {
   constructor() {
     this.emitter = new EventEmitter();
     this.emitter.setMaxListeners(100);
-    // Load existing event logs from persistent storage
     const saved = dbRuntime.get('eventLogs');
     if (Array.isArray(saved)) {
       this.history = saved;
@@ -31,6 +43,16 @@ class InternalEventBus {
   }
 
   public publish(topic: string, source: string, payload: any, traceId?: string): BusEvent {
+    if (topic === 'COMMERCE.CUSTOMER.NOTIFIED') {
+      if (!isRealWhatsAppConfigured()) {
+        throw new Error('Real WhatsApp provider is not configured; refusing simulated customer notification dispatch');
+      }
+
+      payload.provider = 'WHATSAPP_CLOUD_API';
+      payload.deliveryState = 'PROVIDER_DISPATCH_PENDING';
+      payload.providerEvidenceRequired = true;
+    }
+
     const event: BusEvent = {
       id: `EVT-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
       topic,
@@ -45,17 +67,69 @@ class InternalEventBus {
       this.history = this.history.slice(0, 500);
     }
 
-    // Persist event history
     dbRuntime.set('eventLogs', this.history);
 
-    // Emit event asynchronously
+    if (topic === 'COMMERCE.CUSTOMER.NOTIFIED') {
+      setImmediate(() => {
+        void this.dispatchRealCustomerNotification(event);
+      });
+    }
+
     setImmediate(() => {
       this.emitter.emit(topic, event);
-      this.emitter.emit('*', event); // wildcard subscriber
+      this.emitter.emit('*', event);
     });
 
     console.log(`[Event Bus] [${event.topic}] Published by ${source} (ID: ${event.id})`);
     return event;
+  }
+
+  private async dispatchRealCustomerNotification(event: BusEvent): Promise<void> {
+    const orderId = String(event.payload?.orderId || '');
+    const orders = dbRuntime.get('liveOrders') || [];
+    const order = orders.find((candidate: any) => candidate.id === orderId || candidate.orderId === orderId);
+    const recipientPhone = String(order?.customer?.phone || order?.customerPhone || '').trim();
+
+    if (!recipientPhone) {
+      event.payload.deliveryState = 'BLOCKED_MISSING_RECIPIENT';
+      event.payload.providerDispatchError = 'No customer phone number available for real WhatsApp dispatch';
+      dbRuntime.set('notificationEvidence', this.buildNotificationEvidence(event));
+      return;
+    }
+
+    try {
+      const result = await sendRealWhatsAppText(
+        recipientPhone,
+        buildNotificationBody(event, String(event.payload?.trackingNumber || '')),
+      );
+      event.payload.deliveryState = 'PROVIDER_ACCEPTED';
+      event.payload.providerMessageId = result.providerMessageId;
+      event.payload.providerRequestId = result.providerRequestId;
+      event.payload.providerObservedAt = result.observedAt;
+      dbRuntime.set('notificationEvidence', this.buildNotificationEvidence(event));
+    } catch (error) {
+      event.payload.deliveryState = 'PROVIDER_REJECTED';
+      event.payload.providerDispatchError = String(error);
+      dbRuntime.set('notificationEvidence', this.buildNotificationEvidence(event));
+    }
+  }
+
+  private buildNotificationEvidence(event: BusEvent) {
+    const history = dbRuntime.get('notificationEvidence') || [];
+    const evidence = {
+      eventId: event.id,
+      orderId: event.payload?.orderId,
+      event: event.payload?.event,
+      provider: event.payload?.provider || 'WHATSAPP_CLOUD_API',
+      deliveryState: event.payload?.deliveryState,
+      providerMessageId: event.payload?.providerMessageId,
+      providerRequestId: event.payload?.providerRequestId,
+      observedAt: event.payload?.providerObservedAt || new Date().toISOString(),
+      deliveryConfirmed: false,
+      source: 'provider-send-response'
+    };
+    history.unshift(evidence);
+    return history.slice(0, 200);
   }
 
   public subscribe(topic: string, subscriber: EventSubscriber) {

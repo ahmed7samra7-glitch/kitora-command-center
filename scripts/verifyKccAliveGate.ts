@@ -23,7 +23,7 @@ const realFulfillment = {
 
 const realNotification = {
   source: 'live-provider' as const,
-  channel: 'EMAIL' as const,
+  channel: 'WHATSAPP' as const,
   providerMessageId: 'MSG-REAL-001',
   providerRequestId: 'REQ-MSG-REAL-001',
   status: 'DELIVERED' as const,
@@ -86,6 +86,13 @@ const replayAttempt = evaluateKccAlive({
 assert.equal(replayAttempt.kccAlive, false);
 assert.ok(replayAttempt.blockers.some((blocker) => blocker.includes('stale')));
 void historicalReferenceTime;
+
+const email = evaluateKccAlive({
+  fulfillment: createKccAliveAttestation('fulfillment', realFulfillment),
+  notification: createKccAliveAttestation('notification', { ...realNotification, channel: 'EMAIL' as never }),
+});
+assert.equal(email.kccAlive, false);
+assert.match(email.blockers.join('\n'), /channel must be WHATSAPP/);
 
 const real = evaluateKccAlive({
   fulfillment: createKccAliveAttestation('fulfillment', realFulfillment),
