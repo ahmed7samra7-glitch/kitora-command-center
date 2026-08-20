@@ -42,32 +42,37 @@ export function recordWhatsAppDeliveryEvidence(
     throw new Error(`Delivery evidence requires delivered/read status, received ${evidence.status}`);
   }
 
+  const history = dbRuntime.get('notificationEvidence') || [];
+  const outbound = history.find((item: any) =>
+    item?.provider === 'WHATSAPP_CLOUD_API' &&
+    item?.providerMessageId === evidence.providerMessageId &&
+    item?.source === 'provider-send-response' &&
+    item?.deliveryState === 'PROVIDER_ACCEPTED'
+  );
+  if (!outbound) {
+    throw new Error('WhatsApp delivery evidence does not match a previously accepted provider send; refusing orphan evidence');
+  }
+
   const recorded: WhatsAppDeliveryEvidence = {
     ...evidence,
     webhookReceivedAt: new Date().toISOString(),
     signatureValid: true,
   };
 
-  const history = dbRuntime.get('notificationEvidence') || [];
-  const updated = history.map((item: any) =>
-    item.providerMessageId === recorded.providerMessageId
-      ? { ...item, deliveryConfirmed: true, deliveryStatus: recorded.status, deliveredAt: recorded.occurredAt, webhookReceivedAt: recorded.webhookReceivedAt, signatureValid: true, source: 'whatsapp-webhook' }
-      : item,
-  );
-  if (!updated.some((item: any) => item.providerMessageId === recorded.providerMessageId)) {
-    updated.unshift({
-      provider: 'WHATSAPP_CLOUD_API',
-      providerMessageId: recorded.providerMessageId,
-      recipientPhone: recorded.recipientPhone,
-      deliveryConfirmed: true,
-      deliveryStatus: recorded.status,
-      deliveredAt: recorded.occurredAt,
-      webhookReceivedAt: recorded.webhookReceivedAt,
-      signatureValid: true,
-      source: 'whatsapp-webhook',
-    });
-  }
-  dbRuntime.set('notificationEvidence', updated.slice(0, 200));
+  const webhookEntry = {
+    provider: 'WHATSAPP_CLOUD_API',
+    providerMessageId: recorded.providerMessageId,
+    providerRequestId: outbound.providerRequestId,
+    recipientPhone: recorded.recipientPhone,
+    deliveryConfirmed: true,
+    deliveryStatus: recorded.status,
+    deliveredAt: recorded.occurredAt,
+    observedAt: recorded.occurredAt,
+    webhookReceivedAt: recorded.webhookReceivedAt,
+    signatureValid: true,
+    source: 'whatsapp-webhook',
+  };
+  dbRuntime.set('notificationEvidence', [webhookEntry, ...history].slice(0, 200));
 
   return recorded;
 }
