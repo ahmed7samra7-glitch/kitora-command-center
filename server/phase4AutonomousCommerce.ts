@@ -265,95 +265,45 @@ class Phase4CommerceEngine {
 
   // 2. Autonomous Product Pipeline & AI Product Hunter
   public async discoverAndHuntProducts(): Promise<PipelineProduct[]> {
-    // Attempt real CJ Dropshipping trending products
-    let cjProducts: any[] = [];
-    try {
-      const cjRes = await cjDropshippingRuntime.getProducts();
-      if (cjRes && cjRes.length > 0) {
-        cjProducts = cjRes.map((p: any) => ({
-          id: p.pid,
-          name: p.productName,
-          category: p.categoryName || 'Electronics',
-          image: p.productImage,
-          cost: p.costPrice || 12,
-          shipping: 4.5
-        }));
-      }
-    } catch {
-      // Ignore if CJ fails or mock fallback
-    }
-
+    const cjProducts = (await cjDropshippingRuntime.getProducts()).map((p: any) => ({
+      id: p.pid,
+      name: p.productName,
+      category: p.categoryName || 'Electronics',
+      image: p.productImage,
+      cost: p.costPrice,
+      shipping: 4.5,
+    }));
     if (cjProducts.length === 0) {
-      cjProducts = [
-        {
-          id: 'CJ-101-LUM',
-          name: 'Minimalist Wireless Sunset Projection Lamp',
-          category: 'Home Decor & Lighting',
-          image: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=800&auto=format&fit=crop&q=80',
-          cost: 8.40,
-          shipping: 3.90
-        },
-        {
-          id: 'CJ-202-VACC',
-          name: 'Handheld High-Power Cordless Car Vacuum Cleaner',
-          category: 'Automotive Accessories',
-          image: 'https://images.unsplash.com/photo-1558317374-067fb5f30001?w=800&auto=format&fit=crop&q=80',
-          cost: 12.80,
-          shipping: 5.50
-        }
-      ];
+      throw new Error('CJ provider catalog evidence is missing; refusing synthetic product discovery');
     }
 
     const newHunted: PipelineProduct[] = [];
-
     for (const item of cjProducts) {
-      const cost = item.cost || item.sellPrice || 12;
-      const ship = item.shipping || 4.5;
+      const cost = item.cost;
+      const ship = item.shipping;
       const pricing = this.calculateDynamicPricing({ productCostUSD: cost, shippingUSD: ship });
-
-      // Run Gemini AI Hunter Analysis if available
-      let aiAnalysis: {
-        viralPotentialScore: number;
-        competitionLevel: 'LOW' | 'MEDIUM' | 'HIGH';
-        targetAudience: string;
-        keySellingPoint: string;
-      } = {
-        viralPotentialScore: 88,
-        competitionLevel: 'MEDIUM',
-        targetAudience: 'Gen-Z, Home Aesthetic Enthusiasts, TikTok Shop Buyers',
-        keySellingPoint: 'Creates an ambient golden-hour aesthetic instantly for photos and mood lighting.'
-      };
-
       const prompt = `Analyze this e-commerce product for viral dropshipping potential:
 Product: ${item.name}
 Category: ${item.category}
-Cost: $${cost}, Shipping: $${ship}, Target Selling Price: $${pricing.calculatedPriceUSD}
-
-Return JSON with format:
-{
-  "viralPotentialScore": number (0-100),
-  "competitionLevel": "LOW" | "MEDIUM" | "HIGH",
-  "targetAudience": "string",
-  "keySellingPoint": "string"
-}`;
-
-      const brainDecision = await kccBrain.executeAgentTask('PRODUCT_HUNTER', prompt, aiAnalysis);
-      aiAnalysis = brainDecision.output;
-
-      // Quality Score Calculation
+Cost: $${cost}, Shipping: $${ship}, Target Selling Price: $${pricing.calculatedPriceUSD}`;
+      const brainDecision = await kccBrain.executeAgentTask('PRODUCT_HUNTER', prompt, {
+        viralPotentialScore: 0,
+        competitionLevel: 'HIGH',
+        targetAudience: '',
+        keySellingPoint: '',
+      });
+      const aiAnalysis = brainDecision.output;
       const marginWeight = Math.min(100, pricing.netMarginPercent * 1.5);
       const viralWeight = aiAnalysis.viralPotentialScore;
       const compBonus = aiAnalysis.competitionLevel === 'LOW' ? 10 : aiAnalysis.competitionLevel === 'MEDIUM' ? 5 : 0;
       const qualityScore = Math.min(99, Math.round((marginWeight * 0.4) + (viralWeight * 0.5) + compBonus));
-
       const decision: PipelineProduct['decision'] = qualityScore >= 85 ? 'APPROVED_AUTO_PUBLISH' : qualityScore >= 70 ? 'REQUIRES_HUMAN_REVIEW' : 'REJECTED';
-
       const pipelineItem: PipelineProduct = {
         id: `PROD-KITORA-${Math.floor(100 + Math.random() * 900)}`,
-        cjProductId: item.id || `CJ-${Math.floor(10000 + Math.random() * 90000)}`,
+        cjProductId: item.id,
         title: item.name,
         category: item.category || 'General E-Commerce',
-        imageUrl: item.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80',
+        imageUrl: item.image || '',
         cjCostUSD: cost,
         shippingUSD: ship,
         calculatedPriceUSD: pricing.calculatedPriceUSD,
@@ -363,19 +313,13 @@ Return JSON with format:
         qualityScore,
         decision,
         hunterAnalysis: aiAnalysis,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       };
-
       this.pipeline.unshift(pipelineItem);
       newHunted.push(pipelineItem);
-
-      // Auto-publish approved products to live store catalog
-      if (decision === 'APPROVED_AUTO_PUBLISH' || qualityScore >= 80) {
-        await this.publishProductToLiveStore(pipelineItem);
-      }
+      if (decision === 'APPROVED_AUTO_PUBLISH' || qualityScore >= 80) await this.publishProductToLiveStore(pipelineItem);
     }
-
-    eventBus.publish('COMMERCE.PIPELINE.HUNTED', 'Phase4CommerceEngine', { count: newHunted.length });
+    eventBus.publish('COMMERCE.PIPELINE.HUNTED', 'Phase4CommerceEngine', { count: newHunted.length, source: 'live-provider' });
     return this.pipeline;
   }
 
@@ -453,34 +397,28 @@ Return JSON with format:
 
   // 5. Customer Experience Automation Engine
   public async triggerCustomerAutomation(orderId: string, event: 'ORDER_PLACED' | 'SHIPPED' | 'DELIVERED' | 'REVIEW_REQUEST'): Promise<any> {
-    const trackingNumber = `CJ-TRK-${Math.floor(10000000 + Math.random() * 90000000)}`;
-
-    const notifications = {
-      ORDER_PLACED: {
-        emailSubject: `Order Confirmed #${orderId} - KITORA Store`,
-        whatsAppMessage: `✅ Thank you for your order #${orderId}! Your item is being packed at our fulfillment hub. Track your status anytime at https://kitora.store/orders/${orderId}`,
-        status: 'DISPATCHED_LIVE_WHATSAPP'
-      },
-      SHIPPED: {
-        emailSubject: `Your Order #${orderId} Has Shipped!`,
-        whatsAppMessage: `🚚 Exciting news! Order #${orderId} has been dispatched via CJ Express. Tracking Number: ${trackingNumber}`,
-        status: 'DISPATCHED_LIVE_WHATSAPP'
-      },
-      DELIVERED: {
-        emailSubject: `Package Delivered #${orderId}`,
-        whatsAppMessage: `🎉 Your package for order #${orderId} was delivered! We hope you love it.`,
-        status: 'DISPATCHED_LIVE_WHATSAPP'
-      },
-      REVIEW_REQUEST: {
-        emailSubject: `How is your experience with Order #${orderId}?`,
-        whatsAppMessage: `⭐ Hi there! Share a quick photo review of order #${orderId} and get a $10 gift voucher for your next order!`,
-        status: 'DISPATCHED_LIVE_WHATSAPP'
-      }
+    const orders = dbRuntime.get('liveOrders') || [];
+    const order = orders.find((candidate: any) => candidate.id === orderId || candidate.orderId === orderId);
+    if (!order) throw new Error(`Order ${orderId} is not persisted; refusing notification dispatch`);
+    const trackingNumber = String(order.trackingNumber || '').trim();
+    if (event === 'SHIPPED' && !trackingNumber) throw new Error('Real provider tracking evidence is required before SHIPPED notification');
+    if (event === 'DELIVERED' && order.fulfillmentStatus !== 'DELIVERED') throw new Error('Verified provider delivery evidence is required before DELIVERED notification');
+    const eventRecord = eventBus.publish('COMMERCE.CUSTOMER.NOTIFIED', 'Phase4CommerceEngine', {
+      orderId,
+      event,
+      ...(trackingNumber ? { trackingNumber } : {}),
+      deliveryState: 'PROVIDER_DISPATCH_PENDING',
+      deliveryConfirmed: false,
+      providerEvidenceRequired: true,
+    });
+    return {
+      orderId,
+      event,
+      eventId: eventRecord.id,
+      deliveryState: 'PROVIDER_DISPATCH_PENDING',
+      deliveryConfirmed: false,
+      providerEvidenceRequired: true,
     };
-
-    const result = notifications[event];
-    eventBus.publish('COMMERCE.CUSTOMER.NOTIFIED', 'Phase4CommerceEngine', { orderId, event, trackingNumber });
-    return { orderId, event, trackingNumber, ...result };
   }
 
   // 6. Finance Intelligence Engine
@@ -591,79 +529,65 @@ Return JSON with format:
     paymentAmountUSD: number;
     paypalPaymentId?: string;
   }): Promise<any> {
-    const orderId = `ORD-KITORA-${Math.floor(100000 + Math.random() * 900000)}`;
-
-    // Step 1: PayPal Payment Verification
-    let paypalStatus = 'VERIFIED_CAPTURED';
-    let paypalOrderId = orderInput.paypalPaymentId;
-
-    if (!paypalOrderId) {
-      const paypalRes = await payPalRuntime.createOrder({ amount: orderInput.paymentAmountUSD, currency: 'USD' });
-      paypalOrderId = paypalRes.id;
+    if (!orderInput.paypalPaymentId) throw new Error('Verified PayPal capture evidence is required; refusing synthetic payment success');
+    const paypalOrder = payPalRuntime.getSavedOrders().find((order: any) => order.id === orderInput.paypalPaymentId);
+    if (!paypalOrder || paypalOrder.status !== 'COMPLETED' || paypalOrder.mode !== 'live' || !paypalOrder.captureId) {
+      throw new Error('PayPal payment is not verified as a live completed capture');
     }
-
-    // Step 2: Create CJ Dropshipping Fulfillment Order
+    const catalogItem = (dbRuntime.get('storeCatalog') || []).find((item: any) => item.id === orderInput.productId && item.isPurchasable === true);
+    if (!catalogItem?.cjProductId) throw new Error('Purchasable catalog item is not linked to a CJ provider product');
+    const liveProduct = cjDropshippingRuntime.getProducts().find((product: any) => product.pid === catalogItem.cjProductId);
+    if (!liveProduct) throw new Error('Catalog item has no live CJ provider product evidence');
+    const quantity = Number(orderInput.quantity);
+    if (!Number.isInteger(quantity) || quantity <= 0) throw new Error('Order quantity must be a positive integer');
+    const orderId = `ORD-KITORA-${Math.floor(100000 + Math.random() * 900000)}`;
     const cjFulfillment = await cjDropshippingRuntime.submitOrder({
       shippingName: orderInput.customerName,
       shippingAddress: orderInput.shippingAddress.address,
       shippingCity: orderInput.shippingAddress.city,
       shippingCountry: orderInput.shippingAddress.country,
       shippingZip: orderInput.shippingAddress.zip,
-      paypalOrderId: paypalOrderId,
-      products: [{ pid: 'CJ-P-99120', quantity: orderInput.quantity || 1, unitPrice: orderInput.paymentAmountUSD }]
+      customerEmail: orderInput.customerEmail,
+      shippingPhone: orderInput.customerPhone,
+      paypalOrderId: paypalOrder.id,
+      products: [{ pid: liveProduct.pid, quantity, unitPrice: liveProduct.costPrice }],
     });
-
-    // Step 3: Save Order in Supabase / dbStorage liveOrders table
+    if (!cjFulfillment.providerRequestId || !cjFulfillment.cjOrderId) throw new Error('CJ provider fulfillment evidence is incomplete');
     const fullOrderRecord = {
       id: orderId,
-      paypalOrderId,
-      cjOrderId: cjFulfillment.orderId,
-      customer: {
-        name: orderInput.customerName,
-        email: orderInput.customerEmail,
-        phone: orderInput.customerPhone,
-        address: orderInput.shippingAddress
-      },
+      paypalOrderId: paypalOrder.id,
+      cjOrderId: cjFulfillment.cjOrderId,
+      customer: { name: orderInput.customerName, email: orderInput.customerEmail, phone: orderInput.customerPhone, address: orderInput.shippingAddress },
       productId: orderInput.productId,
-      quantity: orderInput.quantity || 1,
+      quantity,
       totalAmountUSD: orderInput.paymentAmountUSD,
-      paymentStatus: paypalStatus,
-      fulfillmentStatus: 'SUBMITTED_TO_CJ',
+      paymentStatus: 'VERIFIED_CAPTURED_LIVE',
+      fulfillmentStatus: cjFulfillment.status,
       trackingNumber: cjFulfillment.trackingNumber,
-      carrier: 'CJ Express Expedited',
+      carrier: cjFulfillment.logisticsCarrier,
+      providerRequestId: cjFulfillment.providerRequestId,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
-
     const liveOrders = dbRuntime.get('liveOrders') || [];
     liveOrders.unshift(fullOrderRecord);
     dbRuntime.set('liveOrders', liveOrders);
-
-    // Step 4: Automated Email & WhatsApp Dispatch
-    const placedNotif = await this.triggerCustomerAutomation(orderId, 'ORDER_PLACED');
-    const shippedNotif = await this.triggerCustomerAutomation(orderId, 'SHIPPED');
-
+    const placedNotification = await this.triggerCustomerAutomation(orderId, 'ORDER_PLACED');
     eventBus.publish('COMMERCE.ORDER.PIPELINE.EXECUTED', 'Phase4CommerceEngine', {
       orderId,
-      paypalOrderId,
-      cjOrderId: cjFulfillment.orderId,
-      trackingNumber: cjFulfillment.trackingNumber
+      paypalOrderId: paypalOrder.id,
+      cjOrderId: cjFulfillment.cjOrderId,
+      providerRequestId: cjFulfillment.providerRequestId,
+      fulfillmentStatus: cjFulfillment.status,
+      executionState: 'PROVIDER_EVIDENCE_PENDING',
+      notificationEvidenceRequired: true,
     });
-
-    // Priority 4 Check: High-Value Approval Alert if order > $1,000
-    if (orderInput.paymentAmountUSD >= 1000) {
-      this.sendOwnerNotificationIfRequired({
-        type: 'HIGH_VALUE_APPROVAL',
-        title: `High-Value Order Received: $${orderInput.paymentAmountUSD}`,
-        message: `Order #${orderId} from ${orderInput.customerName} processed cleanly. High revenue threshold logged.`,
-        severity: 'MEDIUM'
-      });
-    }
-
-    console.log(`[Real Order Pipeline] ✅ Order #${orderId} processed end-to-end (PayPal -> CJ -> Supabase -> WhatsApp).`);
     return {
       order: fullOrderRecord,
-      notificationsSent: [placedNotif, shippedNotif]
+      notification: placedNotification,
+      executionState: 'PROVIDER_EVIDENCE_PENDING',
+      fulfillmentVerified: true,
+      whatsappDeliveryConfirmed: false,
     };
   }
 

@@ -59,6 +59,7 @@ async function main() {
   await expectBlocked('executive overview', () => phase4CommerceEngine.getExecutiveOverview());
 
   console.log('Production commerce guard verification: PASS');
+  process.exit(0);
 }
 
 void main().catch((error) => {

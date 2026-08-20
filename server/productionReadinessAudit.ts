@@ -1,7 +1,7 @@
 import { dbRuntime } from './dbStorage.js';
 import { payPalRuntime } from './paypal.js';
 import { cjDropshippingRuntime } from './cjDropshipping.js';
-import { evaluateKccAlive } from './kccAliveGate.js';
+import { createKccAliveAttestation, evaluateKccAlive } from './kccAliveGate.js';
 
 export interface SubsystemStatus {
   subsystem: string;
@@ -38,24 +38,31 @@ export interface ProductionAuditReport {
   kccAlive: ReturnType<typeof evaluateKccAlive>;
 }
 
-function hasWhatsAppEvidence(): boolean {
+function getWhatsAppEvidence(): any | null {
   const history = dbRuntime.get('notificationEvidence') || [];
-  return Array.isArray(history) && history.some((item: any) =>
+  return Array.isArray(history) ? history.find((item: any) =>
     item?.provider === 'WHATSAPP_CLOUD_API' &&
+    typeof item?.providerMessageId === 'string' && item.providerMessageId.trim() &&
+    typeof item?.providerRequestId === 'string' && item.providerRequestId.trim() &&
     item?.deliveryConfirmed === true &&
     item?.signatureValid === true &&
-    item?.source === 'whatsapp-webhook'
-  );
+    item?.source === 'whatsapp-webhook' &&
+    ['delivered', 'read'].includes(String(item.deliveryStatus || item.status))
+  ) || null : null;
+}
+
+function hasWhatsAppEvidence(): boolean {
+  return Boolean(getWhatsAppEvidence());
 }
 
 function hasCJLiveEvidence(): boolean {
   const orders = cjDropshippingRuntime.getOrders();
   return Array.isArray(orders) && orders.some((order: any) =>
     cjDropshippingRuntime.isConfigured() &&
-    typeof order?.providerRequestId === 'string' &&
-    order.providerRequestId.trim().length > 0 &&
-    typeof order?.trackingNumber === 'string' &&
-    order.trackingNumber.trim().length > 0 &&
+    order?.source === 'live-provider' &&
+    typeof order?.providerRequestId === 'string' && order.providerRequestId.trim().length > 0 &&
+    typeof order?.cjOrderId === 'string' && order.cjOrderId.trim().length > 0 &&
+    typeof order?.trackingNumber === 'string' && order.trackingNumber.trim().length > 0 &&
     ['SUBMITTED', 'PROCESSING', 'DISPATCHED', 'DELIVERED'].includes(String(order.status))
   );
 }
@@ -294,81 +301,37 @@ export class ProductionReadinessAuditEngine {
     const orders = dbRuntime.get('liveOrders') || [];
     const cjLive = hasCJLiveEvidence();
     const whatsappLive = hasWhatsAppEvidence();
-
+    const cjEvidence = (cjDropshippingRuntime.getOrders() as any[]).find((order) =>
+      order?.source === 'live-provider' && typeof order?.providerRequestId === 'string' && order.providerRequestId.trim() &&
+      typeof order?.cjOrderId === 'string' && order.cjOrderId.trim() && typeof order?.trackingNumber === 'string' && order.trackingNumber.trim() &&
+      ['SUBMITTED', 'PROCESSING', 'DISPATCHED', 'DELIVERED'].includes(String(order.status))
+    );
+    const whatsappEvidence = getWhatsAppEvidence();
+    const attestationSecret = process.env.KCC_ALIVE_ATTESTATION_SECRET?.trim();
+    const fulfillment = cjEvidence && attestationSecret ? createKccAliveAttestation('fulfillment', {
+      source: 'live-provider', provider: 'CJ_DROPSHIPPING', providerOrderId: String(cjEvidence.cjOrderId), providerRequestId: String(cjEvidence.providerRequestId),
+      trackingNumber: String(cjEvidence.trackingNumber), status: String(cjEvidence.status) === 'DELIVERED' ? 'DELIVERED' : ['DISPATCHED', 'PROCESSING'].includes(String(cjEvidence.status)) ? 'SHIPPED' : 'SUBMITTED',
+      observedAt: String(cjEvidence.updatedAt || cjEvidence.submittedAt),
+    } as const, attestationSecret) : null;
+    const notification = whatsappEvidence && attestationSecret ? createKccAliveAttestation('notification', {
+      source: 'live-provider', channel: 'WHATSAPP', providerMessageId: String(whatsappEvidence.providerMessageId), providerRequestId: String(whatsappEvidence.providerRequestId),
+      status: 'DELIVERED', recipientConfirmed: true, observedAt: String(whatsappEvidence.deliveredAt || whatsappEvidence.observedAt),
+    } as const, attestationSecret) : null;
+    const kccAlive = evaluateKccAlive({ fulfillment, notification });
     const subsystems: SubsystemStatus[] = [
-      {
-        subsystem: 'Persistent Store Catalog',
-        category: 'Data & Persistence',
-        classification: catalog.length > 0 ? 'FUNCTIONAL' : 'PARTIAL',
-        mockEliminated: true,
-        autonomouslyVerified: catalog.length > 0,
-        description: 'Persistent catalog records are observable in dbStorage.',
-        evidenceMissing: catalog.length > 0 ? 'No implementation evidence missing.' : 'No catalog records observed.',
-        details: { recordCount: catalog.length }
-      },
-      {
-        subsystem: 'Order Persistence',
-        category: 'Payment & Checkout',
-        classification: orders.length > 0 ? 'FUNCTIONAL' : 'PARTIAL',
-        mockEliminated: true,
-        autonomouslyVerified: orders.length > 0,
-        description: 'Order records are observable in dbStorage.',
-        evidenceMissing: orders.length > 0 ? 'Live transaction proof remains external.' : 'No order records observed.',
-        details: { recordCount: orders.length }
-      },
-      {
-        subsystem: 'CJ Fulfillment Provider Boundary',
-        category: 'Supplier Fulfillment',
-        classification: cjLive ? 'FUNCTIONAL' : 'PARTIAL',
-        mockEliminated: true,
-        autonomouslyVerified: cjLive,
-        description: 'CJ production path is fail-closed and only counts provider-backed order evidence with request ID and tracking.',
-        evidenceMissing: cjLive ? 'None observed.' : 'CJ credentials plus provider-backed fulfillment evidence with request ID and tracking.',
-        details: { configured: cjDropshippingRuntime.isConfigured(), liveEvidence: cjLive }
-      },
-      {
-        subsystem: 'WhatsApp Notification Provider Boundary',
-        category: 'Customer Communication',
-        classification: whatsappLive ? 'FUNCTIONAL' : 'PARTIAL',
-        mockEliminated: true,
-        autonomouslyVerified: whatsappLive,
-        description: 'WhatsApp acceptance and signed webhook delivery are treated as separate evidence states.',
-        evidenceMissing: whatsappLive ? 'None observed.' : 'Signed webhook delivery evidence plus provider configuration.',
-        details: { configured: Boolean(process.env.META_WHATSAPP_LIVE_BEARER_TOKEN && process.env.META_WHATSAPP_PHONE_NUMBER_ID), deliveryEvidence: whatsappLive }
-      },
-      {
-        subsystem: 'KCC ALIVE Gate',
-        category: 'Core Agent Runtime',
-        classification: 'PARTIAL',
-        mockEliminated: true,
-        autonomouslyVerified: false,
-        description: 'Fail-closed readiness gate is active.',
-        evidenceMissing: 'Required fresh fulfillment and notification evidence.',
-        details: { kccAlive: false }
-      }
+      { subsystem: 'Persistent Store Catalog', category: 'Data & Persistence', classification: catalog.length > 0 ? 'FUNCTIONAL' : 'PARTIAL', mockEliminated: true, autonomouslyVerified: catalog.length > 0, description: 'Persistent catalog records are observable in dbStorage.', evidenceMissing: catalog.length > 0 ? 'No implementation evidence missing.' : 'No catalog records observed.', details: { recordCount: catalog.length } },
+      { subsystem: 'Order Persistence', category: 'Payment & Checkout', classification: orders.length > 0 ? 'FUNCTIONAL' : 'PARTIAL', mockEliminated: true, autonomouslyVerified: orders.length > 0, description: 'Order records are observable in dbStorage.', evidenceMissing: orders.length > 0 ? 'Provider verification remains required.' : 'No order records observed.', details: { recordCount: orders.length } },
+      { subsystem: 'CJ Fulfillment Provider Boundary', category: 'Supplier Fulfillment', classification: cjLive ? 'FUNCTIONAL' : 'PARTIAL', mockEliminated: true, autonomouslyVerified: cjLive, description: 'Only live-provider CJ order records with request ID and tracking count as fulfillment evidence.', evidenceMissing: cjLive ? 'None observed.' : 'Fresh live CJ fulfillment evidence is missing.', details: { configured: cjDropshippingRuntime.isConfigured(), liveEvidence: cjLive } },
+      { subsystem: 'WhatsApp Notification Provider Boundary', category: 'Customer Communication', classification: whatsappLive ? 'FUNCTIONAL' : 'PARTIAL', mockEliminated: true, autonomouslyVerified: whatsappLive, description: 'Only provider acceptance linked to signed webhook delivery evidence counts.', evidenceMissing: whatsappLive ? 'None observed.' : 'Fresh signed WhatsApp delivery evidence is missing.', details: { configured: Boolean(process.env.META_WHATSAPP_LIVE_BEARER_TOKEN?.trim() && process.env.META_WHATSAPP_PHONE_NUMBER_ID?.trim()), deliveryEvidence: whatsappLive } },
+      { subsystem: 'KCC ALIVE Gate', category: 'Core Agent Runtime', classification: kccAlive.kccAlive ? 'FUNCTIONAL' : 'PARTIAL', mockEliminated: true, autonomouslyVerified: kccAlive.kccAlive, description: 'ALIVE is true only when both independently verified evidence attestations pass signature and freshness checks.', evidenceMissing: kccAlive.kccAlive ? 'None observed.' : kccAlive.blockers.join('; '), details: { kccAlive: kccAlive.kccAlive, blockers: kccAlive.blockers } },
     ];
-
-    const kccAlive = evaluateKccAlive({ fulfillment: null, notification: null });
-    const backlogRecommendations = [
+    const backlogRecommendations = kccAlive.kccAlive ? [] : [
       { priority: 'P0', title: 'Obtain fresh provider-backed CJ fulfillment evidence', impact: 'Required for kccAlive=true.' },
       { priority: 'P0', title: 'Obtain fresh signed WhatsApp delivery evidence', impact: 'Required for kccAlive=true.' },
-      { priority: 'P1', title: 'Remove legacy simulated readiness wording outside this audit', impact: 'Prevents stale dashboards from overstating production readiness.' }
+      { priority: 'P0', title: 'Configure KCC_ALIVE_ATTESTATION_SECRET', impact: 'Required to attest and verify readiness evidence.' },
     ];
-
-    const mockFreeSubsystemsCount = subsystems.filter((s) => s.mockEliminated && s.autonomouslyVerified).length;
-    return {
-      timestamp: new Date().toISOString(),
-      overallStatus: kccAlive.kccAlive ? 'FUNCTIONAL_PENDING_LIVE_CREDENTIALS' : 'PRODUCTION_BLOCKED',
-      mockEliminationSummary: {
-        totalSubsystemsAudited: subsystems.length,
-        mockFreeSubsystemsCount,
-        mockFreePercentage: subsystems.length === 0 ? 0 : Number(((mockFreeSubsystemsCount / subsystems.length) * 100).toFixed(1))
-      },
-      subsystems,
-      launchChecklist: this.getLaunchReadinessChecklist(),
-      backlogRecommendations,
-      kccAlive
-    };
+    const mockFreeSubsystemsCount = subsystems.filter((subsystem) => subsystem.mockEliminated && subsystem.autonomouslyVerified).length;
+    return { timestamp: new Date().toISOString(), overallStatus: kccAlive.kccAlive ? 'FUNCTIONAL_PENDING_LIVE_CREDENTIALS' : 'PRODUCTION_BLOCKED', mockEliminationSummary: { totalSubsystemsAudited: subsystems.length, mockFreeSubsystemsCount, mockFreePercentage: Number(((mockFreeSubsystemsCount / subsystems.length) * 100).toFixed(1)) }, subsystems, launchChecklist: this.getLaunchReadinessChecklist(), backlogRecommendations, kccAlive };
   }
 }
 
