@@ -186,7 +186,8 @@ app.use((req: Request, res: Response, next) => {
     path === '/api/kcc/openapi.json' ||
     path.startsWith('/api/phase4/store/catalog') ||
     path.startsWith('/api/phase4/store/order') ||
-    path.startsWith('/api/paypal/webhook');
+    path.startsWith('/api/paypal/webhook') ||
+    path.startsWith('/api/whatsapp/webhook');
 
   if (isPublicApi) {
     return next();
@@ -1402,10 +1403,8 @@ app.get('/api/diagnostics/security-audit', (req, res) => {
 
 // 6. Subsystem Production Readiness Scoring Matrix (0-100)
 app.get('/api/diagnostics/readiness', (req, res) => {
-  res.json({
-    success: true,
-    readiness: diagnosticsCenter.getProductionReadiness()
-  });
+  const readiness = diagnosticsCenter.getProductionReadiness();
+  res.status(readiness.kccAlive ? 200 : 503).json({ success: readiness.kccAlive, readiness });
 });
 
 // ==========================================
@@ -1440,6 +1439,11 @@ app.get('/api/pilot/workflows', (req, res) => {
 
 // 4. Trigger Real Workflow Test Cycle with Timeline Recording
 app.post('/api/pilot/workflows/execute', async (req, res) => {
+  const audit = productionReadinessAuditEngine.getProductionReadinessAudit();
+  if (!audit.kccAlive.kccAlive) {
+    res.status(503).json({ success: false, status: 'PRODUCTION_BLOCKED', kccAlive: false, blockers: audit.kccAlive.blockers });
+    return;
+  }
   try {
     const { workflowName } = req.body;
     const name = workflowName || 'Pilot Order Fulfillment Workflow';
@@ -1506,13 +1510,9 @@ app.post('/api/pilot/workflows/execute', async (req, res) => {
 });
 
 // 5. Evidence-Based Production Readiness Calculation
-app.get('/api/pilot/readiness', async (req, res) => {
-  try {
-    const readiness = await pilotProductionEngine.getEvidenceBasedReadiness();
-    res.json({ success: true, readiness });
-  } catch (err: any) {
-    res.status(500).json({ success: false, error: err?.message });
-  }
+app.get('/api/pilot/readiness', (req, res) => {
+  const audit = productionReadinessAuditEngine.getProductionReadinessAudit();
+  res.status(audit.kccAlive.kccAlive ? 200 : 503).json({ success: audit.kccAlive.kccAlive, readiness: audit });
 });
 
 // ==========================================
@@ -2327,7 +2327,8 @@ function getKccHealthPayload() {
   const failedMissions = missions.filter(m => m.status === 'FAILED');
 
   // 7. Overall System Status
-  let overallStatus: 'HEALTHY' | 'DEGRADED' | 'UNHEALTHY' = 'HEALTHY';
+  const productionAudit = productionReadinessAuditEngine.getProductionReadinessAudit();
+  let overallStatus: 'HEALTHY' | 'DEGRADED' | 'UNHEALTHY' = productionAudit.kccAlive.kccAlive ? 'HEALTHY' : 'DEGRADED';
 
   if (dbStatus.status !== 'CONNECTED') {
     overallStatus = 'UNHEALTHY';
@@ -2355,7 +2356,7 @@ function getKccHealthPayload() {
       chatGptBridge: 'AUTHENTICATED'
     },
     subsystems: {
-      server: { status: 'UP', port: PORT, host: '0.0.0.0' },
+      server: { status: 'UP', port: 3000, host: '0.0.0.0' },
       database: dbStatus,
       autonomousAgentRuntime: {
         status: agentRuntimeStatus,
@@ -2375,6 +2376,11 @@ function getKccHealthPayload() {
         claude: claudeStatus,
         deterministicFallback: 'ONLINE'
       }
+    },
+    productionReadiness: {
+      status: productionAudit.overallStatus,
+      kccAlive: productionAudit.kccAlive.kccAlive,
+      blockers: productionAudit.kccAlive.blockers,
     },
     telemetry: {
       totalMissions: missions.length,

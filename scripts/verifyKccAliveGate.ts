@@ -102,4 +102,4 @@ assert.equal(real.kccAlive, true);
 assert.deepEqual(real.blockers, []);
 assert.deepEqual(real.evidence, { fulfillment: true, notification: true });
 
-console.log('KCC ALIVE gate proof passed: only valid attested live-provider evidence within trusted server-time freshness bounds can set kccAlive=true.');
+console.log('KCC ALIVE gate proof passed: only valid attested live-provider CJ fulfillment plus WhatsApp evidence within trusted server-time freshness bounds can set kccAlive=true.');

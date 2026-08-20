@@ -20,6 +20,8 @@ export interface CJProduct {
     stock: number;
   }>;
   syncedAt: string;
+  source: 'live-provider';
+  providerRequestId: string;
 }
 
 export interface CJOrderRequest {
@@ -54,6 +56,7 @@ export interface CJOrderRecord {
   providerRequestId?: string;
   submittedAt: string;
   updatedAt: string;
+  source: 'live-provider';
 }
 
 class CJDropshippingRuntime {
@@ -95,115 +98,68 @@ class CJDropshippingRuntime {
   }
 
   public async syncProducts(keyword = 'smart', limit = 10): Promise<CJProduct[]> {
-    let products: CJProduct[] = [];
+    if (!this.isConfigured()) {
+      throw new Error('CJ production credentials are missing; refusing synthetic catalog data');
+    }
 
-    if (this.isConfigured()) {
-      try {
-        const token = await this.getAccessToken();
-        const res = await fetch(`${this.baseUrl}/product/list?pageNum=1&pageSize=${limit}&keywords=${encodeURIComponent(keyword)}`, {
-          method: 'GET',
-          headers: { 'CJ-Access-Token': token }
-        });
+    const token = await this.getAccessToken();
+    const res = await fetch(`${this.baseUrl}/product/list?pageNum=1&pageSize=${limit}&keywords=${encodeURIComponent(keyword)}`, {
+      method: 'GET',
+      headers: { 'CJ-Access-Token': token }
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !Array.isArray(data?.data?.list)) {
+      throw new Error(`CJ product sync failed (${res.status}): ${data?.message || 'No provider catalog returned'}`);
+    }
 
-        if (res.ok) {
-          const data = await res.json();
-          if (data.data?.list) {
-            products = data.data.list.map((item: any) => {
-              const sellPrice = parseFloat(item.sellPrice || '29.99');
-              const costPrice = parseFloat(item.costPrice || '12.50');
-              const margin = sellPrice > 0 ? ((sellPrice - costPrice) / sellPrice) * 100 : 50;
-
-              return {
-                pid: item.pid || `CJ-P-${Date.now()}`,
-                productName: item.productNameEn || item.productName || 'CJ Premium Dropship Item',
-                productSku: item.productSku || `SKU-${Math.random().toString(36).substring(2, 7)}`,
-                categoryName: item.categoryName || 'Consumer Electronics',
-                productImage: item.productImage || 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=500&auto=format&fit=crop',
-                sellPrice,
-                costPrice,
-                netMarginPercentage: parseFloat(margin.toFixed(2)),
-                inventoryCount: item.inventory || 450,
-                supplierRiskScore: Math.floor(Math.random() * 15) + 5,
-                variants: [
-                  {
-                    vid: `VID-${item.pid || '1'}-A`,
-                    variantSku: `${item.productSku || 'SKU'}-BLK`,
-                    variantName: 'Default / Black',
-                    variantPrice: sellPrice,
-                    stock: item.inventory || 450
-                  }
-                ],
-                syncedAt: new Date().toISOString()
-              };
-            });
-          }
-        }
-      } catch (err) {
-        console.warn('[CJ Runtime] Live CJ sync failed; retaining non-production catalog fallback:', err);
+    const providerRequestId = String(data.requestId || res.headers.get('x-request-id') || '').trim();
+    if (!providerRequestId) throw new Error('CJ product sync returned no provider request ID');
+    const syncedAt = new Date().toISOString();
+    const products: CJProduct[] = data.data.list.map((item: any) => {
+      const requiredFields = ['pid', 'productNameEn', 'productSku', 'sellPrice', 'costPrice', 'inventory'];
+      if (requiredFields.some((field) => item?.[field] === undefined || item?.[field] === null || String(item[field]).trim() === '')) {
+        throw new Error('CJ product sync returned incomplete provider product data');
       }
-    }
-
-    if (products.length === 0) {
-      products = [
-        {
-          pid: 'CJ-P-889102',
-          productName: 'AI Smart Voice-Active Translator Earbuds Pro',
-          productSku: 'CJ-EARBUDS-PRO',
-          categoryName: 'Smart Wearables',
-          productImage: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=500&auto=format&fit=crop',
-          sellPrice: 89.99,
-          costPrice: 28.50,
-          netMarginPercentage: 68.33,
-          inventoryCount: 1240,
-          supplierRiskScore: 8,
-          variants: [
-            { vid: 'VID-889102-1', variantSku: 'CJ-EARBUDS-BLK', variantName: 'Matte Black', variantPrice: 89.99, stock: 800 },
-            { vid: 'VID-889102-2', variantSku: 'CJ-EARBUDS-WHT', variantName: 'Pearl White', variantPrice: 89.99, stock: 440 }
-          ],
-          syncedAt: new Date().toISOString()
-        },
-        {
-          pid: 'CJ-P-774019',
-          productName: 'Self-Cleaning Thermal Smart Hydration Bottle',
-          productSku: 'CJ-BOTTLE-SMART',
-          categoryName: 'Fitness & Lifestyle',
-          productImage: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=500&auto=format&fit=crop',
-          sellPrice: 54.50,
-          costPrice: 16.20,
-          netMarginPercentage: 70.28,
-          inventoryCount: 890,
-          supplierRiskScore: 12,
-          variants: [
-            { vid: 'VID-774019-1', variantSku: 'CJ-BOTTLE-SLV', variantName: 'Brushed Silver', variantPrice: 54.50, stock: 890 }
-          ],
-          syncedAt: new Date().toISOString()
-        },
-        {
-          pid: 'CJ-P-992301',
-          productName: 'Ultra-Quiet MagCharge Desk Ambient Lamp',
-          productSku: 'CJ-LAMP-MAG',
-          categoryName: 'Home & Office',
-          productImage: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=500&auto=format&fit=crop',
-          sellPrice: 65.00,
-          costPrice: 22.00,
-          netMarginPercentage: 66.15,
-          inventoryCount: 520,
-          supplierRiskScore: 6,
-          variants: [
-            { vid: 'VID-992301-1', variantSku: 'CJ-LAMP-WHT', variantName: 'Minimal White', variantPrice: 65.00, stock: 520 }
-          ],
-          syncedAt: new Date().toISOString()
-        }
-      ];
-    }
+      const variants = Array.isArray(item.variants) ? item.variants : [];
+      if (variants.length === 0) throw new Error(`CJ product ${item.pid} returned no provider variants`);
+      const sellPrice = Number(item.sellPrice);
+      const costPrice = Number(item.costPrice);
+      if (!Number.isFinite(sellPrice) || !Number.isFinite(costPrice) || sellPrice <= 0 || costPrice < 0) {
+        throw new Error(`CJ product ${item.pid} returned invalid pricing`);
+      }
+      const margin = ((sellPrice - costPrice) / sellPrice) * 100;
+      return {
+        pid: String(item.pid),
+        productName: String(item.productNameEn || item.productName),
+        productSku: String(item.productSku),
+        categoryName: String(item.categoryName || ''),
+        productImage: String(item.productImage || ''),
+        sellPrice,
+        costPrice,
+        netMarginPercentage: Number(margin.toFixed(2)),
+        inventoryCount: Number(item.inventory),
+        supplierRiskScore: Number(item.supplierRiskScore || 0),
+        variants: variants.map((variant: any) => ({
+          vid: String(variant.vid),
+          variantSku: String(variant.variantSku),
+          variantName: String(variant.variantName),
+          variantPrice: Number(variant.variantPrice),
+          stock: Number(variant.stock),
+        })),
+        syncedAt,
+        source: 'live-provider',
+        providerRequestId,
+      };
+    });
+    if (products.length === 0) throw new Error('CJ provider returned no catalog products; refusing synthetic catalog data');
 
     dbRuntime.set('cjProducts', products);
-    eventBus.publish('CJ.PRODUCTS.SYNCED', 'CJDropshippingRuntime', { count: products.length, source: this.isConfigured() ? 'live-or-fallback' : 'non-production-fallback' });
+    eventBus.publish('CJ.PRODUCTS.SYNCED', 'CJDropshippingRuntime', { count: products.length, source: 'live-provider', providerRequestId });
     return products;
   }
 
   public async syncInventory(): Promise<{ totalSkus: number; totalUnits: number; updatedAt: string }> {
-    let products = dbRuntime.get('cjProducts') || [];
+    let products = (dbRuntime.get('cjProducts') || []).filter((product: CJProduct) => product?.source === 'live-provider');
     if (products.length === 0) products = await this.syncProducts();
 
     const totalUnits = products.reduce((sum: number, p: CJProduct) => sum + p.inventoryCount, 0);
@@ -223,12 +179,13 @@ class CJDropshippingRuntime {
       throw new Error('At least one CJ product is required for fulfillment');
     }
 
-    const products = dbRuntime.get('cjProducts') || [];
+    const products = (dbRuntime.get('cjProducts') || []).filter((product: CJProduct) => product?.source === 'live-provider');
     const resolvedProducts = req.products.map((item) => {
       const match = products.find((p: CJProduct) => p.pid === item.pid);
-      const vid = item.vid || match?.variants?.[0]?.vid;
+      if (!match) throw new Error(`Product ${item.pid} is not backed by a live CJ catalog response`);
+      const vid = item.vid || match.variants?.[0]?.vid;
       if (!vid) throw new Error(`No CJ variant ID available for product ${item.pid}`);
-      return { ...item, vid };
+      return { ...item, vid, match };
     });
 
     const token = await this.getAccessToken();
@@ -272,10 +229,9 @@ class CJDropshippingRuntime {
       throw new Error(`CJ createOrderV2 failed (${res.status}): ${data?.message || 'No CJ order ID returned'}`);
     }
 
-    const totalCost = resolvedProducts.reduce((sum, item) => {
-      const match = products.find((p: CJProduct) => p.pid === item.pid);
-      return sum + (match?.costPrice || item.unitPrice * 0.4) * item.quantity;
-    }, 0);
+    const providerRequestId = String(data.requestId || res.headers.get('x-request-id') || '').trim();
+    if (!providerRequestId) throw new Error('CJ createOrderV2 returned no provider request ID');
+    const totalCost = resolvedProducts.reduce((sum, item) => sum + item.match.costPrice * item.quantity, 0);
 
     const cjOrderId = String(data.data.orderId);
     const orderRecord: CJOrderRecord = {
@@ -286,9 +242,10 @@ class CJDropshippingRuntime {
       shippingCountry: req.shippingCountry,
       totalCost: parseFloat(totalCost.toFixed(2)),
       paypalOrderId: req.paypalOrderId,
-      providerRequestId: data.requestId,
+      providerRequestId,
       submittedAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
+      source: 'live-provider'
     };
 
     const savedOrders = dbRuntime.get('cjOrders') || [];
@@ -342,8 +299,9 @@ class CJDropshippingRuntime {
       status: mappedStatus,
       trackingNumber: cj.logisticsTrackingNumber || cj.trackingNumber || current.trackingNumber,
       logisticsCarrier: cj.logisticsName || current.logisticsCarrier,
-      providerRequestId: data.requestId || current.providerRequestId,
-      updatedAt: new Date().toISOString()
+      providerRequestId: String(data.requestId || res.headers.get('x-request-id') || current.providerRequestId || '').trim(),
+      updatedAt: new Date().toISOString(),
+      source: 'live-provider'
     };
 
     if (existingIndex >= 0) savedOrders[existingIndex] = updatedRecord;
@@ -372,7 +330,7 @@ class CJDropshippingRuntime {
   }
 
   public getProducts(): CJProduct[] {
-    return dbRuntime.get('cjProducts') || [];
+    return (dbRuntime.get('cjProducts') || []).filter((product: CJProduct) => product?.source === 'live-provider');
   }
 
   public getOrders(): CJOrderRecord[] {

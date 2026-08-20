@@ -15,7 +15,9 @@
     "verify:production-readiness-truth": "tsx scripts/verifyProductionReadinessTruth.ts",
     "verify:server-entry-runtime": "tsx scripts/verifyServerEntryRuntime.ts",
     "verify:security-fail-closed": "tsx scripts/verifySecurityFailClosed.ts",
-    "verify:production-commerce-guard": "tsx scripts/verifyProductionCommerceGuard.ts"
+    "verify:production-commerce-guard": "tsx scripts/verifyProductionCommerceGuard.ts",
+    "verify:kcc-alive-gate": "tsx scripts/verifyKccAliveGate.ts",
+    "test": "tsx scripts/verifyProductionFailClosed.ts && npm run verify:kcc-alive-gate"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

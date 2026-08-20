@@ -4,6 +4,7 @@ import { eventBus } from './eventBus.js';
 import { dbRuntime } from './dbStorage.js';
 import { payPalRuntime } from './paypal.js';
 import { cjDropshippingRuntime } from './cjDropshipping.js';
+import { productionReadinessAuditEngine } from './productionReadinessAudit.js';
 
 export interface CredentialStatus {
   keyName: string;
@@ -77,7 +78,7 @@ class DiagnosticsCenter {
         keyName: 'PAYPAL_CLIENT_ID',
         configured: !!paypalId,
         maskedValue: mask(paypalId),
-        status: paypalId ? 'VALID' : 'WARNING_MOCK',
+        status: paypalId ? 'VALID' : 'MISSING',
         rotationRequired: false,
         lastVerifiedAt: new Date().toISOString()
       },
@@ -85,7 +86,7 @@ class DiagnosticsCenter {
         keyName: 'PAYPAL_CLIENT_SECRET',
         configured: !!paypalSecret,
         maskedValue: mask(paypalSecret),
-        status: paypalSecret ? 'VALID' : 'WARNING_MOCK',
+        status: paypalSecret ? 'VALID' : 'MISSING',
         rotationRequired: false,
         lastVerifiedAt: new Date().toISOString()
       },
@@ -93,7 +94,7 @@ class DiagnosticsCenter {
         keyName: 'CJ_DROPSHIPPING_API_KEY',
         configured: !!cjKey,
         maskedValue: mask(cjKey),
-        status: cjKey ? 'VALID' : 'WARNING_MOCK',
+        status: cjKey ? 'VALID' : 'MISSING',
         rotationRequired: false,
         lastVerifiedAt: new Date().toISOString()
       },
@@ -101,7 +102,7 @@ class DiagnosticsCenter {
         keyName: 'GEMINI_API_KEY',
         configured: !!geminiKey,
         maskedValue: mask(geminiKey),
-        status: geminiKey ? 'VALID' : 'WARNING_MOCK',
+        status: geminiKey ? 'VALID' : 'MISSING',
         rotationRequired: false,
         lastVerifiedAt: new Date().toISOString()
       }
@@ -112,7 +113,7 @@ class DiagnosticsCenter {
     return {
       rbacEnabled: true,
       secretStorageSecure: true, // Server-side process.env strictly isolated from frontend bundle
-      webhookValidationActive: true, // PayPal webhook signature verification active
+      webhookValidationActive: Boolean(process.env.META_WHATSAPP_APP_SECRET?.trim()), // Signed webhook evidence is inactive without Meta app secret
       jwtValidationActive: true, // Bearer token validation active on administrative routes
       rateLimitingEnabled: true, // Memory rate limiter active on API routes
       auditIntegrityVerified: true, // Event bus immutable trace chain
@@ -122,7 +123,27 @@ class DiagnosticsCenter {
     };
   }
 
-  public getProductionReadiness(): { overallScore: number; subsystems: ReadinessSubsystem[] } {
+  public getProductionReadiness(): { overallScore: number; overallStatus: string; kccAlive: boolean; blockers: string[]; subsystems: ReadinessSubsystem[] } {
+    const audit = productionReadinessAuditEngine.getProductionReadinessAudit();
+    const subsystems: ReadinessSubsystem[] = audit.subsystems.map((item) => ({
+      id: item.subsystem.toUpperCase().replace(/[^A-Z0-9]+/g, '_'),
+      name: item.subsystem,
+      score: item.autonomouslyVerified ? 100 : 0,
+      status: item.autonomouslyVerified ? 'PRODUCTION_READY' : 'CRITICAL_ACTION_NEEDED',
+      evidence: item.autonomouslyVerified ? ['Canonical production audit evidence present'] : [item.evidenceMissing],
+      justification: item.description,
+    }));
+    return {
+      overallScore: audit.kccAlive.kccAlive ? 100 : 0,
+      overallStatus: audit.overallStatus,
+      kccAlive: audit.kccAlive.kccAlive,
+      blockers: audit.kccAlive.blockers,
+      subsystems,
+    };
+  }
+
+  /* Legacy optimistic implementation retained below only as unreachable source history. */
+  private getProductionReadinessLegacy(): { overallScore: number; subsystems: ReadinessSubsystem[] } {
     const subsystems: ReadinessSubsystem[] = [
       {
         id: 'PAYPAL_RUNTIME',
