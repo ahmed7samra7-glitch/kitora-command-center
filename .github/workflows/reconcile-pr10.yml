@@ -1,0 +1,39 @@
+name: Reconcile PR10
+on:
+  push:
+    branches: [feat/kcc-real-provider-boundary]
+permissions:
+  contents: write
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Merge main and resolve known server conflict
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin main
+          if git merge --no-edit origin/main; then
+            :
+          else
+            conflicts="$(git diff --name-only --diff-filter=U)"
+            test "$conflicts" = "server.ts"
+            git checkout --ours -- server.ts
+            python - <<'PY'
+            from pathlib import Path
+            p=Path('server.ts'); s=p.read_text()
+            old="server: { status: 'UP', port: 3000, host: '0.0.0.0' }"
+            new="server: { status: 'UP', port: PORT, host: '0.0.0.0' }"
+            if old not in s: raise SystemExit('expected health port line missing')
+            p.write_text(s.replace(old,new,1))
+            PY
+            git add server.ts
+            git commit -m 'chore: reconcile PR #10 with main'
+          fi
+          git rm -f .github/workflows/reconcile-pr10.yml || true
+          git commit -m 'chore: remove temporary reconciliation workflow' || true
+          git push origin HEAD:feat/kcc-real-provider-boundary
