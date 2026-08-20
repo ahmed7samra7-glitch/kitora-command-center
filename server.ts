@@ -2355,7 +2355,7 @@ function getKccHealthPayload() {
       chatGptBridge: 'AUTHENTICATED'
     },
     subsystems: {
-      server: { status: 'UP', port: 3000, host: '0.0.0.0' },
+      server: { status: 'UP', port: PORT, host: '0.0.0.0' },
       database: dbStatus,
       autonomousAgentRuntime: {
         status: agentRuntimeStatus,
