@@ -23,7 +23,7 @@ const realFulfillment = {
 
 const realNotification = {
   source: 'live-provider' as const,
-  channel: 'EMAIL' as const,
+  channel: 'WHATSAPP' as const,
   providerMessageId: 'MSG-REAL-001',
   providerRequestId: 'REQ-MSG-REAL-001',
   status: 'DELIVERED' as const,
@@ -87,6 +87,13 @@ assert.equal(replayAttempt.kccAlive, false);
 assert.ok(replayAttempt.blockers.some((blocker) => blocker.includes('stale')));
 void historicalReferenceTime;
 
+const email = evaluateKccAlive({
+  fulfillment: createKccAliveAttestation('fulfillment', realFulfillment),
+  notification: createKccAliveAttestation('notification', { ...realNotification, channel: 'EMAIL' as never }),
+});
+assert.equal(email.kccAlive, false);
+assert.match(email.blockers.join('\n'), /channel must be WHATSAPP/);
+
 const real = evaluateKccAlive({
   fulfillment: createKccAliveAttestation('fulfillment', realFulfillment),
   notification: createKccAliveAttestation('notification', realNotification),
@@ -95,4 +102,4 @@ assert.equal(real.kccAlive, true);
 assert.deepEqual(real.blockers, []);
 assert.deepEqual(real.evidence, { fulfillment: true, notification: true });
 
-console.log('KCC ALIVE gate proof passed: only valid attested live-provider evidence within trusted server-time freshness bounds can set kccAlive=true.');
+console.log('KCC ALIVE gate proof passed: only valid attested live-provider CJ fulfillment plus WhatsApp evidence within trusted server-time freshness bounds can set kccAlive=true.');
