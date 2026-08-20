@@ -59,25 +59,20 @@ export function recordWhatsAppDeliveryEvidence(
     signatureValid: true,
   };
 
-  const updated = history.map((item: any) =>
-    item.providerMessageId === recorded.providerMessageId
-      ? { ...item, deliveryConfirmed: true, deliveryStatus: recorded.status, deliveredAt: recorded.occurredAt, webhookReceivedAt: recorded.webhookReceivedAt, signatureValid: true, source: 'whatsapp-webhook' }
-      : item,
-  );
-  if (!updated.some((item: any) => item.providerMessageId === recorded.providerMessageId && item.source === 'whatsapp-webhook')) {
-    updated.unshift({
-      provider: 'WHATSAPP_CLOUD_API',
-      providerMessageId: recorded.providerMessageId,
-      recipientPhone: recorded.recipientPhone,
-      deliveryConfirmed: true,
-      deliveryStatus: recorded.status,
-      deliveredAt: recorded.occurredAt,
-      webhookReceivedAt: recorded.webhookReceivedAt,
-      signatureValid: true,
-      source: 'whatsapp-webhook',
-    });
-  }
-  dbRuntime.set('notificationEvidence', updated.slice(0, 200));
+  const webhookEntry = {
+    provider: 'WHATSAPP_CLOUD_API',
+    providerMessageId: recorded.providerMessageId,
+    providerRequestId: outbound.providerRequestId,
+    recipientPhone: recorded.recipientPhone,
+    deliveryConfirmed: true,
+    deliveryStatus: recorded.status,
+    deliveredAt: recorded.occurredAt,
+    observedAt: recorded.occurredAt,
+    webhookReceivedAt: recorded.webhookReceivedAt,
+    signatureValid: true,
+    source: 'whatsapp-webhook',
+  };
+  dbRuntime.set('notificationEvidence', [webhookEntry, ...history].slice(0, 200));
 
   return recorded;
 }
