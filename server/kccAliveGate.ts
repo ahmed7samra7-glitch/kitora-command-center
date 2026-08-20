@@ -12,7 +12,7 @@ export type LiveFulfillmentEvidence = {
 
 export type LiveNotificationEvidence = {
   source: 'live-provider';
-  channel: 'WHATSAPP' | 'EMAIL';
+  channel: 'WHATSAPP';
   providerMessageId: string;
   providerRequestId: string;
   status: 'SENT' | 'DELIVERED';
@@ -113,7 +113,7 @@ function validateNotification(attestation: KccAliveInput['notification'], refere
   if (blockers.length > 0) return blockers;
   const evidence = attestation!.evidence;
   if (evidence.source !== 'live-provider') blockers.push('notification evidence is not marked live-provider');
-  if (!['WHATSAPP', 'EMAIL'].includes(String(evidence.channel))) blockers.push('notification channel is not supported');
+  if (evidence.channel !== 'WHATSAPP') blockers.push('notification channel must be WHATSAPP for KCC ALIVE');
   if (!hasText(evidence.providerMessageId)) blockers.push('provider notification message ID is missing');
   if (!hasText(evidence.providerRequestId)) blockers.push('provider notification request ID is missing');
   if (!['SENT', 'DELIVERED'].includes(String(evidence.status))) blockers.push('notification status is not a live-provider status');
