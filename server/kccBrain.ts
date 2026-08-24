@@ -52,38 +52,32 @@ export class KCCBrain {
     if (!existing || Object.keys(existing).length === 0) {
       const defaultPrompts: Record<string, PromptRegistryEntry> = {
         PRODUCT_HUNTER: {
-          agentId: 'PRODUCT_HUNTER',
-          name: 'Autonomous Product Sourcing Hunter',
+          agentId: 'PRODUCT_HUNTER', name: 'Autonomous Product Sourcing Hunter',
           systemPrompt: `You are KITORA's Lead Autonomous Product Sourcing Hunter. Analyze e-commerce viral trends, calculate net profit margins (target >= 40%), evaluate shipping velocity, and return high-demand winning product recommendations.`,
           targetModel: 'auto', version: 1, updatedAt: new Date().toISOString()
         },
         MARKETING_COPYWRITER: {
-          agentId: 'MARKETING_COPYWRITER',
-          name: 'High-Conversion Ads & Copywriting Specialist',
+          agentId: 'MARKETING_COPYWRITER', name: 'High-Conversion Ads & Copywriting Specialist',
           systemPrompt: `You are KITORA's Direct-Response Marketing Copywriter. Create high-converting Meta and Google ad headlines, primary text, target audience segments, and SEO product descriptions designed to drive immediate conversions.`,
           targetModel: 'auto', version: 1, updatedAt: new Date().toISOString()
         },
         SEO_OPTIMIZER: {
-          agentId: 'SEO_OPTIMIZER',
-          name: 'Store Catalog SEO Optimizer',
+          agentId: 'SEO_OPTIMIZER', name: 'Store Catalog SEO Optimizer',
           systemPrompt: `You are KITORA's E-Commerce SEO Specialist. Optimize product titles, meta descriptions, image alt tags, and structural JSON-LD metadata for maximum search engine indexation.`,
           targetModel: 'auto', version: 1, updatedAt: new Date().toISOString()
         },
         PRICING_ENGINE: {
-          agentId: 'PRICING_ENGINE',
-          name: 'Dynamic Pricing & Margin Engine',
+          agentId: 'PRICING_ENGINE', name: 'Dynamic Pricing & Margin Engine',
           systemPrompt: `You are KITORA's Pricing Strategy AI. Calculate retail pricing based on supplier cost, shipping overhead, payment processing fees (PayPal 3.49% + $0.49), and target net margin percentage.`,
           targetModel: 'auto', version: 1, updatedAt: new Date().toISOString()
         },
         CUSTOMER_SERVICE: {
-          agentId: 'CUSTOMER_SERVICE',
-          name: 'WhatsApp & Email Customer Support AI',
+          agentId: 'CUSTOMER_SERVICE', name: 'WhatsApp & Email Customer Support AI',
           systemPrompt: `You are KITORA's Autonomous Customer Support Representative. Craft empathetic, helpful, and professional responses for order tracking, shipping updates, and customer inquiries.`,
           targetModel: 'auto', version: 1, updatedAt: new Date().toISOString()
         },
         EXECUTIVE_AUDITOR: {
-          agentId: 'EXECUTIVE_AUDITOR',
-          name: 'Autonomous Business Operations Auditor',
+          agentId: 'EXECUTIVE_AUDITOR', name: 'Autonomous Business Operations Auditor',
           systemPrompt: `You are KCC Brain's Executive Operations Auditor. Monitor store health, inventory levels, order fulfillment speed, and financial net revenue to provide concise daily owner digests.`,
           targetModel: 'auto', version: 1, updatedAt: new Date().toISOString()
         }
@@ -104,22 +98,12 @@ export class KCCBrain {
   public updatePrompt(agentId: string, systemPrompt: string, targetModel?: any): PromptRegistryEntry {
     const registry = this.getPromptRegistry();
     const current = registry[agentId] || {
-      agentId,
-      name: `${agentId} Agent`,
-      systemPrompt: '',
-      targetModel: 'auto',
-      version: 0,
-      updatedAt: new Date().toISOString()
+      agentId, name: `${agentId} Agent`, systemPrompt: '', targetModel: 'auto', version: 0, updatedAt: new Date().toISOString()
     };
-
     const updated: PromptRegistryEntry = {
-      ...current,
-      systemPrompt,
-      targetModel: targetModel || current.targetModel,
-      version: current.version + 1,
-      updatedAt: new Date().toISOString()
+      ...current, systemPrompt, targetModel: targetModel || current.targetModel,
+      version: current.version + 1, updatedAt: new Date().toISOString()
     };
-
     registry[agentId] = updated;
     dbRuntime.set('kccPromptRegistry', registry);
     return updated;
@@ -142,7 +126,6 @@ export class KCCBrain {
 
     let requiresOwnerApproval = false;
     let approvalReason: string | undefined;
-
     if (contextInfo && ((contextInfo.sensitivityScore && contextInfo.sensitivityScore > 0.8) || (contextInfo.costUSD && contextInfo.costUSD > 100))) {
       requiresOwnerApproval = true;
       approvalReason = `Action sensitivity score (${contextInfo.sensitivityScore || 0}) or cost ($${contextInfo.costUSD || 0}) exceeds autonomous zero-touch threshold.`;
@@ -161,39 +144,38 @@ export class KCCBrain {
       requiredTools: ['CODE', 'QA', 'SECURITY'].some(kw => agentId.includes(kw)) ? ['code_editor', 'terminal'] : ['web_search'],
       approvalLevel: requiresOwnerApproval ? 'REQUIRES_OWNER' : 'AUTONOMOUS',
       deadline: new Date(Date.now() + 180000).toISOString(),
-      status: 'QUEUED',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      auditLogs: [...auditTrail]
+      status: 'QUEUED', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), auditLogs: [...auditTrail]
     };
 
     const selectedAdapter = providerSelectionEngine.selectBestProvider(universalTask);
     auditTrail.push(`[Provider Selection Engine] Routed task to optimal adapter: '${selectedAdapter.providerId}'`);
+
+    // The deterministic adapter is a legacy compatibility component, not a real AI provider.
+    // KCC Brain must never use it to manufacture a successful execution when no live provider is available.
+    if (selectedAdapter.providerId === 'deterministic') {
+      auditTrail.push('[Provider Gateway] No live AI provider is available. Deterministic fallback is blocked fail-closed.');
+      const result: BrainDecisionResult = {
+        decisionId, agentId, selectedProvider: 'deterministic', selectedModel: 'deterministic-engine-v1',
+        status: 'BLOCKED', requiresOwnerApproval, approvalReason, shouldRetry: true, output: null,
+        executionTimeMs: Date.now() - start, quotaCooloffActive: false, auditTrail
+      };
+      this.decisionLogs.unshift(result);
+      if (this.decisionLogs.length > 50) this.decisionLogs.pop();
+      return result;
+    }
 
     const response = await selectedAdapter.executeTask(universalTask);
     const selectedProvider: 'gemini' | 'openai' | 'claude' | 'deterministic' = selectedAdapter.providerId as any;
     const selectedModel = response.modelUsed;
     const shouldRetry = response.status === 'FAILED';
 
-    // Fail closed: provider failure, missing evidence, or an inconsistent provider response
-    // must never become a successful deterministic fallback.
     if (response.status !== 'COMPLETED') {
       auditTrail.push(`[Provider Gateway] Execution failed via ${selectedProvider}: ${response.error || 'provider returned FAILED'}. No deterministic fallback applied.`);
     } else if (!response.evidence || response.evidence.status !== 'COMPLETED') {
-      auditTrail.push(`[Provider Gateway] Provider returned COMPLETED without valid completion evidence. Result rejected fail-closed.`);
+      auditTrail.push('[Provider Gateway] Provider returned COMPLETED without valid completion evidence. Result rejected fail-closed.');
       const result: BrainDecisionResult = {
-        decisionId,
-        agentId,
-        selectedProvider,
-        selectedModel,
-        status: 'FAILED',
-        requiresOwnerApproval,
-        approvalReason,
-        shouldRetry: true,
-        output: null,
-        executionTimeMs: Date.now() - start,
-        quotaCooloffActive: false,
-        auditTrail
+        decisionId, agentId, selectedProvider, selectedModel, status: 'FAILED', requiresOwnerApproval, approvalReason,
+        shouldRetry: true, output: null, executionTimeMs: Date.now() - start, quotaCooloffActive: false, auditTrail
       };
       this.decisionLogs.unshift(result);
       if (this.decisionLogs.length > 50) this.decisionLogs.pop();
@@ -203,20 +185,12 @@ export class KCCBrain {
     }
 
     const result: BrainDecisionResult = {
-      decisionId,
-      agentId,
-      selectedProvider,
-      selectedModel,
+      decisionId, agentId, selectedProvider, selectedModel,
       status: response.status === 'COMPLETED' ? 'COMPLETED' : 'FAILED',
-      requiresOwnerApproval,
-      approvalReason,
-      shouldRetry,
+      requiresOwnerApproval, approvalReason, shouldRetry,
       output: response.status === 'COMPLETED' ? response.output : null,
-      executionTimeMs: Date.now() - start,
-      quotaCooloffActive: false,
-      auditTrail
+      executionTimeMs: Date.now() - start, quotaCooloffActive: false, auditTrail
     };
-
     this.decisionLogs.unshift(result);
     if (this.decisionLogs.length > 50) this.decisionLogs.pop();
     return result;
