@@ -129,18 +129,38 @@ export class KCCRealityVerifier {
         evidence.push('Workspace manifest check failed.');
       }
     } else if (method === 'API_CHECK') {
-      // Check CJ Orders or Store Catalog in dbRuntime
-      const catalog = dbRuntime.get('storeCatalog') || [];
-      const cjOrders = dbRuntime.get('cjOrders') || [];
-      evidence.push(`Verified runtime DB storage: Catalog size = ${catalog.length}, CJ synced orders = ${cjOrders.length}.`);
-      if (executionOutput && executionOutput.kitoraInspection) {
-        evidence.push(`Verified Live KITORA Store (${executionOutput.kitoraInspection.storeUrl}): HTTP Status = ${executionOutput.kitoraInspection.httpStatusCode || 200}, Live Accessible = ${executionOutput.kitoraInspection.liveHttpAccessible}.`);
+      const inspection = executionOutput?.kitoraInspection;
+      const hasLiveInspection = Boolean(
+        inspection?.liveHttpAccessible === true &&
+        inspection?.checkoutStatus === 'HEALTHY' &&
+        typeof inspection?.storeUrl === 'string' &&
+        inspection.storeUrl.trim()
+      );
+      const hasProviderEvidence = Boolean(
+        executionOutput?.externalEvidence === true &&
+        typeof executionOutput?.providerRequestId === 'string' &&
+        executionOutput.providerRequestId.trim()
+      );
+      if (!hasLiveInspection && !hasProviderEvidence) {
+        verified = false;
+        confidenceScore = 0.0;
+        evidence.push('API verification rejected: no operation-specific live inspection or provider request evidence.');
+      } else if (hasLiveInspection) {
+        evidence.push(`Verified Live KITORA Store (${inspection.storeUrl}): HTTP Status = ${inspection.httpStatusCode}, checkout status = ${inspection.checkoutStatus}.`);
+      } else {
+        evidence.push(`Verified external provider request ${executionOutput.providerRequestId}.`);
       }
     } else if (method === 'PAYMENT_STATE') {
-      const orders = dbRuntime.get('paypalOrders') || [];
-      evidence.push(`Verified PayPal payment gateway orders count = ${orders.length}.`);
+      const paymentEvidence = executionOutput?.paymentEvidence;
+      if (!paymentEvidence || paymentEvidence.provider !== 'PAYPAL' || paymentEvidence.status !== 'COMPLETED' || typeof paymentEvidence.orderId !== 'string' || !paymentEvidence.orderId.trim() || typeof paymentEvidence.captureId !== 'string' || !paymentEvidence.captureId.trim()) {
+        verified = false;
+        confidenceScore = 0.0;
+        evidence.push('Payment verification rejected: no provider-backed PayPal capture evidence tied to this order.');
+      } else {
+        evidence.push(`Verified PayPal capture ${paymentEvidence.captureId} for order ${paymentEvidence.orderId}.`);
+      }
     } else if (method === 'AI_AUDIT') {
-      const hasContent = executionOutput && executionOutput.success !== false && (executionOutput.output || executionOutput.result || executionOutput.message || executionOutput.provider);
+      const hasContent = executionOutput && executionOutput.success !== false && (executionOutput.output || executionOutput.result || executionOutput.message);
       if (hasContent) {
         evidence.push('AI output passed safety and schema compliance validation checks.');
       } else {
@@ -151,7 +171,7 @@ export class KCCRealityVerifier {
       }
     } else {
       // CONTENT_VERIFY
-      const hasContent = executionOutput && executionOutput.success !== false && (executionOutput.output || executionOutput.result || executionOutput.message || executionOutput.provider);
+      const hasContent = executionOutput && executionOutput.success !== false && (executionOutput.output || executionOutput.result || executionOutput.message);
       if (hasContent) {
         evidence.push('Content length and semantic structure verified against goal requirements.');
       } else {
