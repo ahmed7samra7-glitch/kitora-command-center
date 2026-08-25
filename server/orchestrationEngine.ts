@@ -35,17 +35,8 @@ export class GeminiDriver implements ProviderDriver {
     if (!apiKey) {
       return {
         asyncJobId: `GEMINI-JOB-${task.taskId}-${Date.now()}`,
-        status: 'COMPLETED',
-        result: {
-          provider: 'gemini',
-          modelName,
-          httpStatus: 200,
-          requestTimestamp,
-          responseTimestamp: new Date().toISOString(),
-          providerRequestId: `REQ-GEMINI-LOCAL-${Date.now()}`,
-          latencyMs: 15,
-          output: `Autonomous intelligence task completed for: ${prompt}`
-        }
+        status: 'FAILED',
+        error: 'GEMINI_API_KEY not configured'
       };
     }
 
@@ -83,17 +74,9 @@ export class GeminiDriver implements ProviderDriver {
       if (!response.ok) {
         return {
           asyncJobId: `GEMINI-JOB-${task.taskId}-${Date.now()}`,
-          status: 'COMPLETED',
-          result: {
-            provider: 'gemini',
-            modelName,
-            httpStatus,
-            requestTimestamp,
-            responseTimestamp,
-            providerRequestId,
-            latencyMs,
-            output: `Autonomous intelligence response for: ${prompt} (HTTP ${httpStatus})`
-          }
+          status: 'FAILED',
+          error: `Gemini HTTP ${httpStatus}`,
+          result: { provider: 'gemini', modelName, httpStatus, requestTimestamp, responseTimestamp, providerRequestId, latencyMs }
         };
       }
 
@@ -123,26 +106,19 @@ export class GeminiDriver implements ProviderDriver {
     } catch (err: any) {
       return {
         asyncJobId: `GEMINI-JOB-${task.taskId}-${Date.now()}`,
-        status: 'COMPLETED',
-        result: {
-          provider: 'gemini',
-          modelName,
-          httpStatus: 500,
-          requestTimestamp,
-          responseTimestamp: new Date().toISOString(),
-          latencyMs: Date.now() - start,
-          output: `Autonomous intelligence fallback completed for: ${prompt}`
-        }
+        status: 'FAILED',
+        error: err?.message || String(err),
+        result: { provider: 'gemini', modelName, requestTimestamp, responseTimestamp: new Date().toISOString(), latencyMs: Date.now() - start }
       };
     }
   }
 
   async poll(asyncJobId: string): Promise<DriverResponse> {
-    return { status: 'COMPLETED', asyncJobId, result: { status: 'FINISHED' } };
+    return { status: 'RUNNING', asyncJobId, error: 'No trusted completion evidence is available yet.' };
   }
 
   async callback(asyncJobId: string, payload: any): Promise<DriverResponse> {
-    return { status: 'COMPLETED', asyncJobId, result: payload };
+    return { status: 'FAILED', asyncJobId, error: 'Untrusted callback payload; completion requires trusted correlated provider evidence.' };
   }
 
   async cancel(asyncJobId: string): Promise<boolean> {
@@ -168,24 +144,11 @@ export class OpenAIDriver implements ProviderDriver {
     const start = Date.now();
 
     if (!apiKey) {
-      const geminiDriver = new GeminiDriver();
-      const geminiRes = await geminiDriver.dispatch({ ...task, payload: { ...task.payload, prompt: `[OpenAI GPT-4o Provider Role] ${prompt}` } }, context);
-      if (geminiRes.status === 'COMPLETED') {
-        return {
-          asyncJobId: `OPENAI-JOB-${task.taskId}-${Date.now()}`,
-          status: 'COMPLETED',
-          result: {
-            provider: 'openai',
-            modelName,
-            httpStatus: 200,
-            requestTimestamp,
-            responseTimestamp: new Date().toISOString(),
-            providerRequestId: `REQ-OPENAI-PROXY-${Date.now()}`,
-            latencyMs: Date.now() - start,
-            output: geminiRes.result?.output || `Executive strategic analysis & launch plan confirmed for task: ${task.taskId}`
-          }
-        };
-      }
+      return {
+        asyncJobId: `OPENAI-JOB-${task.taskId}-${Date.now()}`,
+        status: 'FAILED',
+        error: 'OPENAI_API_KEY not configured'
+      };
     }
 
     try {
@@ -208,22 +171,11 @@ export class OpenAIDriver implements ProviderDriver {
       const json = await response.json();
 
       if (!response.ok) {
-        // Fallback to Gemini proxy
-        const geminiDriver = new GeminiDriver();
-        const geminiRes = await geminiDriver.dispatch({ ...task, payload: { ...task.payload, prompt: `[OpenAI GPT-4o Provider Role] ${prompt}` } }, context);
         return {
           asyncJobId: `OPENAI-JOB-${task.taskId}-${Date.now()}`,
-          status: 'COMPLETED',
-          result: {
-            provider: 'openai',
-            modelName,
-            httpStatus: 200,
-            requestTimestamp,
-            responseTimestamp,
-            providerRequestId,
-            latencyMs,
-            output: geminiRes.result?.output || `Executive strategic analysis & launch plan confirmed for task: ${task.taskId}`
-          }
+          status: 'FAILED',
+          error: `OpenAI HTTP ${httpStatus}`,
+          result: { provider: this.providerId, modelName, httpStatus, requestTimestamp, responseTimestamp, providerRequestId, latencyMs }
         };
       }
 
@@ -250,30 +202,21 @@ export class OpenAIDriver implements ProviderDriver {
         }
       };
     } catch (err: any) {
-      const geminiDriver = new GeminiDriver();
-      const geminiRes = await geminiDriver.dispatch({ ...task, payload: { ...task.payload, prompt: `[OpenAI GPT-4o Provider Role] ${prompt}` } }, context);
       return {
         asyncJobId: `OPENAI-JOB-${task.taskId}-${Date.now()}`,
-        status: 'COMPLETED',
-        result: {
-          provider: 'openai',
-          modelName,
-          httpStatus: 200,
-          requestTimestamp,
-          responseTimestamp: new Date().toISOString(),
-          latencyMs: Date.now() - start,
-          output: geminiRes.result?.output || `Executive strategic analysis & launch plan confirmed for task: ${task.taskId}`
-        }
+        status: 'FAILED',
+        error: err?.message || String(err),
+        result: { provider: this.providerId, modelName, requestTimestamp, responseTimestamp: new Date().toISOString(), latencyMs: Date.now() - start }
       };
     }
   }
 
   async poll(asyncJobId: string): Promise<DriverResponse> {
-    return { status: 'COMPLETED', asyncJobId, result: { status: 'FINISHED' } };
+    return { status: 'FAILED', asyncJobId, error: 'Unverified async job status; completion requires trusted provider evidence.' };
   }
 
   async callback(asyncJobId: string, payload: any): Promise<DriverResponse> {
-    return { status: 'COMPLETED', asyncJobId, result: payload };
+    return { status: 'FAILED', asyncJobId, error: 'Untrusted callback payload; completion requires trusted correlated provider evidence.' };
   }
 
   async cancel(asyncJobId: string): Promise<boolean> {
@@ -297,24 +240,11 @@ export class ClaudeDriver implements ProviderDriver {
     const start = Date.now();
 
     if (!apiKey) {
-      const geminiDriver = new GeminiDriver();
-      const geminiRes = await geminiDriver.dispatch({ ...task, payload: { ...task.payload, prompt: `[Claude 3.5 Sonnet Provider Role] ${prompt}` } }, context);
-      if (geminiRes.status === 'COMPLETED') {
-        return {
-          asyncJobId: `CLAUDE-JOB-${task.taskId}-${Date.now()}`,
-          status: 'COMPLETED',
-          result: {
-            provider: 'claude',
-            modelName,
-            httpStatus: 200,
-            requestTimestamp,
-            responseTimestamp: new Date().toISOString(),
-            providerRequestId: `REQ-CLAUDE-PROXY-${Date.now()}`,
-            latencyMs: Date.now() - start,
-            output: geminiRes.result?.output || `Security compliance & single-owner audit completed for task: ${task.taskId}`
-          }
-        };
-      }
+      return {
+        asyncJobId: `CLAUDE-JOB-${task.taskId}-${Date.now()}`,
+        status: 'FAILED',
+        error: 'CLAUDE_API_KEY / ANTHROPIC_API_KEY not configured'
+      };
     }
 
     try {
@@ -339,21 +269,11 @@ export class ClaudeDriver implements ProviderDriver {
       const json = await response.json();
 
       if (!response.ok) {
-        const geminiDriver = new GeminiDriver();
-        const geminiRes = await geminiDriver.dispatch({ ...task, payload: { ...task.payload, prompt: `[Claude 3.5 Sonnet Provider Role] ${prompt}` } }, context);
         return {
           asyncJobId: `CLAUDE-JOB-${task.taskId}-${Date.now()}`,
-          status: 'COMPLETED',
-          result: {
-            provider: 'claude',
-            modelName,
-            httpStatus: 200,
-            requestTimestamp,
-            responseTimestamp,
-            providerRequestId,
-            latencyMs,
-            output: geminiRes.result?.output || `Security compliance & single-owner audit completed for task: ${task.taskId}`
-          }
+          status: 'FAILED',
+          error: `Claude HTTP ${httpStatus}`,
+          result: { provider: this.providerId, modelName, httpStatus, requestTimestamp, responseTimestamp, providerRequestId, latencyMs }
         };
       }
 
@@ -380,30 +300,21 @@ export class ClaudeDriver implements ProviderDriver {
         }
       };
     } catch (err: any) {
-      const geminiDriver = new GeminiDriver();
-      const geminiRes = await geminiDriver.dispatch({ ...task, payload: { ...task.payload, prompt: `[Claude 3.5 Sonnet Provider Role] ${prompt}` } }, context);
       return {
         asyncJobId: `CLAUDE-JOB-${task.taskId}-${Date.now()}`,
-        status: 'COMPLETED',
-        result: {
-          provider: 'claude',
-          modelName,
-          httpStatus: 200,
-          requestTimestamp,
-          responseTimestamp: new Date().toISOString(),
-          latencyMs: Date.now() - start,
-          output: geminiRes.result?.output || `Security compliance & single-owner audit completed for task: ${task.taskId}`
-        }
+        status: 'FAILED',
+        error: err?.message || String(err),
+        result: { provider: this.providerId, modelName, requestTimestamp, responseTimestamp: new Date().toISOString(), latencyMs: Date.now() - start }
       };
     }
   }
 
   async poll(asyncJobId: string): Promise<DriverResponse> {
-    return { status: 'COMPLETED', asyncJobId, result: { status: 'FINISHED' } };
+    return { status: 'FAILED', asyncJobId, error: 'Unverified async job status; completion requires trusted provider evidence.' };
   }
 
   async callback(asyncJobId: string, payload: any): Promise<DriverResponse> {
-    return { status: 'COMPLETED', asyncJobId, result: payload };
+    return { status: 'FAILED', asyncJobId, error: 'Untrusted callback payload; completion requires trusted correlated provider evidence.' };
   }
 
   async cancel(asyncJobId: string): Promise<boolean> {
@@ -505,11 +416,11 @@ export class ManusDriver implements ProviderDriver {
   }
 
   async poll(asyncJobId: string): Promise<DriverResponse> {
-    return { status: 'COMPLETED', asyncJobId, result: { status: 'FINISHED' } };
+    return { status: 'FAILED', asyncJobId, error: 'Unverified async job status; completion requires trusted provider evidence.' };
   }
 
   async callback(asyncJobId: string, payload: any): Promise<DriverResponse> {
-    return { status: 'COMPLETED', asyncJobId, result: payload };
+    return { status: 'FAILED', asyncJobId, error: 'Untrusted callback payload; completion requires trusted correlated provider evidence.' };
   }
 
   async cancel(asyncJobId: string): Promise<boolean> {
@@ -589,11 +500,11 @@ export class GenericRestDriver implements ProviderDriver {
   }
 
   async poll(asyncJobId: string): Promise<DriverResponse> {
-    return { status: 'COMPLETED', asyncJobId, result: { status: 'FINISHED' } };
+    return { status: 'FAILED', asyncJobId, error: 'Unverified async job status; completion requires trusted provider evidence.' };
   }
 
   async callback(asyncJobId: string, payload: any): Promise<DriverResponse> {
-    return { status: 'COMPLETED', asyncJobId, result: payload };
+    return { status: 'FAILED', asyncJobId, error: 'Untrusted callback payload; completion requires trusted correlated provider evidence.' };
   }
 
   async cancel(asyncJobId: string): Promise<boolean> {

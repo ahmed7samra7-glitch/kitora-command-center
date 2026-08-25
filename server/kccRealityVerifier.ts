@@ -26,6 +26,21 @@ export class KCCRealityVerifier {
 
     let resultProof: VerificationProof;
 
+    // A downstream verifier must never certify an execution that explicitly failed.
+    // Method-specific checks (especially API_CHECK/PAYMENT_STATE) may otherwise
+    // observe unrelated healthy state and accidentally promote the failed task.
+    if (!executionOutput || executionOutput.success === false) {
+      resultProof = {
+        verified: false,
+        confidenceScore: 0.0,
+        verificationMethod: method,
+        evidence: [`EXECUTION_REJECTED: Provider execution did not produce a successful result. ${executionOutput?.error || 'Missing execution output.'}`],
+        verifiedAt: new Date().toISOString()
+      };
+      this.auditLogs.push(resultProof);
+      return resultProof;
+    }
+
     // Rule 5: Provider returns SUCCESS with malformed or false evidence
     if (executionOutput && (executionOutput.malformedEvidence === true || executionOutput.falseEvidence === true || executionOutput.contradictionDetected === true)) {
       resultProof = {

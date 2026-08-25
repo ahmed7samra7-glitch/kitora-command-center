@@ -16,6 +16,7 @@ export interface BrainDecisionResult {
   agentId: string;
   selectedProvider: 'gemini' | 'openai' | 'claude' | 'deterministic';
   selectedModel: string;
+  status: 'COMPLETED' | 'FAILED' | 'BLOCKED';
   requiresOwnerApproval: boolean;
   approvalReason?: string;
   shouldRetry: boolean;
@@ -46,58 +47,39 @@ export class KCCBrain {
     }
   }
 
-  // 1. PROMPT REGISTRY (Persisted in dbStorage)
   public seedPromptRegistry() {
     const existing = dbRuntime.get('kccPromptRegistry');
     if (!existing || Object.keys(existing).length === 0) {
       const defaultPrompts: Record<string, PromptRegistryEntry> = {
         PRODUCT_HUNTER: {
-          agentId: 'PRODUCT_HUNTER',
-          name: 'Autonomous Product Sourcing Hunter',
+          agentId: 'PRODUCT_HUNTER', name: 'Autonomous Product Sourcing Hunter',
           systemPrompt: `You are KITORA's Lead Autonomous Product Sourcing Hunter. Analyze e-commerce viral trends, calculate net profit margins (target >= 40%), evaluate shipping velocity, and return high-demand winning product recommendations.`,
-          targetModel: 'auto',
-          version: 1,
-          updatedAt: new Date().toISOString()
+          targetModel: 'auto', version: 1, updatedAt: new Date().toISOString()
         },
         MARKETING_COPYWRITER: {
-          agentId: 'MARKETING_COPYWRITER',
-          name: 'High-Conversion Ads & Copywriting Specialist',
+          agentId: 'MARKETING_COPYWRITER', name: 'High-Conversion Ads & Copywriting Specialist',
           systemPrompt: `You are KITORA's Direct-Response Marketing Copywriter. Create high-converting Meta and Google ad headlines, primary text, target audience segments, and SEO product descriptions designed to drive immediate conversions.`,
-          targetModel: 'auto',
-          version: 1,
-          updatedAt: new Date().toISOString()
+          targetModel: 'auto', version: 1, updatedAt: new Date().toISOString()
         },
         SEO_OPTIMIZER: {
-          agentId: 'SEO_OPTIMIZER',
-          name: 'Store Catalog SEO Optimizer',
+          agentId: 'SEO_OPTIMIZER', name: 'Store Catalog SEO Optimizer',
           systemPrompt: `You are KITORA's E-Commerce SEO Specialist. Optimize product titles, meta descriptions, image alt tags, and structural JSON-LD metadata for maximum search engine indexation.`,
-          targetModel: 'auto',
-          version: 1,
-          updatedAt: new Date().toISOString()
+          targetModel: 'auto', version: 1, updatedAt: new Date().toISOString()
         },
         PRICING_ENGINE: {
-          agentId: 'PRICING_ENGINE',
-          name: 'Dynamic Pricing & Margin Engine',
+          agentId: 'PRICING_ENGINE', name: 'Dynamic Pricing & Margin Engine',
           systemPrompt: `You are KITORA's Pricing Strategy AI. Calculate retail pricing based on supplier cost, shipping overhead, payment processing fees (PayPal 3.49% + $0.49), and target net margin percentage.`,
-          targetModel: 'auto',
-          version: 1,
-          updatedAt: new Date().toISOString()
+          targetModel: 'auto', version: 1, updatedAt: new Date().toISOString()
         },
         CUSTOMER_SERVICE: {
-          agentId: 'CUSTOMER_SERVICE',
-          name: 'WhatsApp & Email Customer Support AI',
+          agentId: 'CUSTOMER_SERVICE', name: 'WhatsApp & Email Customer Support AI',
           systemPrompt: `You are KITORA's Autonomous Customer Support Representative. Craft empathetic, helpful, and professional responses for order tracking, shipping updates, and customer inquiries.`,
-          targetModel: 'auto',
-          version: 1,
-          updatedAt: new Date().toISOString()
+          targetModel: 'auto', version: 1, updatedAt: new Date().toISOString()
         },
         EXECUTIVE_AUDITOR: {
-          agentId: 'EXECUTIVE_AUDITOR',
-          name: 'Autonomous Business Operations Auditor',
+          agentId: 'EXECUTIVE_AUDITOR', name: 'Autonomous Business Operations Auditor',
           systemPrompt: `You are KCC Brain's Executive Operations Auditor. Monitor store health, inventory levels, order fulfillment speed, and financial net revenue to provide concise daily owner digests.`,
-          targetModel: 'auto',
-          version: 1,
-          updatedAt: new Date().toISOString()
+          targetModel: 'auto', version: 1, updatedAt: new Date().toISOString()
         }
       };
       dbRuntime.set('kccPromptRegistry', defaultPrompts);
@@ -116,28 +98,17 @@ export class KCCBrain {
   public updatePrompt(agentId: string, systemPrompt: string, targetModel?: any): PromptRegistryEntry {
     const registry = this.getPromptRegistry();
     const current = registry[agentId] || {
-      agentId,
-      name: `${agentId} Agent`,
-      systemPrompt: '',
-      targetModel: 'auto',
-      version: 0,
-      updatedAt: new Date().toISOString()
+      agentId, name: `${agentId} Agent`, systemPrompt: '', targetModel: 'auto', version: 0, updatedAt: new Date().toISOString()
     };
-
     const updated: PromptRegistryEntry = {
-      ...current,
-      systemPrompt,
-      targetModel: targetModel || current.targetModel,
-      version: current.version + 1,
-      updatedAt: new Date().toISOString()
+      ...current, systemPrompt, targetModel: targetModel || current.targetModel,
+      version: current.version + 1, updatedAt: new Date().toISOString()
     };
-
     registry[agentId] = updated;
     dbRuntime.set('kccPromptRegistry', registry);
     return updated;
   }
 
-  // 2. AUTONOMOUS DECISION ENGINE & MULTI-PROVIDER GATEWAY
   public async executeAgentTask(
     agentId: string,
     prompt: string,
@@ -149,81 +120,79 @@ export class KCCBrain {
     const traceId = `TRACE-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     const auditTrail: string[] = [];
 
-    // Step A: Load Prompt from Registry
     const promptEntry = this.getPrompt(agentId);
     const systemInstruction = promptEntry ? promptEntry.systemPrompt : `You are an autonomous e-commerce AI assistant for KITORA store.`;
     auditTrail.push(`[KCC Brain] Loaded system prompt for agent '${agentId}' (Version v${promptEntry?.version || 1}) from Registry.`);
 
-    // Step B: Decision Engine Owner Approval Gate
     let requiresOwnerApproval = false;
     let approvalReason: string | undefined;
-
-    if (contextInfo) {
-      if ((contextInfo.sensitivityScore && contextInfo.sensitivityScore > 0.8) || (contextInfo.costUSD && contextInfo.costUSD > 100)) {
-        requiresOwnerApproval = true;
-        approvalReason = `Action sensitivity score (${contextInfo.sensitivityScore || 0}) or cost ($${contextInfo.costUSD || 0}) exceeds autonomous zero-touch threshold.`;
-        auditTrail.push(`[Owner Guard] Action requires owner approval: ${approvalReason}`);
-      }
+    if (contextInfo && ((contextInfo.sensitivityScore && contextInfo.sensitivityScore > 0.8) || (contextInfo.costUSD && contextInfo.costUSD > 100))) {
+      requiresOwnerApproval = true;
+      approvalReason = `Action sensitivity score (${contextInfo.sensitivityScore || 0}) or cost ($${contextInfo.costUSD || 0}) exceeds autonomous zero-touch threshold.`;
+      auditTrail.push(`[Owner Guard] Action requires owner approval: ${approvalReason}`);
     }
 
-    // Step C: Build Universal Task Protocol Object
     const universalTask: UniversalTask = {
       taskId: decisionId,
       traceId,
       agentId,
       priority: contextInfo?.sensitivityScore && contextInfo.sensitivityScore > 0.5 ? 'HIGH' : 'MEDIUM',
       goal: prompt,
-      context: {
-        systemPrompt: systemInstruction,
-        contextInfo
-      },
+      context: { systemPrompt: systemInstruction, contextInfo },
       expectedOutput: fallbackOutput,
       memoryReferences: [`BRAIN_REGISTRY_${agentId}`],
       requiredTools: ['CODE', 'QA', 'SECURITY'].some(kw => agentId.includes(kw)) ? ['code_editor', 'terminal'] : ['web_search'],
       approvalLevel: requiresOwnerApproval ? 'REQUIRES_OWNER' : 'AUTONOMOUS',
       deadline: new Date(Date.now() + 180000).toISOString(),
-      status: 'QUEUED',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      auditLogs: [...auditTrail]
+      status: 'QUEUED', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), auditLogs: [...auditTrail]
     };
 
-    // Step D: Route via Provider Selection Engine
     const selectedAdapter = providerSelectionEngine.selectBestProvider(universalTask);
     auditTrail.push(`[Provider Selection Engine] Routed task to optimal adapter: '${selectedAdapter.providerId}'`);
 
+    // The deterministic adapter is a legacy compatibility component, not a real AI provider.
+    // KCC Brain must never use it to manufacture a successful execution when no live provider is available.
+    if (selectedAdapter.providerId === 'deterministic') {
+      auditTrail.push('[Provider Gateway] No live AI provider is available. Deterministic fallback is blocked fail-closed.');
+      const result: BrainDecisionResult = {
+        decisionId, agentId, selectedProvider: 'deterministic', selectedModel: 'deterministic-engine-v1',
+        status: 'BLOCKED', requiresOwnerApproval, approvalReason, shouldRetry: true, output: null,
+        executionTimeMs: Date.now() - start, quotaCooloffActive: false, auditTrail
+      };
+      this.decisionLogs.unshift(result);
+      if (this.decisionLogs.length > 50) this.decisionLogs.pop();
+      return result;
+    }
+
     const response = await selectedAdapter.executeTask(universalTask);
+    const selectedProvider: 'gemini' | 'openai' | 'claude' | 'deterministic' = selectedAdapter.providerId as any;
+    const selectedModel = response.modelUsed;
+    const shouldRetry = response.status === 'FAILED';
 
-    let selectedProvider: 'gemini' | 'openai' | 'claude' | 'deterministic' = selectedAdapter.providerId as any;
-    let selectedModel = response.modelUsed;
-    let output: any = response.output || fallbackOutput;
-    let shouldRetry = response.status === 'FAILED';
-
-    if (response.status === 'COMPLETED') {
-      auditTrail.push(`[Provider Gateway] Successfully executed task via ${response.modelUsed} (${response.executionTimeMs}ms)`);
+    if (response.status !== 'COMPLETED') {
+      auditTrail.push(`[Provider Gateway] Execution failed via ${selectedProvider}: ${response.error || 'provider returned FAILED'}. No deterministic fallback applied.`);
+    } else if (!response.evidence || response.evidence.status !== 'COMPLETED') {
+      auditTrail.push('[Provider Gateway] Provider returned COMPLETED without valid completion evidence. Result rejected fail-closed.');
+      const result: BrainDecisionResult = {
+        decisionId, agentId, selectedProvider, selectedModel, status: 'FAILED', requiresOwnerApproval, approvalReason,
+        shouldRetry: true, output: null, executionTimeMs: Date.now() - start, quotaCooloffActive: false, auditTrail
+      };
+      this.decisionLogs.unshift(result);
+      if (this.decisionLogs.length > 50) this.decisionLogs.pop();
+      return result;
     } else {
-      auditTrail.push(`[Provider Gateway] Primary selection execution failed (${response.error}). Applied zero-latency deterministic fallback.`);
-      selectedProvider = 'deterministic';
-      selectedModel = 'deterministic-fallback';
+      auditTrail.push(`[Provider Gateway] Successfully executed and evidenced task via ${response.modelUsed} (${response.executionTimeMs}ms)`);
     }
 
     const result: BrainDecisionResult = {
-      decisionId,
-      agentId,
-      selectedProvider,
-      selectedModel,
-      requiresOwnerApproval,
-      approvalReason,
-      shouldRetry,
-      output,
-      executionTimeMs: Date.now() - start,
-      quotaCooloffActive: false,
-      auditTrail
+      decisionId, agentId, selectedProvider, selectedModel,
+      status: response.status === 'COMPLETED' ? 'COMPLETED' : 'FAILED',
+      requiresOwnerApproval, approvalReason, shouldRetry,
+      output: response.status === 'COMPLETED' ? response.output : null,
+      executionTimeMs: Date.now() - start, quotaCooloffActive: false, auditTrail
     };
-
     this.decisionLogs.unshift(result);
     if (this.decisionLogs.length > 50) this.decisionLogs.pop();
-
     return result;
   }
 
@@ -234,7 +203,7 @@ export class KCCBrain {
         gemini: !!this.primaryGeminiClient,
         openAi: !!process.env.OPENAI_API_KEY,
         claude: !!(process.env.CLAUDE_API_KEY || process.env.ANTHROPIC_API_KEY),
-        deterministicFallback: true
+        deterministicFallback: false
       },
       quotaCooloff: {
         geminiActive: Date.now() < (this.quotaCooloffUntil['gemini'] || 0),
@@ -242,7 +211,8 @@ export class KCCBrain {
       },
       promptRegistryCount: Object.keys(this.getPromptRegistry()).length,
       recentDecisionCount: this.decisionLogs.length,
-      lastDecision: this.decisionLogs[0] || null
+      lastDecision: this.decisionLogs[0] || null,
+      failClosedProviderExecution: true
     };
   }
 

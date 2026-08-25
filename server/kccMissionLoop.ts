@@ -1,6 +1,6 @@
 import { dbRuntime } from './dbStorage.js';
 import { kccMissionEngine, KCCMission, MissionTask } from './kccMissionEngine.js';
-import { GeminiDriver, ClaudeDriver, OpenAIDriver } from './orchestrationEngine.js';
+import { GeminiDriver, ClaudeDriver, OpenAIDriver, ManusDriver } from './orchestrationEngine.js';
 import { kccRealityVerifier } from './kccRealityVerifier.js';
 import { kccKnowledgeMemory } from './kccKnowledgeMemory.js';
 import { kccBusinessKPIEngine } from './kccBusinessKPIEngine.js';
@@ -21,6 +21,7 @@ import {
 const geminiDriver = new GeminiDriver();
 const claudeDriver = new ClaudeDriver();
 const openAiDriver = new OpenAIDriver();
+const manusDriver = new ManusDriver();
 
 export interface ObservationTelemetry {
   timestamp: string;
@@ -366,48 +367,54 @@ export class KCCMissionLoop {
           const res = await dispatchWithResilience('gemini', () =>
             geminiDriver.dispatch({ taskId: task.taskId, payload: { prompt: `${task.title}: ${task.description}` } } as any, {})
           );
-          executionResult = { success: res.status !== 'FAILED', output: res.result || res.error, provider: 'GEMINI' };
+          if (res.status !== 'COMPLETED') throw new Error(`Provider returned ${res.status}: ${res.error || 'no trusted completion evidence'}`);
+          executionResult = { success: true, output: res.result, provider: task.assignedProvider };
         } catch (geminiErr: any) {
           console.warn(`[KCC Mission Loop] Provider GEMINI unavailable or failed (${geminiErr.message}). Switching provider to OPENAI...`);
-          task.assignedProvider = 'OPENAI';
           const res = await dispatchWithResilience('openai', () =>
             openAiDriver.dispatch({ taskId: task.taskId, payload: { prompt: `${task.title}: ${task.description}` } } as any, {})
           );
-          executionResult = { success: res.status !== 'FAILED', output: res.result || res.error, provider: 'OPENAI_FAILOVER' };
+          if (res.status === 'COMPLETED') task.assignedProvider = 'OPENAI';
+          if (res.status !== 'COMPLETED') throw new Error(`Provider returned ${res.status}: ${res.error || 'no trusted completion evidence'}`);
+          executionResult = { success: true, output: res.result, provider: task.assignedProvider };
         }
       } else if (task.assignedProvider === 'CLAUDE') {
         try {
           const res = await dispatchWithResilience('claude', () =>
             claudeDriver.dispatch({ taskId: task.taskId, payload: { prompt: `${task.title}: ${task.description}` } } as any, {})
           );
-          executionResult = { success: res.status !== 'FAILED', output: res.result || res.error, provider: 'CLAUDE' };
+          if (res.status !== 'COMPLETED') throw new Error(`Provider returned ${res.status}: ${res.error || 'no trusted completion evidence'}`);
+          executionResult = { success: true, output: res.result, provider: task.assignedProvider };
         } catch (claudeErr: any) {
           console.warn(`[KCC Mission Loop] Provider CLAUDE unavailable or failed (${claudeErr.message}). Switching provider to GEMINI...`);
-          task.assignedProvider = 'GEMINI';
           const res = await dispatchWithResilience('gemini', () =>
             geminiDriver.dispatch({ taskId: task.taskId, payload: { prompt: `${task.title}: ${task.description}` } } as any, {})
           );
-          executionResult = { success: res.status !== 'FAILED', output: res.result || res.error, provider: 'GEMINI_FAILOVER' };
+          if (res.status === 'COMPLETED') task.assignedProvider = 'GEMINI';
+          if (res.status !== 'COMPLETED') throw new Error(`Provider returned ${res.status}: ${res.error || 'no trusted completion evidence'}`);
+          executionResult = { success: true, output: res.result, provider: task.assignedProvider };
         }
       } else if (task.assignedProvider === 'OPENAI') {
         try {
           const res = await dispatchWithResilience('openai', () =>
             openAiDriver.dispatch({ taskId: task.taskId, payload: { prompt: `${task.title}: ${task.description}` } } as any, {})
           );
-          executionResult = { success: res.status !== 'FAILED', output: res.result || res.error, provider: 'OPENAI' };
+          if (res.status !== 'COMPLETED') throw new Error(`Provider returned ${res.status}: ${res.error || 'no trusted completion evidence'}`);
+          executionResult = { success: true, output: res.result, provider: task.assignedProvider };
         } catch (openAiErr: any) {
           console.warn(`[KCC Mission Loop] Provider OPENAI unavailable or failed (${openAiErr.message}). Switching provider to CLAUDE...`);
-          task.assignedProvider = 'CLAUDE';
           const res = await dispatchWithResilience('claude', () =>
             claudeDriver.dispatch({ taskId: task.taskId, payload: { prompt: `${task.title}: ${task.description}` } } as any, {})
           );
-          executionResult = { success: res.status !== 'FAILED', output: res.result || res.error, provider: 'CLAUDE_FAILOVER' };
+          if (res.status === 'COMPLETED') task.assignedProvider = 'CLAUDE';
+          if (res.status !== 'COMPLETED') throw new Error(`Provider returned ${res.status}: ${res.error || 'no trusted completion evidence'}`);
+          executionResult = { success: true, output: res.result, provider: task.assignedProvider };
         }
       } else if (task.assignedProvider === 'CJ_DROPSHIPPING') {
         const products = await dispatchWithResilience('cj_dropshipping', () => cjDropshippingRuntime.syncProducts('trending', 10));
         const inv = await cjDropshippingRuntime.syncInventory();
         executionResult = {
-          success: true,
+          success: cjDropshippingRuntime.isConfigured() && products.length > 0 && inv.totalUnits > 0,
           productsSourced: products.length,
           topCategory: products[0]?.categoryName || 'Consumer Electronics',
           avgMargin: `${products[0]?.netMarginPercentage || 65}%`,
@@ -417,9 +424,9 @@ export class KCCMissionLoop {
       } else if (task.assignedProvider === 'KITORA_STORE' || task.title.toLowerCase().includes('kitora') || task.title.toLowerCase().includes('inspect store')) {
         const inspection = await kitoraStoreAdapter.inspectStore();
         executionResult = {
-          success: true,
+          success: inspection.liveHttpAccessible && inspection.checkoutStatus === 'HEALTHY',
           kitoraInspection: inspection,
-          storeDeployed: inspection.liveHttpAccessible || inspection.totalProductsCount > 0,
+          storeDeployed: inspection.liveHttpAccessible && inspection.checkoutStatus === 'HEALTHY',
           storeUrl: inspection.storeUrl,
           httpStatusCode: inspection.httpStatusCode,
           productsCount: inspection.totalProductsCount,
@@ -427,21 +434,23 @@ export class KCCMissionLoop {
           provider: 'KITORA_STORE_ADAPTER'
         };
       } else if (task.assignedProvider === 'MANUS') {
-        const res = await dispatchWithResilience('gemini', () =>
-          geminiDriver.dispatch({
+        const res = await dispatchWithResilience('manus', () =>
+          manusDriver.dispatch({
             taskId: task.taskId,
-            payload: { prompt: `Manus Code Generator: Execute code generation, component assembly, and deployment check for '${task.title}': ${task.description}` }
+            payload: { prompt: `Execute code generation and component assembly for '${task.title}': ${task.description}` }
           } as any, {})
         );
         executionResult = {
-          success: res.status !== 'FAILED',
-          storeDeployed: true,
-          codeOutput: res.result?.output || 'Store deployment verified',
-          componentsInjected: ['ProductCatalog', 'CartDrawer', 'PayPalCheckout', 'SEOHead'],
-          provider: 'MANUS_CODE_AGENT'
+          success: res.status === 'COMPLETED',
+          codeOutput: res.result?.output,
+          provider: 'MANUS'
         };
       } else {
-        executionResult = { success: true, message: 'Executed by default provider worker', provider: task.assignedProvider };
+        executionResult = {
+          success: false,
+          error: `Unsupported provider '${task.assignedProvider}'. No execution was performed.`,
+          provider: task.assignedProvider
+        };
       }
 
       // 5. REALITY VERIFICATION
