@@ -41,7 +41,7 @@ export interface RuntimeStatus {
   aiProviderHealth: {
     primary: 'ONLINE' | 'DEGRADED' | 'OFFLINE';
     secondary: 'ONLINE' | 'DEGRADED' | 'OFFLINE';
-    deterministicFallback: 'ALWAYS_AVAILABLE';
+    deterministicFallback: 'BLOCKED';
   };
 }
 
@@ -140,6 +140,18 @@ class PermanentAutonomousAgentRuntime {
     agentId: string = 'EXECUTIVE_AUDITOR'
   ): Promise<{ result: any; provider: string }> {
     const decision = await kccBrain.executeAgentTask(agentId, prompt, fallbackOutput);
+    if (decision.status !== 'COMPLETED') {
+      const error = new Error(`KCC Brain ${decision.status}: autonomous fallback execution cannot continue without a completed provider result.`) as Error & { code?: string; status?: string; shouldRetry?: boolean };
+      error.code = 'KCC_BRAIN_BLOCKED';
+      error.status = decision.status;
+      error.shouldRetry = decision.shouldRetry;
+      throw error;
+    }
+    if (decision.output === null || decision.output === undefined) {
+      const error = new Error('KCC Brain COMPLETED result contained no output.') as Error & { code?: string };
+      error.code = 'KCC_BRAIN_INVALID_OUTPUT';
+      throw error;
+    }
     return {
       result: decision.output,
       provider: decision.selectedModel
@@ -369,7 +381,7 @@ class PermanentAutonomousAgentRuntime {
       aiProviderHealth: {
         primary: this.primaryAiClient ? 'ONLINE' : 'DEGRADED',
         secondary: this.primaryAiClient ? 'ONLINE' : 'DEGRADED',
-        deterministicFallback: 'ALWAYS_AVAILABLE'
+        deterministicFallback: 'BLOCKED'
       }
     };
   }

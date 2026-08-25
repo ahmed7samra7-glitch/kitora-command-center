@@ -102,7 +102,10 @@ export class AsyncWorkerDaemon {
 
     let driverRes;
     try {
-      driverRes = await driver.dispatch(task, context);
+      const asyncJobId = task.result?.asyncJobId;
+      driverRes = task.status === 'RUNNING' && asyncJobId
+        ? await driver.poll(asyncJobId)
+        : await driver.dispatch(task, context);
     } catch (err: any) {
       driverRes = {
         status: 'FAILED' as const,
@@ -110,29 +113,25 @@ export class AsyncWorkerDaemon {
       };
     }
 
-    let finalOutput = driverRes.result?.output;
-    if (!finalOutput && driverRes.status === 'FAILED' && driverRes.error === 'NOT_CONNECTED') {
-      // Autonomous fallback execution for Remote AI Worker when API key is unconfigured
-      finalOutput = `[${this.workerId} (${this.provider.toUpperCase()})] Simulated execution for step: ${task.payload?.prompt || task.taskId}. Capabilities utilized: [${this.capabilities.join(', ')}]`;
+    if (driverRes.status === 'COMPLETED' && (driverRes.result?.output === null || driverRes.result?.output === undefined)) {
       driverRes = {
-        status: 'COMPLETED' as const,
-        result: {
-          provider: this.provider,
-          workerId: this.workerId,
-          capabilitiesUsed: this.capabilities,
-          output: finalOutput,
-          simulated: true,
-          httpStatus: 200,
-          tokenUsage: { promptTokens: 20, candidateTokens: 35, totalTokens: 55 }
-        }
+        status: 'FAILED' as const,
+        error: 'Provider claimed COMPLETED without output evidence.'
       };
     }
 
     const latencyMs = Date.now() - startDispatch;
 
     // SUBMIT RESULT
-    const resultObj = driverRes.result || { output: finalOutput, error: driverRes.error };
-    const submitStatus = driverRes.status === 'FAILED' ? 'FAILED' : 'COMPLETED';
+    const resultObj = {
+      ...(driverRes.result || {}),
+      asyncJobId: driverRes.asyncJobId || driverRes.result?.asyncJobId,
+      output: driverRes.status === 'COMPLETED' ? driverRes.result?.output : driverRes.result?.output,
+      error: driverRes.error
+    };
+    const submitStatus = driverRes.status === 'COMPLETED' || driverRes.status === 'FAILED' || driverRes.status === 'RUNNING'
+      ? driverRes.status
+      : 'FAILED';
 
     const submitRes = workerRegistryManager.submitTaskResult({
       taskId: task.taskId,
@@ -142,7 +141,7 @@ export class AsyncWorkerDaemon {
       error: driverRes.error
     });
 
-    this.tasksCompletedCount++;
+    if (submitStatus === 'COMPLETED') this.tasksCompletedCount++;
 
     // AUDIT LOG
     OrchestrationAuditLogger.log({
