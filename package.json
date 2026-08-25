@@ -10,6 +10,7 @@
     "clean": "rm -rf dist server.cjs",
     "lint": "tsc --noEmit",
     "verify:kcc-brain-fail-closed": "tsx scripts/verifyKccBrainFailClosed.ts",
+    "verify:async-worker-fail-closed": "tsx scripts/verifyAsyncWorkerFailClosed.ts",
     "verify:provider-execution-fail-closed": "tsx scripts/verifyProviderExecutionFailClosed.ts",
     "verify:real-provider-boundary": "tsx scripts/verifyRealProviderBoundary.ts",
     "verify:real-notification-boundary": "tsx scripts/verifyRealNotificationBoundary.ts",
@@ -19,7 +20,7 @@
     "verify:security-fail-closed": "tsx scripts/verifySecurityFailClosed.ts",
     "verify:production-commerce-guard": "tsx scripts/verifyProductionCommerceGuard.ts",
     "verify:kcc-alive-gate": "tsx scripts/verifyKccAliveGate.ts",
-    "test": "npm run verify:kcc-brain-fail-closed && npm run verify:provider-execution-fail-closed && tsx scripts/verifyProductionFailClosed.ts && npm run verify:kcc-alive-gate"
+    "test": "npm run verify:kcc-brain-fail-closed && npm run verify:provider-execution-fail-closed && npm run verify:async-worker-fail-closed && tsx scripts/verifyProductionFailClosed.ts && npm run verify:kcc-alive-gate"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
