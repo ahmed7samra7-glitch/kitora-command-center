@@ -5,7 +5,7 @@ import { dbRuntime } from './dbStorage.js';
 import { eventBus } from './eventBus.js';
 import { kccBrain, BrainDecisionResult } from './kccBrain.js';
 
-export function requireCompletedBrainOutput<T>(decision: BrainDecisionResult, operation: string): T {
+export function requireCompletedBrainOutput<T>(decision: BrainDecisionResult, operation: string, validateOutput: (output: unknown) => boolean = output => output !== null && typeof output === 'object'): T {
   if (decision.status !== 'COMPLETED') {
     const error = new Error(`KCC Brain ${decision.status}: ${operation} cannot continue without a completed provider result.`) as Error & { code?: string; status?: string; shouldRetry?: boolean };
     error.code = 'KCC_BRAIN_BLOCKED';
@@ -13,8 +13,8 @@ export function requireCompletedBrainOutput<T>(decision: BrainDecisionResult, op
     error.shouldRetry = decision.shouldRetry;
     throw error;
   }
-  if (decision.output === null || decision.output === undefined) {
-    const error = new Error(`KCC Brain COMPLETED result for ${operation} contained no output.`) as Error & { code?: string };
+  if (decision.output === null || decision.output === undefined || !validateOutput(decision.output)) {
+    const error = new Error(`KCC Brain COMPLETED result for ${operation} contained invalid or incomplete output.`) as Error & { code?: string };
     error.code = 'KCC_BRAIN_INVALID_OUTPUT';
     throw error;
   }
@@ -313,7 +313,10 @@ Cost: $${cost}, Shipping: $${ship}, Target Selling Price: $${pricing.calculatedP
         competitionLevel: 'LOW' | 'MEDIUM' | 'HIGH';
         targetAudience: string;
         keySellingPoint: string;
-      }>(brainDecision, 'product hunting');
+      }>(brainDecision, 'product hunting', output => {
+        const value = output as any;
+        return value !== null && typeof value === 'object' && Number.isFinite(value.viralPotentialScore) && ['LOW', 'MEDIUM', 'HIGH'].includes(value.competitionLevel) && typeof value.targetAudience === 'string' && typeof value.keySellingPoint === 'string';
+      });
       const marginWeight = Math.min(100, pricing.netMarginPercent * 1.5);
       const viralWeight = aiAnalysis.viralPotentialScore;
       const compBonus = aiAnalysis.competitionLevel === 'LOW' ? 10 : aiAnalysis.competitionLevel === 'MEDIUM' ? 5 : 0;
@@ -383,7 +386,10 @@ Category: "${category}"
 Return a complete JSON object with fields: title, shortDescription, longDescription, features, benefits, specifications, faq, seoTitle, metaDescription, tags.`;
 
     const decision = await kccBrain.executeAgentTask('MARKETING_COPYWRITER', prompt, fallbackContent);
-    return requireCompletedBrainOutput<GeneratedContent>(decision, 'product content generation');
+    return requireCompletedBrainOutput<GeneratedContent>(decision, 'product content generation', output => {
+      const value = output as any;
+      return value !== null && typeof value === 'object' && typeof value.title === 'string' && typeof value.shortDescription === 'string' && typeof value.longDescription === 'string' && Array.isArray(value.features) && Array.isArray(value.benefits) && value.specifications !== null && typeof value.specifications === 'object' && Array.isArray(value.faq) && typeof value.seoTitle === 'string' && typeof value.metaDescription === 'string' && Array.isArray(value.tags);
+    });
   }
 
   // 4. Marketing Automation Engine
@@ -413,7 +419,10 @@ Return JSON with format:
 }`;
 
     const decision = await kccBrain.executeAgentTask('MARKETING_COPYWRITER', prompt, fallbackAssets);
-    return requireCompletedBrainOutput<typeof fallbackAssets>(decision, 'marketing asset generation');
+    return requireCompletedBrainOutput<typeof fallbackAssets>(decision, 'marketing asset generation', output => {
+      const value = output as any;
+      return value !== null && typeof value === 'object' && value.metaAdCopy !== null && typeof value.metaAdCopy === 'object' && typeof value.metaAdCopy.primaryText === 'string' && typeof value.metaAdCopy.headline === 'string' && typeof value.metaAdCopy.callToAction === 'string' && Array.isArray(value.googleAdKeywords) && value.emailCampaign !== null && typeof value.emailCampaign === 'object' && typeof value.emailCampaign.subject === 'string' && typeof value.emailCampaign.preheader === 'string' && typeof value.emailCampaign.bodyText === 'string' && typeof value.whatsappBroadcast === 'string';
+    });
   }
 
   // 5. Customer Experience Automation Engine

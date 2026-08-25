@@ -71,6 +71,16 @@ try {
     throw new Error('Phase 4 must preserve valid completed Brain output.');
   }
 
+  let malformedRejected = false;
+  try {
+    requireCompletedBrainOutput({ ...result, status: 'COMPLETED', output: {} }, 'test product content generation', output => Boolean(output && typeof output === 'object' && typeof (output as any).title === 'string'));
+  } catch (error: any) {
+    malformedRejected = error.code === 'KCC_BRAIN_INVALID_OUTPUT';
+  }
+  if (!malformedRejected) {
+    throw new Error('Phase 4 must reject malformed completed Brain output.');
+  }
+
   const downstreamProof = kccRealityVerifier.verifyTaskResult(
     { verificationMethod: 'API_CHECK' },
     { success: false, error: 'provider HTTP 503' }
