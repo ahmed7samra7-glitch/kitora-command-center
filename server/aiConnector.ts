@@ -1153,6 +1153,21 @@ export class PersistentAiJobQueue {
     pending.assignedProvider = provider.providerId;
     pending.auditLogs.push(`[Dispatcher] Assigned task ${pending.taskId} to provider '${provider.providerId}'`);
 
+    if (provider.providerId === 'deterministic') {
+      pending.status = 'FAILED';
+      pending.error = 'No live AI provider is available; deterministic fallback is blocked.';
+      pending.result = null;
+      pending.auditLogs.push('[Dispatcher] Deterministic provider selection rejected; downstream task chain was not advanced.');
+      this.saveToDisk();
+      eventBus.publish('pipeline_task_failed', 'TASK_CHAIN_ENGINE', {
+        taskId: pending.taskId,
+        traceId: pending.traceId,
+        provider: provider.providerId,
+        error: pending.error
+      });
+      return;
+    }
+
     let response = await provider.executeTask(pending);
 
     // A failed real-provider execution must remain failed. Deterministic output
