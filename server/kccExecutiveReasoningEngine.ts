@@ -9,6 +9,17 @@ const claudeDriver = new ClaudeDriver();
 const openAiDriver = new OpenAIDriver();
 const manusDriver = new ManusDriver();
 
+function requireCompletedProviderOutput(provider: string, response: any): string {
+  if (response?.status !== 'COMPLETED') {
+    throw new Error(`${provider} provider did not complete executive reasoning: ${response?.status || 'UNKNOWN'}`);
+  }
+  const output = response?.result?.output;
+  if (typeof output !== 'string' || !output.trim()) {
+    throw new Error(`${provider} provider completed without executive reasoning output`);
+  }
+  return output;
+}
+
 export interface ExecutiveMeetingRecord {
   meetingId: string;
   missionId: string;
@@ -67,7 +78,7 @@ Format as JSON with keys:
 - tasks: array of { title, description, category, priority, requiredCapability, assignedProvider }`;
 
     const geminiRes = await geminiDriver.dispatch({ taskId: `${meetingId}-GEMINI`, payload: { prompt: geminiPrompt } } as any, {});
-    const geminiProposalText = geminiRes.result?.output || `Executive strategy proposal for ${contextDescription}`;
+    const geminiProposalText = requireCompletedProviderOutput('GEMINI', geminiRes);
     const parsedGemini = this.parseProposal(geminiProposalText, triggerContext, mission);
 
     // STEP 2: Claude Criticizes
@@ -79,7 +90,7 @@ Avoid Repeating Past Failures: ${JSON.stringify(memoryContext.failedStrategies)}
 Identify operational risks, margin constraints, rate limits, or safety vulnerabilities.`;
 
     const claudeRes = await claudeDriver.dispatch({ taskId: `${meetingId}-CLAUDE`, payload: { prompt: claudePrompt } } as any, {});
-    const claudeObjectionText = claudeRes.result?.output || `Risk audit evaluated for ${contextDescription}. Operational & safety parameters verified against historical bounds.`;
+    const claudeObjectionText = requireCompletedProviderOutput('CLAUDE', claudeRes);
 
     // STEP 3: OpenAI Proposes Alternatives
     const openAiPrompt = `You are OpenAI, Chief Innovation Officer. Review Gemini's proposal and Claude's critiques:
@@ -89,7 +100,7 @@ Critiques: "${claudeObjectionText}"
 Propose alternative optimization paths, growth leverage points, or ROI enhancements.`;
 
     const openAiRes = await openAiDriver.dispatch({ taskId: `${meetingId}-OPENAI`, payload: { prompt: openAiPrompt } } as any, {});
-    const openAiAltText = openAiRes.result?.output || `Alternative optimization: Accelerate automation pipelines and optimize net margin efficiency.`;
+    const openAiAltText = requireCompletedProviderOutput('OPENAI', openAiRes);
 
     // STEP 4: Manus Validates Implementation Feasibility
     const manusPrompt = `You are Manus, Chief Engineering & Execution Officer. Validate implementation feasibility for:
@@ -97,7 +108,7 @@ Strategy: "${parsedGemini.strategy}"
 Confirm code build capability, API endpoint status, and automated deployment readiness.`;
 
     const manusRes = await manusDriver.dispatch({ taskId: `${meetingId}-MANUS`, payload: { prompt: manusPrompt } } as any, {});
-    const manusFeasibilityText = manusRes.result?.output || `Feasibility verified. E-commerce engine and automation code generators are fully operational.`;
+    const manusFeasibilityText = requireCompletedProviderOutput('MANUS', manusRes);
 
     // STEP 5: Reality Verifier Validates Facts (Rejects Hallucinations)
     const realityProof = kccRealityVerifier.verifyTaskResult(
@@ -383,7 +394,9 @@ Format as JSON with keys:
     checklist: Array<{ criterion: string; verified: boolean; evidence: string }>;
     generatedTasksCount: number;
   }> {
-    const completedTasks = (mission.tasks || []).filter(t => t.status === 'COMPLETED');
+    const completedTasks = (mission.tasks || []).filter(t =>
+      t.status === 'COMPLETED' && t.result?.realityVerification?.verified === true
+    );
     const taskTitles = completedTasks.map(t => t.title.toLowerCase());
 
     const hasResearch = taskTitles.some(t => t.includes('research') || t.includes('market'));
@@ -400,14 +413,14 @@ Format as JSON with keys:
 
     const checklist = [
       { criterion: 'Product Selection & Niche Opportunity Researched', verified: hasResearch, evidence: 'Market trend analysis verified by Gemini.' },
-      { criterion: 'Supplier Availability & Catalog Sourced', verified: hasSourcing, evidence: 'CJ Dropshipping catalog synced (4,500 units available).' },
-      { criterion: 'Store Front & E-Commerce Theme Deployed', verified: hasStoreBuild, evidence: 'Full-stack storefront code generated and deployed by Manus.' },
+      { criterion: 'Supplier Availability & Catalog Sourced', verified: hasSourcing, evidence: 'Completed task carries operation-specific reality verification for supplier/catalog execution.' },
+      { criterion: 'Store Front & E-Commerce Theme Deployed', verified: hasStoreBuild, evidence: 'Completed task carries operation-specific reality verification for live store execution.' },
       { criterion: 'Multi-Modal Copywriting & SEO Optimized', verified: hasCopySeo, evidence: 'SEO metadata and high-converting ad copy generated.' },
       { criterion: 'Security, Compliance & Single-Owner Audit Passed', verified: hasSecurity, evidence: 'Security scan verified clean, single-owner session authorized.' },
       { criterion: 'Strategic Autonomous Launch Strategy Approved', verified: hasStrategyDecision, evidence: 'Multi-AI Executive Board consensus approved.' },
-      { criterion: 'Automated Marketing & Ad Campaign Funnel Active', verified: hasAdCampaign, evidence: 'Meta/Google ads funnel initialized with $50/day cap.' },
-      { criterion: 'Supplier Inventory Reserved & Net Margin Calculated', verified: hasInventoryReserve, evidence: 'Inventory reserved, gross margin (+68.5%) verified.' },
-      { criterion: 'Final Multi-AI Executive Launch Readiness Sign-Off', verified: hasFinalSignoff, evidence: 'Executive Board final consensus: LAUNCH_READY.' }
+      { criterion: 'Automated Marketing & Ad Campaign Funnel Active', verified: hasAdCampaign, evidence: 'Completed task carries operation-specific reality verification for campaign execution.' },
+      { criterion: 'Supplier Inventory Reserved & Net Margin Calculated', verified: hasInventoryReserve, evidence: 'Completed task carries operation-specific reality verification for inventory and unit economics.' },
+      { criterion: 'Final Multi-AI Executive Launch Readiness Sign-Off', verified: hasFinalSignoff, evidence: 'Completed task carries operation-specific reality verification for final sign-off.' }
     ];
 
     const verifiedCount = checklist.filter(c => c.verified).length;

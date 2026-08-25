@@ -25,7 +25,7 @@ export interface PayPalOrderRecord {
   links?: any[];
   captureId?: string;
   payer?: any;
-  mode: 'sandbox' | 'live' | 'simulation';
+  mode: 'sandbox' | 'live';
 }
 
 class PayPalRuntime {
@@ -51,7 +51,7 @@ class PayPalRuntime {
 
   public async getAccessToken(): Promise<string> {
     if (!this.isConfigured()) {
-      return 'SIMULATED_PAYPAL_ACCESS_TOKEN_' + Date.now();
+      throw new Error('PayPal credentials are required; refusing simulated access-token generation');
     }
 
     if (this.accessToken && Date.now() < this.tokenExpiresAt - 30000) {
@@ -89,9 +89,13 @@ class PayPalRuntime {
     const currency = req.currency || 'USD';
     const amountStr = req.amount.toFixed(2);
 
+    if (!this.isConfigured()) {
+      throw new Error('PayPal credentials are required; refusing simulated order creation');
+    }
+
     let orderRecord: PayPalOrderRecord;
 
-    if (this.isConfigured()) {
+    {
       const token = await this.getAccessToken();
       const body = {
         intent: 'CAPTURE',
@@ -150,25 +154,6 @@ class PayPalRuntime {
         links: data.links,
         mode: this.mode
       };
-    } else {
-      // Functional operational sandbox simulation
-      const orderId = `PP-ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-      orderRecord = {
-        id: orderId,
-        status: 'CREATED',
-        amount: req.amount,
-        currency,
-        description: req.description || 'Kitora E-Commerce Order (Sandbox)',
-        customId: req.customId,
-        createTime: new Date().toISOString(),
-        updateTime: new Date().toISOString(),
-        links: [
-          { href: `${this.baseUrl}/v2/checkout/orders/${orderId}`, rel: 'self', method: 'GET' },
-          { href: `https://www.sandbox.paypal.com/checkoutnow?token=${orderId}`, rel: 'approve', method: 'GET' },
-          { href: `${this.baseUrl}/v2/checkout/orders/${orderId}/capture`, rel: 'capture', method: 'POST' }
-        ],
-        mode: 'simulation'
-      };
     }
 
     // Save to persistent storage
@@ -184,9 +169,19 @@ class PayPalRuntime {
     const savedOrders = dbRuntime.get('paypalOrders') || [];
     const index = savedOrders.findIndex((o: PayPalOrderRecord) => o.id === orderId);
 
+    if (!this.isConfigured()) {
+      throw new Error('PayPal credentials are required; refusing simulated capture');
+    }
+    if (index < 0) {
+      throw new Error(`PayPal order ${orderId} is not present in provider-backed local records`);
+    }
+    if (savedOrders[index].mode !== this.mode) {
+      throw new Error(`PayPal order ${orderId} was created for ${savedOrders[index].mode}, not configured ${this.mode}`);
+    }
+
     let updatedRecord: PayPalOrderRecord;
 
-    if (this.isConfigured() && index >= 0 && savedOrders[index].mode !== 'simulation') {
+    {
       const token = await this.getAccessToken();
       const res = await fetch(`${this.baseUrl}/v2/checkout/orders/${orderId}/capture`, {
         method: 'POST',
@@ -211,38 +206,9 @@ class PayPalRuntime {
         updateTime: new Date().toISOString(),
         payer: data.payer
       };
-    } else {
-      // Sandbox / Simulation Capture Execution
-      const captureId = `CAP-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-      const target = index >= 0 ? savedOrders[index] : {
-        id: orderId,
-        status: 'CREATED',
-        amount: 99.00,
-        currency: 'USD',
-        description: 'Direct Capture Order',
-        createTime: new Date().toISOString(),
-        updateTime: new Date().toISOString(),
-        mode: 'simulation'
-      };
-
-      updatedRecord = {
-        ...target,
-        status: 'COMPLETED',
-        captureId,
-        updateTime: new Date().toISOString(),
-        payer: {
-          email_address: 'buyer@kitora-sandbox.com',
-          payer_id: 'PAYER-KITORA-999',
-          name: { given_name: 'Autonomous', surname: 'Buyer' }
-        }
-      };
     }
 
-    if (index >= 0) {
-      savedOrders[index] = updatedRecord;
-    } else {
-      savedOrders.unshift(updatedRecord);
-    }
+    savedOrders[index] = updatedRecord;
     dbRuntime.set('paypalOrders', savedOrders);
 
     eventBus.publish('PAYPAL.ORDER.CAPTURED', 'PayPalRuntime', updatedRecord);
@@ -261,9 +227,8 @@ class PayPalRuntime {
 
     if (eventType === 'PAYMENT.CAPTURE.COMPLETED' || eventType === 'CHECKOUT.ORDER.APPROVED') {
       const orderId = resource?.supplementary_data?.related_ids?.order_id || resource?.id;
-      if (orderId) {
-        await this.captureOrder(orderId).catch(() => {});
-      }
+      if (!orderId) return { processed: false, eventType };
+      await this.captureOrder(orderId);
     }
 
     return { processed: true, eventType };
@@ -282,8 +247,6 @@ class PayPalRuntime {
       if (this.isConfigured()) {
         await this.getAccessToken();
         pingSuccess = true;
-      } else {
-        pingSuccess = true; // Simulation mode active
       }
     } catch (e) {
       pingSuccess = false;
@@ -293,7 +256,7 @@ class PayPalRuntime {
 
     return {
       configured: this.isConfigured(),
-      mode: this.isConfigured() ? this.mode : 'simulation',
+      mode: this.mode,
       baseUrl: this.baseUrl,
       pingSuccess,
       activeOrdersCount: orders.length,

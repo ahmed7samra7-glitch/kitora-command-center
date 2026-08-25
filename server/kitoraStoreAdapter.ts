@@ -77,7 +77,7 @@ export class KitoraStoreAdapter {
       evidence.push(`Live Store URL '${this.liveStoreUrl}' returned HTTP status ${httpStatusCode} in ${Date.now() - startTime}ms.`);
       evidence.push(`Verified Store Title: '${title}'. Server header: '${serverHeader}'.`);
     } catch (err: any) {
-      evidence.push(`Live HTTP check to '${this.liveStoreUrl}' error: ${err.message}. Defaulting to authoritative local store engine.`);
+      evidence.push(`Live HTTP check to '${this.liveStoreUrl}' failed: ${err.message}. Local catalog and order state are informational only and cannot establish live-store availability.`);
     }
 
     const catalog = await this.getProducts();
@@ -130,11 +130,12 @@ export class KitoraStoreAdapter {
   }
 
   public async getCheckoutStatus(): Promise<{ status: 'HEALTHY' | 'DEGRADED' | 'UNAVAILABLE'; gateway: string; paypalVerified: boolean }> {
-    const configured = payPalRuntime.isConfigured();
+    const health = await payPalRuntime.getHealthStatus();
+    const healthy = health.configured && health.pingSuccess;
     return {
-      status: configured ? 'HEALTHY' : 'UNAVAILABLE',
+      status: healthy ? 'HEALTHY' : health.configured ? 'DEGRADED' : 'UNAVAILABLE',
       gateway: 'PayPal Checkout Gateway',
-      paypalVerified: configured
+      paypalVerified: healthy
     };
   }
 

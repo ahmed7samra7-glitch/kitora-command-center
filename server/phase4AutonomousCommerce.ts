@@ -564,6 +564,10 @@ Return JSON with format:
     if (!paypalOrder || paypalOrder.status !== 'COMPLETED' || paypalOrder.mode !== 'live' || !paypalOrder.captureId) {
       throw new Error('PayPal payment is not verified as a live completed capture');
     }
+    const existingLiveOrder = (dbRuntime.get('liveOrders') || []).find((order: any) => order.paypalOrderId === paypalOrder.id);
+    if (existingLiveOrder) {
+      throw new Error(`PayPal payment ${paypalOrder.id} is already linked to order ${existingLiveOrder.id}; refusing duplicate fulfillment`);
+    }
     const catalogItem = (dbRuntime.get('storeCatalog') || []).find((item: any) => item.id === orderInput.productId && item.isPurchasable === true);
     if (!catalogItem?.cjProductId) throw new Error('Purchasable catalog item is not linked to a CJ provider product');
     const liveProduct = cjDropshippingRuntime.getProducts().find((product: any) => product.pid === catalogItem.cjProductId);
@@ -616,7 +620,7 @@ Return JSON with format:
       order: fullOrderRecord,
       notification: placedNotification,
       executionState: 'PROVIDER_EVIDENCE_PENDING',
-      fulfillmentVerified: true,
+      fulfillmentVerified: ['DISPATCHED', 'DELIVERED'].includes(cjFulfillment.status) && Boolean(cjFulfillment.trackingNumber),
       whatsappDeliveryConfirmed: false,
     };
   }
