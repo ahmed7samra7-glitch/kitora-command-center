@@ -3,7 +3,23 @@ import { cjDropshippingRuntime } from './cjDropshipping.js';
 import { payPalRuntime } from './paypal.js';
 import { dbRuntime } from './dbStorage.js';
 import { eventBus } from './eventBus.js';
-import { kccBrain } from './kccBrain.js';
+import { kccBrain, BrainDecisionResult } from './kccBrain.js';
+
+export function requireCompletedBrainOutput<T>(decision: BrainDecisionResult, operation: string): T {
+  if (decision.status !== 'COMPLETED') {
+    const error = new Error(`KCC Brain ${decision.status}: ${operation} cannot continue without a completed provider result.`) as Error & { code?: string; status?: string; shouldRetry?: boolean };
+    error.code = 'KCC_BRAIN_BLOCKED';
+    error.status = decision.status;
+    error.shouldRetry = decision.shouldRetry;
+    throw error;
+  }
+  if (decision.output === null || decision.output === undefined) {
+    const error = new Error(`KCC Brain COMPLETED result for ${operation} contained no output.`) as Error & { code?: string };
+    error.code = 'KCC_BRAIN_INVALID_OUTPUT';
+    throw error;
+  }
+  return decision.output as T;
+}
 
 // Helper to prevent AI calls from hanging the 24/7 background queue
 async function withTimeout<T>(promise: Promise<T>, timeoutMs = 4000): Promise<T> {
@@ -292,7 +308,12 @@ Cost: $${cost}, Shipping: $${ship}, Target Selling Price: $${pricing.calculatedP
         targetAudience: '',
         keySellingPoint: '',
       });
-      const aiAnalysis = brainDecision.output;
+      const aiAnalysis = requireCompletedBrainOutput<{
+        viralPotentialScore: number;
+        competitionLevel: 'LOW' | 'MEDIUM' | 'HIGH';
+        targetAudience: string;
+        keySellingPoint: string;
+      }>(brainDecision, 'product hunting');
       const marginWeight = Math.min(100, pricing.netMarginPercent * 1.5);
       const viralWeight = aiAnalysis.viralPotentialScore;
       const compBonus = aiAnalysis.competitionLevel === 'LOW' ? 10 : aiAnalysis.competitionLevel === 'MEDIUM' ? 5 : 0;
@@ -362,7 +383,7 @@ Category: "${category}"
 Return a complete JSON object with fields: title, shortDescription, longDescription, features, benefits, specifications, faq, seoTitle, metaDescription, tags.`;
 
     const decision = await kccBrain.executeAgentTask('MARKETING_COPYWRITER', prompt, fallbackContent);
-    return decision.output;
+    return requireCompletedBrainOutput<GeneratedContent>(decision, 'product content generation');
   }
 
   // 4. Marketing Automation Engine
@@ -392,7 +413,7 @@ Return JSON with format:
 }`;
 
     const decision = await kccBrain.executeAgentTask('MARKETING_COPYWRITER', prompt, fallbackAssets);
-    return decision.output;
+    return requireCompletedBrainOutput<typeof fallbackAssets>(decision, 'marketing asset generation');
   }
 
   // 5. Customer Experience Automation Engine

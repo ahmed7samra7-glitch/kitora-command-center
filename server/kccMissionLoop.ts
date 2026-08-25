@@ -367,42 +367,48 @@ export class KCCMissionLoop {
           const res = await dispatchWithResilience('gemini', () =>
             geminiDriver.dispatch({ taskId: task.taskId, payload: { prompt: `${task.title}: ${task.description}` } } as any, {})
           );
-          executionResult = { success: res.status === 'COMPLETED', output: res.result || res.error, provider: 'GEMINI' };
+          if (res.status !== 'COMPLETED') throw new Error(`Provider returned ${res.status}: ${res.error || 'no trusted completion evidence'}`);
+          executionResult = { success: true, output: res.result, provider: task.assignedProvider };
         } catch (geminiErr: any) {
           console.warn(`[KCC Mission Loop] Provider GEMINI unavailable or failed (${geminiErr.message}). Switching provider to OPENAI...`);
           const res = await dispatchWithResilience('openai', () =>
             openAiDriver.dispatch({ taskId: task.taskId, payload: { prompt: `${task.title}: ${task.description}` } } as any, {})
           );
           if (res.status === 'COMPLETED') task.assignedProvider = 'OPENAI';
-          executionResult = { success: res.status === 'COMPLETED', output: res.result || res.error, provider: 'OPENAI' };
+          if (res.status !== 'COMPLETED') throw new Error(`Provider returned ${res.status}: ${res.error || 'no trusted completion evidence'}`);
+          executionResult = { success: true, output: res.result, provider: task.assignedProvider };
         }
       } else if (task.assignedProvider === 'CLAUDE') {
         try {
           const res = await dispatchWithResilience('claude', () =>
             claudeDriver.dispatch({ taskId: task.taskId, payload: { prompt: `${task.title}: ${task.description}` } } as any, {})
           );
-          executionResult = { success: res.status === 'COMPLETED', output: res.result || res.error, provider: 'CLAUDE' };
+          if (res.status !== 'COMPLETED') throw new Error(`Provider returned ${res.status}: ${res.error || 'no trusted completion evidence'}`);
+          executionResult = { success: true, output: res.result, provider: task.assignedProvider };
         } catch (claudeErr: any) {
           console.warn(`[KCC Mission Loop] Provider CLAUDE unavailable or failed (${claudeErr.message}). Switching provider to GEMINI...`);
           const res = await dispatchWithResilience('gemini', () =>
             geminiDriver.dispatch({ taskId: task.taskId, payload: { prompt: `${task.title}: ${task.description}` } } as any, {})
           );
           if (res.status === 'COMPLETED') task.assignedProvider = 'GEMINI';
-          executionResult = { success: res.status === 'COMPLETED', output: res.result || res.error, provider: 'GEMINI' };
+          if (res.status !== 'COMPLETED') throw new Error(`Provider returned ${res.status}: ${res.error || 'no trusted completion evidence'}`);
+          executionResult = { success: true, output: res.result, provider: task.assignedProvider };
         }
       } else if (task.assignedProvider === 'OPENAI') {
         try {
           const res = await dispatchWithResilience('openai', () =>
             openAiDriver.dispatch({ taskId: task.taskId, payload: { prompt: `${task.title}: ${task.description}` } } as any, {})
           );
-          executionResult = { success: res.status === 'COMPLETED', output: res.result || res.error, provider: 'OPENAI' };
+          if (res.status !== 'COMPLETED') throw new Error(`Provider returned ${res.status}: ${res.error || 'no trusted completion evidence'}`);
+          executionResult = { success: true, output: res.result, provider: task.assignedProvider };
         } catch (openAiErr: any) {
           console.warn(`[KCC Mission Loop] Provider OPENAI unavailable or failed (${openAiErr.message}). Switching provider to CLAUDE...`);
           const res = await dispatchWithResilience('claude', () =>
             claudeDriver.dispatch({ taskId: task.taskId, payload: { prompt: `${task.title}: ${task.description}` } } as any, {})
           );
           if (res.status === 'COMPLETED') task.assignedProvider = 'CLAUDE';
-          executionResult = { success: res.status === 'COMPLETED', output: res.result || res.error, provider: 'CLAUDE' };
+          if (res.status !== 'COMPLETED') throw new Error(`Provider returned ${res.status}: ${res.error || 'no trusted completion evidence'}`);
+          executionResult = { success: true, output: res.result, provider: task.assignedProvider };
         }
       } else if (task.assignedProvider === 'CJ_DROPSHIPPING') {
         const products = await dispatchWithResilience('cj_dropshipping', () => cjDropshippingRuntime.syncProducts('trending', 10));

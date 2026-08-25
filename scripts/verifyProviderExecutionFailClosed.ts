@@ -11,16 +11,16 @@ const task: any = {
   payload: { prompt: 'adversarial fail-closed verification' }
 };
 
-const assertNotCompleted = (name: string, response: any) => {
-  if (response.status === 'COMPLETED') {
-    throw new Error(`${name}: provider execution returned COMPLETED without a live provider/evidence.`);
+const assertFailClosed = (name: string, response: any) => {
+  if (!['BLOCKED', 'FAILED'].includes(response.status)) {
+    throw new Error(`${name}: expected terminal FAILED or BLOCKED, got ${response.status}.`);
   }
 };
 
 try {
-  assertNotCompleted('Gemini missing key', await new GeminiDriver().dispatch(task, {}));
-  assertNotCompleted('OpenAI missing key', await new OpenAIDriver().dispatch(task, {}));
-  assertNotCompleted('Claude missing key', await new ClaudeDriver().dispatch(task, {}));
+  assertFailClosed('Gemini missing key', await new GeminiDriver().dispatch(task, {}));
+  assertFailClosed('OpenAI missing key', await new OpenAIDriver().dispatch(task, {}));
+  assertFailClosed('Claude missing key', await new ClaudeDriver().dispatch(task, {}));
 
   for (const [name, driver] of [['Gemini', new GeminiDriver()], ['OpenAI', new OpenAIDriver()], ['Claude', new ClaudeDriver()] ] as const) {
     const polled = await driver.poll(`${name}-UNVERIFIED-JOB`);
@@ -39,14 +39,14 @@ try {
   process.env.CLAUDE_API_KEY = 'test-key';
   process.env.ANTHROPIC_API_KEY = 'test-key';
 
-  assertNotCompleted('Gemini network exception', await new GeminiDriver().dispatch(task, {}));
-  assertNotCompleted('OpenAI network exception', await new OpenAIDriver().dispatch(task, {}));
-  assertNotCompleted('Claude network exception', await new ClaudeDriver().dispatch(task, {}));
+  assertFailClosed('Gemini network exception', await new GeminiDriver().dispatch(task, {}));
+  assertFailClosed('OpenAI network exception', await new OpenAIDriver().dispatch(task, {}));
+  assertFailClosed('Claude network exception', await new ClaudeDriver().dispatch(task, {}));
 
   globalThis.fetch = (async () => new Response(JSON.stringify({ error: 'HTTP 503' }), { status: 503 })) as typeof fetch;
-  assertNotCompleted('Gemini HTTP 503', await new GeminiDriver().dispatch(task, {}));
-  assertNotCompleted('OpenAI HTTP 503', await new OpenAIDriver().dispatch(task, {}));
-  assertNotCompleted('Claude HTTP 503', await new ClaudeDriver().dispatch(task, {}));
+  assertFailClosed('Gemini HTTP 503', await new GeminiDriver().dispatch(task, {}));
+  assertFailClosed('OpenAI HTTP 503', await new OpenAIDriver().dispatch(task, {}));
+  assertFailClosed('Claude HTTP 503', await new ClaudeDriver().dispatch(task, {}));
 
   globalThis.fetch = originalFetch;
   console.log('Provider execution fail-closed verification: PASS');

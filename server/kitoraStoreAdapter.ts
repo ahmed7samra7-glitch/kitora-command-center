@@ -1,5 +1,6 @@
 import { dbRuntime } from './dbStorage.js';
 import { kccRealityVerifier } from './kccRealityVerifier.js';
+import { payPalRuntime } from './paypal.js';
 
 export interface StoreProduct {
   id: string;
@@ -129,11 +130,11 @@ export class KitoraStoreAdapter {
   }
 
   public async getCheckoutStatus(): Promise<{ status: 'HEALTHY' | 'DEGRADED' | 'UNAVAILABLE'; gateway: string; paypalVerified: boolean }> {
-    const paypalOrders = dbRuntime.get('paypalOrders') || [];
+    const configured = payPalRuntime.isConfigured();
     return {
-      status: 'HEALTHY',
+      status: configured ? 'HEALTHY' : 'UNAVAILABLE',
       gateway: 'PayPal Checkout Gateway',
-      paypalVerified: true
+      paypalVerified: configured
     };
   }
 

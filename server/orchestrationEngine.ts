@@ -114,7 +114,7 @@ export class GeminiDriver implements ProviderDriver {
   }
 
   async poll(asyncJobId: string): Promise<DriverResponse> {
-    return { status: 'FAILED', asyncJobId, error: 'Unverified async job status; completion requires trusted provider evidence.' };
+    return { status: 'RUNNING', asyncJobId, error: 'No trusted completion evidence is available yet.' };
   }
 
   async callback(asyncJobId: string, payload: any): Promise<DriverResponse> {
