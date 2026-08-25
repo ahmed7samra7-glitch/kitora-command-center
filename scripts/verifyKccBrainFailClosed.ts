@@ -1,4 +1,5 @@
 import { kccBrain } from '../server/kccBrain.js';
+import { kccRealityVerifier } from '../server/kccRealityVerifier.js';
 
 const providerKeys = ['GEMINI_API_KEY', 'OPENAI_API_KEY', 'CLAUDE_API_KEY', 'ANTHROPIC_API_KEY', 'MANUS_API_KEY'];
 const savedKeys = new Map<string, string | undefined>();
@@ -25,6 +26,14 @@ try {
 
   if (!result.auditTrail.some(entry => entry.includes('Deterministic fallback is blocked fail-closed'))) {
     throw new Error('Missing fail-closed audit trail entry.');
+  }
+
+  const downstreamProof = kccRealityVerifier.verifyTaskResult(
+    { verificationMethod: 'API_CHECK' },
+    { success: false, error: 'provider HTTP 503' }
+  );
+  if (downstreamProof.verified) {
+    throw new Error('Downstream reality verification must reject explicit provider failure.');
   }
 
   const status = kccBrain.getBrainStatus();

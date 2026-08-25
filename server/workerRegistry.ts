@@ -51,6 +51,7 @@ export class WorkerRegistryManager {
     this.timeoutInterval = setInterval(() => {
       this.checkWorkerTimeouts();
     }, 10000);
+    this.timeoutInterval.unref?.();
   }
 
   // 1. REGISTER OR UPDATE WORKER

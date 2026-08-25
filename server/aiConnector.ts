@@ -308,7 +308,8 @@ export class GeminiProviderAdapter implements IAIProviderAdapter {
   }
 
   public async getStatus(jobId: string): Promise<AIJobStatus> {
-    return 'COMPLETED';
+    // Unknown jobs have no trusted completion evidence and must not be promoted.
+    return 'FAILED';
   }
 
   public async cancelTask(jobId: string): Promise<boolean> {
@@ -513,7 +514,8 @@ export class OpenAIProviderAdapter implements IAIProviderAdapter {
   }
 
   public async getStatus(jobId: string): Promise<AIJobStatus> {
-    return 'COMPLETED';
+    // Unknown jobs have no trusted completion evidence and must not be promoted.
+    return 'FAILED';
   }
 
   public async cancelTask(jobId: string): Promise<boolean> {
@@ -727,7 +729,8 @@ export class ClaudeProviderAdapter implements IAIProviderAdapter {
   }
 
   public async getStatus(jobId: string): Promise<AIJobStatus> {
-    return 'COMPLETED';
+    // Unknown jobs have no trusted completion evidence and must not be promoted.
+    return 'FAILED';
   }
 
   public async cancelTask(jobId: string): Promise<boolean> {
@@ -920,7 +923,8 @@ export class ManusProviderAdapter implements IAIProviderAdapter {
   }
 
   public async getStatus(jobId: string): Promise<AIJobStatus> {
-    return 'COMPLETED';
+    // Unknown jobs have no trusted completion evidence and must not be promoted.
+    return 'FAILED';
   }
 
   public async cancelTask(jobId: string): Promise<boolean> {
@@ -982,7 +986,8 @@ export class DeterministicProviderAdapter implements IAIProviderAdapter {
   }
 
   public async getStatus(jobId: string): Promise<AIJobStatus> {
-    return 'COMPLETED';
+    // Unknown jobs have no trusted completion evidence and must not be promoted.
+    return 'FAILED';
   }
 
   public async cancelTask(jobId: string): Promise<boolean> {
@@ -1070,6 +1075,7 @@ export class ProviderHealthMonitor {
     this.intervalRef = setInterval(() => {
       this.runHealthChecks();
     }, 5 * 60 * 1000);
+    this.intervalRef.unref?.();
   }
 
   public async runHealthChecks(): Promise<ProviderHealth[]> {
@@ -1149,15 +1155,11 @@ export class PersistentAiJobQueue {
 
     let response = await provider.executeTask(pending);
 
-    // Failover execution if primary provider failed
+    // A failed real-provider execution must remain failed. Deterministic output
+    // is never an acceptable substitute for an AI-provider requirement.
     if (response.status === 'FAILED' && provider.providerId !== 'deterministic') {
-      pending.auditLogs.push(`[Failover Engine] Provider '${provider.providerId}' failed (${response.error}). Switching to fallback...`);
+      pending.auditLogs.push(`[Failover Engine] Provider '${provider.providerId}' failed (${response.error}). No deterministic fallback applied.`);
       providerSelectionEngine.triggerCooloff(provider.providerId, 60000);
-
-      // Failover to Deterministic Engine if no other API key
-      provider = providerSelectionEngine.getAdapter('deterministic');
-      pending.assignedProvider = provider.providerId;
-      response = await provider.executeTask(pending);
     }
 
     if (response.status === 'COMPLETED') {
@@ -1170,11 +1172,17 @@ export class PersistentAiJobQueue {
       autonomousTaskChainEngine.onTaskCompleted(pending);
     } else {
       pending.status = 'FAILED';
-      pending.error = response.error;
-      pending.result = pending.expectedOutput;
+      pending.error = response.error || 'Provider execution did not complete.';
+      pending.result = null;
+      pending.auditLogs.push('[Dispatcher] Task failed; downstream task chain was not advanced.');
       this.saveToDisk();
 
-      autonomousTaskChainEngine.onTaskCompleted(pending);
+      eventBus.publish('pipeline_task_failed', 'TASK_CHAIN_ENGINE', {
+        taskId: pending.taskId,
+        traceId: pending.traceId,
+        provider: pending.assignedProvider,
+        error: pending.error
+      });
     }
   }
 

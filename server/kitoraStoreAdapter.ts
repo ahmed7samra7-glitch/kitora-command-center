@@ -152,7 +152,7 @@ export class KitoraStoreAdapter {
   public async verifyDeployment(): Promise<{ verified: boolean; url: string; httpStatus: number | null; latencyMs: number }> {
     const inspection = await this.inspectStore();
     return {
-      verified: inspection.liveHttpAccessible || inspection.totalProductsCount > 0,
+      verified: inspection.liveHttpAccessible && inspection.checkoutStatus === 'HEALTHY',
       url: this.liveStoreUrl,
       httpStatus: inspection.httpStatusCode,
       latencyMs: inspection.responseTimeMs
