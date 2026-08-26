@@ -249,6 +249,7 @@ class PayPalRuntime {
     return updatedRecord;
   }
 
+  /** Reconciles PayPal webhooks without repeating a completed capture. */
   public async processWebhook(headers: any, body: any): Promise<{ processed: boolean; eventType: string }> {
     const eventType = body?.event_type || 'PAYMENT.CAPTURE.COMPLETED';
     const resource = body?.resource || body;

@@ -5,6 +5,8 @@ import { dbRuntime } from './dbStorage.js';
 import { eventBus } from './eventBus.js';
 import { kccBrain, BrainDecisionResult } from './kccBrain.js';
 
+const inFlightFulfillmentReservations = new Set<string>();
+
 export function requireCompletedBrainOutput<T>(decision: BrainDecisionResult, operation: string, validateOutput: (output: unknown) => boolean = output => output !== null && typeof output === 'object'): T {
   if (decision.status !== 'COMPLETED') {
     const error = new Error(`KCC Brain ${decision.status}: ${operation} cannot continue without a completed provider result.`) as Error & { code?: string; status?: string; shouldRetry?: boolean };
@@ -549,6 +551,7 @@ Return JSON with format:
   }
 
   // 4. Real Automated Order Pipeline Execution
+  /** Submits one live order through the payment, CJ, persistence, and notification chain. */
   public async processCompleteOrderPipeline(orderInput: {
     customerName: string;
     customerEmail: string;
@@ -580,32 +583,53 @@ Return JSON with format:
     }
     const fulfillmentReservations = dbRuntime.get('fulfillmentReservations') || {};
     const existingReservation = fulfillmentReservations[paypalOrder.id];
-    if (existingReservation) {
-      throw new Error(`PayPal payment ${paypalOrder.id} already has fulfillment reservation ${existingReservation.orderId}; refusing duplicate fulfillment`);
+    const retryableReservation = existingReservation?.status === 'FAILED_RETRYABLE';
+    if ((existingReservation && !retryableReservation) || inFlightFulfillmentReservations.has(paypalOrder.id)) {
+      throw new Error(`PayPal payment ${paypalOrder.id} already has fulfillment reservation ${existingReservation?.orderId || `ORD-KITORA-${paypalOrder.id}`}; refusing duplicate fulfillment`);
     }
 
-    const orderId = `ORD-KITORA-${paypalOrder.id}`;
+    const orderId = existingReservation?.orderId || `ORD-KITORA-${paypalOrder.id}`;
     fulfillmentReservations[paypalOrder.id] = {
+      ...existingReservation,
       orderId,
       paypalOrderId: paypalOrder.id,
       status: 'PENDING_PROVIDER_RESULT',
-      reservedAt: new Date().toISOString(),
+      reservedAt: existingReservation?.reservedAt || new Date().toISOString(),
+      lastAttemptAt: new Date().toISOString(),
     };
     dbRuntime.set('fulfillmentReservations', fulfillmentReservations);
 
     // The PayPal ID-derived orderId is reused as CJ's orderNumber/idempotency key.
-    const cjFulfillment = await cjDropshippingRuntime.submitOrder({
-      cjOrderId: orderId,
-      shippingName: orderInput.customerName,
-      shippingAddress: orderInput.shippingAddress.address,
-      shippingCity: orderInput.shippingAddress.city,
-      shippingCountry: orderInput.shippingAddress.country,
-      shippingZip: orderInput.shippingAddress.zip,
-      customerEmail: orderInput.customerEmail,
-      shippingPhone: orderInput.customerPhone,
-      paypalOrderId: paypalOrder.id,
-      products: [{ pid: liveProduct.pid, quantity, unitPrice: liveProduct.costPrice }],
-    });
+    inFlightFulfillmentReservations.add(paypalOrder.id);
+    let cjFulfillment;
+    try {
+      cjFulfillment = await cjDropshippingRuntime.submitOrder({
+        cjOrderId: orderId,
+        shippingName: orderInput.customerName,
+        shippingAddress: orderInput.shippingAddress.address,
+        shippingCity: orderInput.shippingAddress.city,
+        shippingCountry: orderInput.shippingAddress.country,
+        shippingZip: orderInput.shippingAddress.zip,
+        customerEmail: orderInput.customerEmail,
+        shippingPhone: orderInput.customerPhone,
+        paypalOrderId: paypalOrder.id,
+        products: [{ pid: liveProduct.pid, quantity, unitPrice: liveProduct.costPrice }],
+      });
+    } catch (error: any) {
+      // The provider may have rejected the request or timed out after accepting it.
+      // Preserve the deterministic CJ order key and mark the reservation retryable;
+      // a later attempt can reconcile/retry without creating a new key.
+      fulfillmentReservations[paypalOrder.id] = {
+        ...fulfillmentReservations[paypalOrder.id],
+        status: 'FAILED_RETRYABLE',
+        failedAt: new Date().toISOString(),
+        lastError: String(error?.message || 'CJ provider submission failed'),
+      };
+      dbRuntime.set('fulfillmentReservations', fulfillmentReservations);
+      throw error;
+    } finally {
+      inFlightFulfillmentReservations.delete(paypalOrder.id);
+    }
     if (!cjFulfillment.providerRequestId || !cjFulfillment.cjOrderId) throw new Error('CJ provider fulfillment evidence is incomplete');
     const fullOrderRecord = {
       id: orderId,
