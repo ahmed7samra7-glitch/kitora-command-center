@@ -5,6 +5,8 @@ import { dbRuntime } from './dbStorage.js';
 import { eventBus } from './eventBus.js';
 import { kccBrain, BrainDecisionResult } from './kccBrain.js';
 
+const inFlightFulfillmentReservations = new Set<string>();
+
 export function requireCompletedBrainOutput<T>(decision: BrainDecisionResult, operation: string, validateOutput: (output: unknown) => boolean = output => output !== null && typeof output === 'object'): T {
   if (decision.status !== 'COMPLETED') {
     const error = new Error(`KCC Brain ${decision.status}: ${operation} cannot continue without a completed provider result.`) as Error & { code?: string; status?: string; shouldRetry?: boolean };
@@ -549,6 +551,7 @@ Return JSON with format:
   }
 
   // 4. Real Automated Order Pipeline Execution
+  /** Submits one live order through the payment, CJ, persistence, and notification chain. */
   public async processCompleteOrderPipeline(orderInput: {
     customerName: string;
     customerEmail: string;
@@ -570,18 +573,63 @@ Return JSON with format:
     if (!liveProduct) throw new Error('Catalog item has no live CJ provider product evidence');
     const quantity = Number(orderInput.quantity);
     if (!Number.isInteger(quantity) || quantity <= 0) throw new Error('Order quantity must be a positive integer');
-    const orderId = `ORD-KITORA-${Math.floor(100000 + Math.random() * 900000)}`;
-    const cjFulfillment = await cjDropshippingRuntime.submitOrder({
-      shippingName: orderInput.customerName,
-      shippingAddress: orderInput.shippingAddress.address,
-      shippingCity: orderInput.shippingAddress.city,
-      shippingCountry: orderInput.shippingAddress.country,
-      shippingZip: orderInput.shippingAddress.zip,
-      customerEmail: orderInput.customerEmail,
-      shippingPhone: orderInput.customerPhone,
+
+    // Reserve the PayPal order synchronously before the first await. This closes the
+    // worker/scheduler race where both callers could otherwise submit to CJ.
+    const liveOrders = dbRuntime.get('liveOrders') || [];
+    const existingLiveOrder = liveOrders.find((order: any) => order.paypalOrderId === paypalOrder.id);
+    if (existingLiveOrder) {
+      throw new Error(`PayPal payment ${paypalOrder.id} is already linked to order ${existingLiveOrder.id}; refusing duplicate fulfillment`);
+    }
+    const fulfillmentReservations = dbRuntime.get('fulfillmentReservations') || {};
+    const existingReservation = fulfillmentReservations[paypalOrder.id];
+    const retryableReservation = existingReservation?.status === 'FAILED_RETRYABLE' || existingReservation?.status === 'PENDING_PROVIDER_RESULT';
+    if ((existingReservation && !retryableReservation) || inFlightFulfillmentReservations.has(paypalOrder.id)) {
+      throw new Error(`PayPal payment ${paypalOrder.id} already has fulfillment reservation ${existingReservation?.orderId || `ORD-KITORA-${paypalOrder.id}`}; refusing duplicate fulfillment`);
+    }
+
+    const orderId = existingReservation?.orderId || `ORD-KITORA-${paypalOrder.id}`;
+    fulfillmentReservations[paypalOrder.id] = {
+      ...existingReservation,
+      orderId,
       paypalOrderId: paypalOrder.id,
-      products: [{ pid: liveProduct.pid, quantity, unitPrice: liveProduct.costPrice }],
-    });
+      status: 'PENDING_PROVIDER_RESULT',
+      reservedAt: existingReservation?.reservedAt || new Date().toISOString(),
+      lastAttemptAt: new Date().toISOString(),
+    };
+    dbRuntime.set('fulfillmentReservations', fulfillmentReservations);
+
+    // The PayPal ID-derived orderId is reused as CJ's orderNumber/idempotency key.
+    inFlightFulfillmentReservations.add(paypalOrder.id);
+    let cjFulfillment;
+    try {
+      cjFulfillment = await cjDropshippingRuntime.submitOrder({
+        cjOrderId: orderId,
+        shippingName: orderInput.customerName,
+        shippingAddress: orderInput.shippingAddress.address,
+        shippingCity: orderInput.shippingAddress.city,
+        shippingCountry: orderInput.shippingAddress.country,
+        shippingZip: orderInput.shippingAddress.zip,
+        customerEmail: orderInput.customerEmail,
+        shippingPhone: orderInput.customerPhone,
+        paypalOrderId: paypalOrder.id,
+        products: [{ pid: liveProduct.pid, quantity, unitPrice: liveProduct.costPrice }],
+      });
+    } catch (error: any) {
+      // The provider may have rejected the request or timed out after accepting it.
+      // Preserve the deterministic CJ order key and mark the reservation retryable;
+      // a later attempt can reconcile/retry without creating a new key.
+      fulfillmentReservations[paypalOrder.id] = {
+        ...fulfillmentReservations[paypalOrder.id],
+        status: 'FAILED_RETRYABLE',
+        failedAt: new Date().toISOString(),
+        lastError: String(error?.message || 'CJ provider submission failed'),
+      };
+      dbRuntime.set('fulfillmentReservations', fulfillmentReservations);
+      throw error;
+    } finally {
+      inFlightFulfillmentReservations.delete(paypalOrder.id);
+    }
     if (!cjFulfillment.providerRequestId || !cjFulfillment.cjOrderId) throw new Error('CJ provider fulfillment evidence is incomplete');
     const fullOrderRecord = {
       id: orderId,
@@ -599,9 +647,16 @@ Return JSON with format:
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    const liveOrders = dbRuntime.get('liveOrders') || [];
     liveOrders.unshift(fullOrderRecord);
     dbRuntime.set('liveOrders', liveOrders);
+    fulfillmentReservations[paypalOrder.id] = {
+      ...fulfillmentReservations[paypalOrder.id],
+      status: 'COMPLETED',
+      completedAt: new Date().toISOString(),
+      cjOrderId: cjFulfillment.cjOrderId,
+      providerRequestId: cjFulfillment.providerRequestId,
+    };
+    dbRuntime.set('fulfillmentReservations', fulfillmentReservations);
     const placedNotification = await this.triggerCustomerAutomation(orderId, 'ORDER_PLACED');
     eventBus.publish('COMMERCE.ORDER.PIPELINE.EXECUTED', 'Phase4CommerceEngine', {
       orderId,

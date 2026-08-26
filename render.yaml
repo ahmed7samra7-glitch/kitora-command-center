@@ -8,5 +8,5 @@ services:
     branch: main
     region: frankfurt
     dockerfilePath: ./Dockerfile
-    healthCheckPath: /api/kcc/health
+    healthCheckPath: /api/live
     autoDeployTrigger: checksPass

@@ -34,8 +34,21 @@ async function waitForHealth(timeoutMs = 15000): Promise<Response> {
 async function main() {
   try {
     const health = await waitForHealth();
-    if (![200, 503].includes(health.status)) {
-      throw new Error(`unexpected health status ${health.status}`);
+    if (health.status !== 200) {
+      throw new Error(`expected degraded-but-live health to remain HTTP 200, received ${health.status}`);
+    }
+    const healthPayload = await health.json() as { status?: string; productionReadiness?: { kccAlive?: boolean } };
+    if (healthPayload.productionReadiness?.kccAlive !== false) {
+      throw new Error('expected KCC ALIVE to remain false without real fulfillment and WhatsApp evidence');
+    }
+
+    const live = await fetch(`http://127.0.0.1:${port}/api/live`);
+    if (live.status !== 200) {
+      throw new Error(`expected process liveness status 200, received ${live.status}`);
+    }
+    const livePayload = await live.json() as { status?: string };
+    if (livePayload.status !== 'LIVE') {
+      throw new Error(`unexpected liveness payload ${JSON.stringify(livePayload)}`);
     }
 
     const webhook = await fetch(`http://127.0.0.1:${port}/api/whatsapp/webhook?hub.mode=subscribe&hub.verify_token=bad&hub.challenge=test`);

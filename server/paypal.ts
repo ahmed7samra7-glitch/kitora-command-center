@@ -11,6 +11,7 @@ export interface PayPalOrderRequest {
     unitAmount: number;
   }>;
   customId?: string;
+  checkoutDetails?: PayPalOrderRecord['checkoutDetails'];
 }
 
 export interface PayPalOrderRecord {
@@ -25,6 +26,14 @@ export interface PayPalOrderRecord {
   links?: any[];
   captureId?: string;
   payer?: any;
+  checkoutDetails?: {
+    customerName: string;
+    customerEmail: string;
+    customerPhone: string;
+    shippingAddress: { address: string; city: string; country: string; zip: string };
+    productId: string;
+    quantity: number;
+  };
   mode: 'sandbox' | 'live' | 'simulation';
 }
 
@@ -145,6 +154,7 @@ class PayPalRuntime {
         currency,
         description: req.description || 'Kitora E-Commerce Order',
         customId: req.customId,
+        checkoutDetails: req.checkoutDetails,
         createTime: data.create_time || new Date().toISOString(),
         updateTime: data.update_time || new Date().toISOString(),
         links: data.links,
@@ -160,6 +170,7 @@ class PayPalRuntime {
         currency,
         description: req.description || 'Kitora E-Commerce Order (Sandbox)',
         customId: req.customId,
+        checkoutDetails: req.checkoutDetails,
         createTime: new Date().toISOString(),
         updateTime: new Date().toISOString(),
         links: [
@@ -249,6 +260,7 @@ class PayPalRuntime {
     return updatedRecord;
   }
 
+  /** Reconciles PayPal webhooks without repeating a completed capture. */
   public async processWebhook(headers: any, body: any): Promise<{ processed: boolean; eventType: string }> {
     const eventType = body?.event_type || 'PAYMENT.CAPTURE.COMPLETED';
     const resource = body?.resource || body;
@@ -259,11 +271,27 @@ class PayPalRuntime {
       receivedAt: new Date().toISOString()
     });
 
-    if (eventType === 'PAYMENT.CAPTURE.COMPLETED' || eventType === 'CHECKOUT.ORDER.APPROVED') {
-      const orderId = resource?.supplementary_data?.related_ids?.order_id || resource?.id;
-      if (orderId) {
-        await this.captureOrder(orderId).catch(() => {});
+    const orderId = resource?.supplementary_data?.related_ids?.order_id || resource?.id;
+
+    if (eventType === 'PAYMENT.CAPTURE.COMPLETED') {
+      // This event is confirmation that PayPal already captured the order. Re-capturing
+      // it can produce ORDER_ALREADY_CAPTURED and cause webhook retries. Reconcile only
+      // against a locally completed order with capture evidence.
+      const savedOrder = this.getSavedOrders().find((order) => order.id === orderId);
+      return {
+        processed: Boolean(savedOrder?.status === 'COMPLETED' && savedOrder.captureId),
+        eventType,
+      };
+    }
+
+    if (eventType === 'CHECKOUT.ORDER.APPROVED') {
+      // Capture only an order that is locally marked APPROVED and has not been captured.
+      // Missing or inconsistent local state remains fail-closed.
+      const savedOrder = this.getSavedOrders().find((order) => order.id === orderId);
+      if (!savedOrder || savedOrder.status !== 'APPROVED' || savedOrder.captureId) {
+        return { processed: false, eventType };
       }
+      await this.captureOrder(orderId);
     }
 
     return { processed: true, eventType };

@@ -256,28 +256,10 @@ class PermanentAutonomousAgentRuntime {
       }
 
       case 'ORDER_FULFILLMENT': {
-        if (task.payload?.customerName) {
-          await phase4CommerceEngine.processCompleteOrderPipeline(task.payload);
-        } else {
-          const paypalOrders = payPalRuntime.getSavedOrders().filter(o => o.status === 'COMPLETED');
-          const cjOrders = cjDropshippingRuntime.getOrders();
-
-          for (const order of paypalOrders) {
-            const exists = cjOrders.some(cjo => cjo.paypalOrderId === order.id);
-            if (!exists) {
-              await phase4CommerceEngine.processCompleteOrderPipeline({
-                customerName: order.payer?.name?.given_name ? `${order.payer.name.given_name} ${order.payer.name.surname}` : 'KITORA Customer',
-                customerEmail: order.payer?.email_address || 'customer@kitora.store',
-                customerPhone: '+14155552671',
-                shippingAddress: { address: '100 Silicon Valley Way', city: 'San Jose', country: 'US', zip: '95134' },
-                productId: 'PROD-KITORA-001',
-                quantity: 1,
-                paymentAmountUSD: order.amount,
-                paypalPaymentId: order.id
-              });
-            }
-          }
+        if (!task.payload?.customerName) {
+          throw new Error('Canonical fulfillment requires persisted checkout details; refusing synthetic shipping or product data');
         }
+        await phase4CommerceEngine.processCompleteOrderPipeline(task.payload);
         return 'paypal-cj-bridge-engine';
       }
 
@@ -316,11 +298,13 @@ class PermanentAutonomousAgentRuntime {
       this.enqueueTask('PRODUCT_HUNT', evt.payload);
     });
 
-    // React to PayPal Payment Captured -> Auto Fulfill
-    eventBus.subscribe('PAYPAL.ORDER.COMPLETED', async (evt) => {
-      console.log('[Event-Driven Runtime] Payment captured! Auto-submitting CJ order & notifying customer...');
+    // React to PayPal Payment Captured -> Auto Fulfill.
+    // The canonical pipeline persists the live order before creating its provider-pending
+    // notification record; enqueueing CUSTOMER_NOTIFY here races that persistence and
+    // passes the PayPal ID instead of the persisted liveOrders ID.
+    eventBus.subscribe('PAYPAL.ORDER.CAPTURED', async (evt) => {
+      console.log('[Event-Driven Runtime] Payment captured! Auto-submitting CJ order through the canonical pipeline...');
       this.enqueueTask('ORDER_FULFILLMENT', evt.payload);
-      this.enqueueTask('CUSTOMER_NOTIFY', { orderId: evt.payload?.id, event: 'ORDER_PLACED' });
     });
 
     // React to Shipment Updates -> Auto WhatsApp Customer Notification

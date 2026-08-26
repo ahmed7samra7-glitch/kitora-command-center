@@ -2,6 +2,7 @@ import { eventBus } from './eventBus.js';
 import { dbRuntime } from './dbStorage.js';
 import { payPalRuntime } from './paypal.js';
 import { cjDropshippingRuntime } from './cjDropshipping.js';
+import { phase4CommerceEngine } from './phase4AutonomousCommerce.js';
 
 export interface ScheduledJob {
   id: string;
@@ -131,27 +132,21 @@ class PersistentSchedulerEngine {
 
     try {
       if (job.id === 'JOB-ORDER-FULFILLMENT') {
-        // Auto-fulfill captured PayPal orders that don't have a CJ Order submitted yet
+        // Reuse the canonical pipeline so payment, CJ fulfillment, liveOrders,
+        // notification authorization, and the idempotency reservation stay aligned.
         const paypalOrders = payPalRuntime.getSavedOrders().filter(o => o.status === 'COMPLETED');
-        const cjOrders = cjDropshippingRuntime.getOrders();
+        const liveOrders = dbRuntime.get('liveOrders') || [];
+        const reservations = dbRuntime.get('fulfillmentReservations') || {};
 
         for (const ppOrder of paypalOrders) {
-          const alreadySubmitted = cjOrders.some(cjo => cjo.paypalOrderId === ppOrder.id);
-          if (!alreadySubmitted) {
-            await cjDropshippingRuntime.submitOrder({
-              shippingName: ppOrder.payer?.name?.given_name ? `${ppOrder.payer.name.given_name} ${ppOrder.payer.name.surname}` : 'Automated Customer',
-              shippingAddress: '100 Silicon Valley Way',
-              shippingCity: 'San Jose',
-              shippingCountry: 'US',
-              shippingZip: '95134',
-              paypalOrderId: ppOrder.id,
-              products: [
-                {
-                  pid: 'CJ-P-889102',
-                  quantity: 1,
-                  unitPrice: ppOrder.amount
-                }
-              ]
+          const reservation = reservations[ppOrder.id];
+          const terminalReservation = reservation && !['FAILED_RETRYABLE', 'PENDING_PROVIDER_RESULT'].includes(reservation.status);
+          const alreadySubmitted = liveOrders.some((order: any) => order.paypalOrderId === ppOrder.id) || Boolean(terminalReservation);
+          if (!alreadySubmitted && ppOrder.checkoutDetails) {
+            await phase4CommerceEngine.processCompleteOrderPipeline({
+              ...ppOrder.checkoutDetails,
+              paymentAmountUSD: ppOrder.amount,
+              paypalPaymentId: ppOrder.id,
             });
           }
         }

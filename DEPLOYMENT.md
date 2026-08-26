@@ -5,9 +5,14 @@
 - **Host Binding**: `0.0.0.0`
 - **Default Port**: `3000` (respects `process.env.PORT`)
 - **Production Entry Point**: `node dist/server.cjs`
-- **Health Verification Endpoint**: `GET /api/kcc/health` or `GET /api/health`
+- **Process Liveness Endpoint**: `GET /api/live`
+- **Readiness and KCC ALIVE Endpoint**: `GET /api/kcc/health` or `GET /api/health`
 
 ## Health Endpoint Contract
+`GET /api/live` is the process-liveness check. It returns HTTP 200 with `{ "status": "LIVE" }` when the HTTP process is operational and does not inspect provider credentials or KCC evidence.
+
+`GET /api/kcc/health` is the readiness and KCC ALIVE status endpoint. It reports KCC evidence state separately; missing fulfillment or WhatsApp evidence must keep `productionReadiness.kccAlive` false.
+
 A `GET /api/kcc/health` request returns:
 ```json
 {
@@ -56,7 +61,8 @@ docker build -t kitora-command-center:latest .
 # 2. Test Container Run
 docker run -d --name kcc-prod -p 3000:3000 -e PORT=3000 -e NODE_ENV=production kitora-command-center:latest
 
-# 3. Verify Health Endpoint
+# 3. Verify process liveness, then inspect readiness
+curl -sSf http://localhost:3000/api/live
 curl -s http://localhost:3000/api/kcc/health
 
 # 4. Cleanup
@@ -85,6 +91,9 @@ gcloud run deploy kitora-command-center \
 
 ## Post-Deployment Verification
 ```bash
-# Ping deployed Cloud Run health check
+# Ping deployed process-liveness check
+curl -sSf https://YOUR-SERVICE-URL.run.app/api/live
+
+# Inspect readiness and KCC ALIVE state separately
 curl -s https://YOUR-SERVICE-URL.run.app/api/kcc/health
 ```
