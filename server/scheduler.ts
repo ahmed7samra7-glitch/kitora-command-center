@@ -139,7 +139,9 @@ class PersistentSchedulerEngine {
         const reservations = dbRuntime.get('fulfillmentReservations') || {};
 
         for (const ppOrder of paypalOrders) {
-          const alreadySubmitted = liveOrders.some((order: any) => order.paypalOrderId === ppOrder.id) || Boolean(reservations[ppOrder.id]);
+          const reservation = reservations[ppOrder.id];
+          const terminalReservation = reservation && !['FAILED_RETRYABLE', 'PENDING_PROVIDER_RESULT'].includes(reservation.status);
+          const alreadySubmitted = liveOrders.some((order: any) => order.paypalOrderId === ppOrder.id) || Boolean(terminalReservation);
           if (!alreadySubmitted && ppOrder.checkoutDetails) {
             await phase4CommerceEngine.processCompleteOrderPipeline({
               ...ppOrder.checkoutDetails,
