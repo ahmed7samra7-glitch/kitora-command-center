@@ -16,6 +16,7 @@ export interface DatabaseSchema {
   cjProducts: any[];
   storeCatalog: any[];
   liveOrders: any[];
+  fulfillmentReservations?: Record<string, any>;
   ownerNotifications: any[];
   scheduledJobs: any[];
   eventLogs: any[];
@@ -59,6 +60,7 @@ const DEFAULT_DB_DATA: DatabaseSchema = {
   cjProducts: [],
   storeCatalog: [],
   liveOrders: [],
+  fulfillmentReservations: {},
   ownerNotifications: [],
   scheduledJobs: [],
   eventLogs: [],

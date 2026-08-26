@@ -570,8 +570,32 @@ Return JSON with format:
     if (!liveProduct) throw new Error('Catalog item has no live CJ provider product evidence');
     const quantity = Number(orderInput.quantity);
     if (!Number.isInteger(quantity) || quantity <= 0) throw new Error('Order quantity must be a positive integer');
-    const orderId = `ORD-KITORA-${Math.floor(100000 + Math.random() * 900000)}`;
+
+    // Reserve the PayPal order synchronously before the first await. This closes the
+    // worker/scheduler race where both callers could otherwise submit to CJ.
+    const liveOrders = dbRuntime.get('liveOrders') || [];
+    const existingLiveOrder = liveOrders.find((order: any) => order.paypalOrderId === paypalOrder.id);
+    if (existingLiveOrder) {
+      throw new Error(`PayPal payment ${paypalOrder.id} is already linked to order ${existingLiveOrder.id}; refusing duplicate fulfillment`);
+    }
+    const fulfillmentReservations = dbRuntime.get('fulfillmentReservations') || {};
+    const existingReservation = fulfillmentReservations[paypalOrder.id];
+    if (existingReservation) {
+      throw new Error(`PayPal payment ${paypalOrder.id} already has fulfillment reservation ${existingReservation.orderId}; refusing duplicate fulfillment`);
+    }
+
+    const orderId = `ORD-KITORA-${paypalOrder.id}`;
+    fulfillmentReservations[paypalOrder.id] = {
+      orderId,
+      paypalOrderId: paypalOrder.id,
+      status: 'PENDING_PROVIDER_RESULT',
+      reservedAt: new Date().toISOString(),
+    };
+    dbRuntime.set('fulfillmentReservations', fulfillmentReservations);
+
+    // The PayPal ID-derived orderId is reused as CJ's orderNumber/idempotency key.
     const cjFulfillment = await cjDropshippingRuntime.submitOrder({
+      cjOrderId: orderId,
       shippingName: orderInput.customerName,
       shippingAddress: orderInput.shippingAddress.address,
       shippingCity: orderInput.shippingAddress.city,
@@ -599,9 +623,16 @@ Return JSON with format:
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    const liveOrders = dbRuntime.get('liveOrders') || [];
     liveOrders.unshift(fullOrderRecord);
     dbRuntime.set('liveOrders', liveOrders);
+    fulfillmentReservations[paypalOrder.id] = {
+      ...fulfillmentReservations[paypalOrder.id],
+      status: 'COMPLETED',
+      completedAt: new Date().toISOString(),
+      cjOrderId: cjFulfillment.cjOrderId,
+      providerRequestId: cjFulfillment.providerRequestId,
+    };
+    dbRuntime.set('fulfillmentReservations', fulfillmentReservations);
     const placedNotification = await this.triggerCustomerAutomation(orderId, 'ORDER_PLACED');
     eventBus.publish('COMMERCE.ORDER.PIPELINE.EXECUTED', 'Phase4CommerceEngine', {
       orderId,

@@ -259,11 +259,27 @@ class PayPalRuntime {
       receivedAt: new Date().toISOString()
     });
 
-    if (eventType === 'PAYMENT.CAPTURE.COMPLETED' || eventType === 'CHECKOUT.ORDER.APPROVED') {
-      const orderId = resource?.supplementary_data?.related_ids?.order_id || resource?.id;
-      if (orderId) {
-        await this.captureOrder(orderId).catch(() => {});
+    const orderId = resource?.supplementary_data?.related_ids?.order_id || resource?.id;
+
+    if (eventType === 'PAYMENT.CAPTURE.COMPLETED') {
+      // This event is confirmation that PayPal already captured the order. Re-capturing
+      // it can produce ORDER_ALREADY_CAPTURED and cause webhook retries. Reconcile only
+      // against a locally completed order with capture evidence.
+      const savedOrder = this.getSavedOrders().find((order) => order.id === orderId);
+      return {
+        processed: Boolean(savedOrder?.status === 'COMPLETED' && savedOrder.captureId),
+        eventType,
+      };
+    }
+
+    if (eventType === 'CHECKOUT.ORDER.APPROVED') {
+      // Capture only an order that is locally marked APPROVED and has not been captured.
+      // Missing or inconsistent local state remains fail-closed.
+      const savedOrder = this.getSavedOrders().find((order) => order.id === orderId);
+      if (!savedOrder || savedOrder.status !== 'APPROVED' || savedOrder.captureId) {
+        return { processed: false, eventType };
       }
+      await this.captureOrder(orderId);
     }
 
     return { processed: true, eventType };

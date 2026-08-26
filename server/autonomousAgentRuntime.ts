@@ -316,11 +316,13 @@ class PermanentAutonomousAgentRuntime {
       this.enqueueTask('PRODUCT_HUNT', evt.payload);
     });
 
-    // React to PayPal Payment Captured -> Auto Fulfill
-    eventBus.subscribe('PAYPAL.ORDER.COMPLETED', async (evt) => {
-      console.log('[Event-Driven Runtime] Payment captured! Auto-submitting CJ order & notifying customer...');
+    // React to PayPal Payment Captured -> Auto Fulfill.
+    // The canonical pipeline persists the live order before creating its provider-pending
+    // notification record; enqueueing CUSTOMER_NOTIFY here races that persistence and
+    // passes the PayPal ID instead of the persisted liveOrders ID.
+    eventBus.subscribe('PAYPAL.ORDER.CAPTURED', async (evt) => {
+      console.log('[Event-Driven Runtime] Payment captured! Auto-submitting CJ order through the canonical pipeline...');
       this.enqueueTask('ORDER_FULFILLMENT', evt.payload);
-      this.enqueueTask('CUSTOMER_NOTIFY', { orderId: evt.payload?.id, event: 'ORDER_PLACED' });
     });
 
     // React to Shipment Updates -> Auto WhatsApp Customer Notification
