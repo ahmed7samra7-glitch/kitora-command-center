@@ -140,14 +140,9 @@ class PersistentSchedulerEngine {
 
         for (const ppOrder of paypalOrders) {
           const alreadySubmitted = liveOrders.some((order: any) => order.paypalOrderId === ppOrder.id) || Boolean(reservations[ppOrder.id]);
-          if (!alreadySubmitted) {
+          if (!alreadySubmitted && ppOrder.checkoutDetails) {
             await phase4CommerceEngine.processCompleteOrderPipeline({
-              customerName: ppOrder.payer?.name?.given_name ? `${ppOrder.payer.name.given_name} ${ppOrder.payer.name.surname}` : 'Automated Customer',
-              customerEmail: ppOrder.payer?.email_address || 'customer@kitora.store',
-              customerPhone: '+14155552671',
-              shippingAddress: { address: '100 Silicon Valley Way', city: 'San Jose', country: 'US', zip: '95134' },
-              productId: 'PROD-KITORA-001',
-              quantity: 1,
+              ...ppOrder.checkoutDetails,
               paymentAmountUSD: ppOrder.amount,
               paypalPaymentId: ppOrder.id,
             });

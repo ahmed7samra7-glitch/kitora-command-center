@@ -11,6 +11,7 @@ export interface PayPalOrderRequest {
     unitAmount: number;
   }>;
   customId?: string;
+  checkoutDetails?: PayPalOrderRecord['checkoutDetails'];
 }
 
 export interface PayPalOrderRecord {
@@ -25,6 +26,14 @@ export interface PayPalOrderRecord {
   links?: any[];
   captureId?: string;
   payer?: any;
+  checkoutDetails?: {
+    customerName: string;
+    customerEmail: string;
+    customerPhone: string;
+    shippingAddress: { address: string; city: string; country: string; zip: string };
+    productId: string;
+    quantity: number;
+  };
   mode: 'sandbox' | 'live' | 'simulation';
 }
 
@@ -145,6 +154,7 @@ class PayPalRuntime {
         currency,
         description: req.description || 'Kitora E-Commerce Order',
         customId: req.customId,
+        checkoutDetails: req.checkoutDetails,
         createTime: data.create_time || new Date().toISOString(),
         updateTime: data.update_time || new Date().toISOString(),
         links: data.links,
@@ -160,6 +170,7 @@ class PayPalRuntime {
         currency,
         description: req.description || 'Kitora E-Commerce Order (Sandbox)',
         customId: req.customId,
+        checkoutDetails: req.checkoutDetails,
         createTime: new Date().toISOString(),
         updateTime: new Date().toISOString(),
         links: [

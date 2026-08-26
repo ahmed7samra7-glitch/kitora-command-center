@@ -583,7 +583,7 @@ Return JSON with format:
     }
     const fulfillmentReservations = dbRuntime.get('fulfillmentReservations') || {};
     const existingReservation = fulfillmentReservations[paypalOrder.id];
-    const retryableReservation = existingReservation?.status === 'FAILED_RETRYABLE';
+    const retryableReservation = existingReservation?.status === 'FAILED_RETRYABLE' || existingReservation?.status === 'PENDING_PROVIDER_RESULT';
     if ((existingReservation && !retryableReservation) || inFlightFulfillmentReservations.has(paypalOrder.id)) {
       throw new Error(`PayPal payment ${paypalOrder.id} already has fulfillment reservation ${existingReservation?.orderId || `ORD-KITORA-${paypalOrder.id}`}; refusing duplicate fulfillment`);
     }
