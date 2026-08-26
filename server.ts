@@ -183,6 +183,7 @@ app.use((req: Request, res: Response, next) => {
     path === '/api/openapi.json' ||
     path === '/api/health' ||
     path === '/api/kcc/health' ||
+    path === '/api/live' ||
     path === '/api/kcc/openapi.json' ||
     path.startsWith('/api/phase4/store/catalog') ||
     path.startsWith('/api/phase4/store/order') ||
@@ -2406,6 +2407,11 @@ const handleKccHealthRequest = (req: express.Request, res: express.Response) => 
     });
   }
 };
+
+// Process liveness only: this endpoint must not depend on KCC ALIVE evidence or upstream providers.
+app.get('/api/live', (_req, res) => {
+  res.status(200).json({ status: 'LIVE' });
+});
 
 app.get('/api/kcc/health', handleKccHealthRequest);
 app.get('/api/health', handleKccHealthRequest);
