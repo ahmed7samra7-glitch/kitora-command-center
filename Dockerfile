@@ -11,6 +11,8 @@ COPY . .
 # Apply the KCC Brain scale-to-zero guards before the production build.
 # Railway builds directly from main and does not execute GitHub CI patch steps.
 RUN node scripts/applyBrainScaleZero.mjs
+# Railway Free builders can be OOM-killed during Vite/esbuild; reserve memory for the container.
+ENV NODE_OPTIONS=--max-old-space-size=384
 RUN npm run build
 
 FROM node:22-alpine AS runner
