@@ -23,7 +23,8 @@ ENV NODE_ENV=production
 ENV PORT=3000
 
 COPY package*.json ./
-RUN npm ci --omit=dev || npm install --omit=dev
+# Runtime uses the bundled dist only; skip build-time install scripts that can mismatch esbuild.
+RUN npm ci --omit=dev --ignore-scripts
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/data ./data
