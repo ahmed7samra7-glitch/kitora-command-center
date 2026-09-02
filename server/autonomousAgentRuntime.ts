@@ -56,7 +56,6 @@ class PermanentAutonomousAgentRuntime {
   private activeRunningCount = 0;
   private lastScheduleCheck = new Date().toISOString();
 
-  // AI Client Lazy Instantiation
   private primaryAiClient: GoogleGenAI | null = null;
   private quotaCooloffUntil = 0;
 
@@ -74,7 +73,6 @@ class PermanentAutonomousAgentRuntime {
     }
   }
 
-  // 1. Boot-time Auto-Start & Queue Recovery
   public start() {
     if (this.isLoopRunning) {
       console.log('[Autonomous Runtime] Background runner is already active 24/7.');
@@ -82,12 +80,9 @@ class PermanentAutonomousAgentRuntime {
     }
 
     console.log('[Autonomous Runtime] 🚀 Booting 24/7 Permanent Autonomous Agent Runtime...');
-    
-    // Load persisted tasks from dbStorage
     const savedQueue = dbRuntime.get('taskQueue');
     if (Array.isArray(savedQueue) && savedQueue.length > 0) {
       this.queue = savedQueue;
-      // Resume unfinished tasks
       for (const t of this.queue) {
         if (t.status === 'RUNNING' || t.status === 'RETRYING') {
           t.status = 'QUEUED';
@@ -97,14 +92,9 @@ class PermanentAutonomousAgentRuntime {
       console.log(`[Autonomous Runtime] Resumed ${this.queue.length} tasks from disk queue.`);
     }
 
-    // Subscribe to all eventBus topics for zero-touch event-driven execution
     this.subscribeToEventBus();
-
-    // Start background processing loop (runs every 3 seconds)
     this.isLoopRunning = true;
     this.loopTimer = setInterval(() => this.processNextQueueTask(), 3000);
-
-    // Start Autonomous Scheduler (15m, 1h, 6h, 24h cron checks)
     this.startAutonomousScheduler();
 
     eventBus.publish('RUNTIME.BOOT.SUCCESS', 'AutonomousAgentRuntime', {
@@ -132,7 +122,6 @@ class PermanentAutonomousAgentRuntime {
     dbRuntime.set('taskQueue', this.queue);
   }
 
-  // 2. Self-Healing AI & Provider Fallback Execution via KCC Brain
   public async executeWithFallbackAI(
     prompt: string,
     systemInstruction: string,
@@ -158,7 +147,6 @@ class PermanentAutonomousAgentRuntime {
     };
   }
 
-  // 3. Task Enqueue & Persistence
   public enqueueTask(type: AgentTask['type'], payload: any = {}): AgentTask {
     const task: AgentTask = {
       id: `TASK-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -173,14 +161,12 @@ class PermanentAutonomousAgentRuntime {
 
     this.queue.push(task);
     this.saveQueue();
-
     eventBus.publish('AGENT.TASK.QUEUED', 'AutonomousAgentRuntime', { taskId: task.id, type: task.type });
     return task;
   }
 
-  // 4. Background Queue Processor Loop
   private async processNextQueueTask() {
-    if (this.activeRunningCount > 0) return; // Process one at a time sequentially to guarantee consistency
+    if (this.activeRunningCount > 0) return;
 
     const nextTask = this.queue.find(t => t.status === 'QUEUED');
     if (!nextTask) return;
@@ -207,12 +193,10 @@ class PermanentAutonomousAgentRuntime {
       });
     } catch (err: any) {
       console.error(`[Autonomous Runtime] Task ${nextTask.id} failed (Attempt ${nextTask.attempts}/${nextTask.maxRetries}):`, err?.message);
-      
       if (nextTask.attempts < nextTask.maxRetries) {
         nextTask.status = 'RETRYING';
         nextTask.lastError = err?.message;
         nextTask.updatedAt = new Date().toISOString();
-        // Re-queue after backoff
         setTimeout(() => {
           nextTask.status = 'QUEUED';
           this.saveQueue();
@@ -235,11 +219,9 @@ class PermanentAutonomousAgentRuntime {
     }
   }
 
-  // 5. Core Autonomous Task Execution Routines
   private async executeTaskLogic(task: AgentTask): Promise<string> {
     switch (task.type) {
       case 'PRODUCT_HUNT': {
-        // Discover product, run AI Hunter, calculate dynamic pricing & auto publish
         const hunted = await phase4CommerceEngine.discoverAndHuntProducts();
         eventBus.publish('COMMERCE.PRODUCT.HUNTED.AUTO', 'AutonomousRuntime', { count: hunted.length });
         return 'gemini-3.6-flash';
@@ -264,7 +246,12 @@ class PermanentAutonomousAgentRuntime {
       }
 
       case 'CUSTOMER_NOTIFY': {
-        await phase4CommerceEngine.triggerCustomerAutomation(task.payload?.orderId || 'ORD-991', task.payload?.event || 'ORDER_PLACED');
+        const orderId = task.payload?.orderId;
+        const event = task.payload?.event;
+        if (!orderId || !event) {
+          throw new Error('Canonical customer notification requires persisted orderId and event; refusing synthetic notification data');
+        }
+        await phase4CommerceEngine.triggerCustomerAutomation(orderId, event);
         return 'whatsapp-dispatch-engine';
       }
 
@@ -274,7 +261,6 @@ class PermanentAutonomousAgentRuntime {
         const overview = phase4CommerceEngine.getExecutiveOverview();
         eventBus.publish('COMMERCE.REPORT.GENERATED', 'AutonomousRuntime', { type: task.type, overview });
 
-        // Dispatch Daily Report to Owner Isolation Layer
         phase4CommerceEngine.sendOwnerNotificationIfRequired({
           type: 'DAILY_EXECUTIVE_REPORT',
           title: `Daily Executive & Financial Performance Report`,
@@ -290,68 +276,53 @@ class PermanentAutonomousAgentRuntime {
     }
   }
 
-  // 6. Event-Driven Subscriptions (Reacting automatically to events)
   private subscribeToEventBus() {
-    // React to new CJ products
     eventBus.subscribe('CJ.PRODUCT.NEW', async (evt) => {
       console.log('[Event-Driven Runtime] Auto-reacting to new CJ product discovery...');
       this.enqueueTask('PRODUCT_HUNT', evt.payload);
     });
 
-    // React to PayPal Payment Captured -> Auto Fulfill.
-    // The canonical pipeline persists the live order before creating its provider-pending
-    // notification record; enqueueing CUSTOMER_NOTIFY here races that persistence and
-    // passes the PayPal ID instead of the persisted liveOrders ID.
     eventBus.subscribe('PAYPAL.ORDER.CAPTURED', async (evt) => {
       console.log('[Event-Driven Runtime] Payment captured! Auto-submitting CJ order through the canonical pipeline...');
       this.enqueueTask('ORDER_FULFILLMENT', evt.payload);
     });
 
-    // React to Shipment Updates -> Auto WhatsApp Customer Notification
     eventBus.subscribe('CJ.SHIPMENT.UPDATED', async (evt) => {
       console.log('[Event-Driven Runtime] Shipment update received. Auto-notifying customer...');
       this.enqueueTask('CUSTOMER_NOTIFY', { orderId: evt.payload?.orderId, event: 'SHIPPED' });
     });
   }
 
-  // 7. Autonomous Scheduler Intervals (15m, 1h, 6h, 24h)
   private startAutonomousScheduler() {
     let tickCounter = 0;
-
-    // Check interval every 1 minute
     this.scheduleTimer = setInterval(() => {
       tickCounter++;
       this.lastScheduleCheck = new Date().toISOString();
 
-      // Every 15 minutes: Autonomous Product Hunter
       if (tickCounter % 15 === 0) {
         console.log('[Autonomous Scheduler] [15 Min] Running Product Hunter routine...');
         this.enqueueTask('PRODUCT_HUNT');
       }
 
-      // Every 60 minutes (1 Hour): Inventory Sync
       if (tickCounter % 60 === 0) {
         console.log('[Autonomous Scheduler] [1 Hour] Running Inventory Sync routine...');
         this.enqueueTask('INVENTORY_SYNC');
       }
 
-      // Every 360 minutes (6 Hours): Competitor & Price Scan
       if (tickCounter % 360 === 0) {
         console.log('[Autonomous Scheduler] [6 Hours] Running Competitor & Price Scan routine...');
         this.enqueueTask('COMPETITOR_SCAN');
       }
 
-      // Every 1440 minutes (24 Hours / Daily): Financial, Executive Report & Health Check
       if (tickCounter % 1440 === 0) {
         console.log('[Autonomous Scheduler] [Daily 24h] Running Daily Executive & Financial Reports...');
         this.enqueueTask('DAILY_FINANCIAL_REPORT');
         this.enqueueTask('DAILY_EXECUTIVE_REPORT');
         this.enqueueTask('STORE_HEALTH_CHECK');
       }
-    }, 60000); // 1 minute tick
+    }, 60000);
   }
 
-  // 8. Runtime Status API Methods
   public getStatus(): RuntimeStatus {
     return {
       isAlive: this.isLoopRunning,
