@@ -208,11 +208,19 @@ class PayPalRuntime {
     }
 
     const data = await res.json();
-    const captureId = data.purchase_units?.[0]?.payments?.captures?.[0]?.id;
-    if (typeof captureId !== 'string' || !captureId.trim()) {
-      throw new Error('PayPal capture response did not contain a valid capture ID');
+    const captures = Array.isArray(data.purchase_units)
+      ? data.purchase_units.flatMap((unit: any) => Array.isArray(unit?.payments?.captures) ? unit.payments.captures : [])
+      : [];
+    const completedCapture = captures.find((capture: any) =>
+      capture?.status === 'COMPLETED' &&
+      typeof capture?.id === 'string' &&
+      capture.id.trim()
+    );
+    if (data.status !== 'COMPLETED' || !completedCapture) {
+      throw new Error('PayPal capture response was incomplete: order status must be COMPLETED and a COMPLETED capture with a provider capture ID is required');
     }
 
+    const captureId = String(completedCapture.id).trim();
     const updatedRecord: PayPalOrderRecord = {
       ...savedOrders[index],
       status: 'COMPLETED',
@@ -239,12 +247,22 @@ class PayPalRuntime {
       receivedAt: new Date().toISOString()
     });
 
-    const orderId = resource?.supplementary_data?.related_ids?.order_id || resource?.id;
+    const captureId = typeof resource?.id === 'string' ? resource.id.trim() : '';
+    const orderId = typeof resource?.supplementary_data?.related_ids?.order_id === 'string'
+      ? resource.supplementary_data.related_ids.order_id.trim()
+      : '';
 
     if (eventType === 'PAYMENT.CAPTURE.COMPLETED') {
-      const savedOrder = this.getSavedOrders().find((order) => order.id === orderId);
+      const savedOrder = this.getSavedOrders().find((order) =>
+        (orderId && order.id === orderId) ||
+        (captureId && order.captureId === captureId)
+      );
       return {
-        processed: Boolean(savedOrder?.status === 'COMPLETED' && savedOrder.captureId),
+        processed: Boolean(
+          savedOrder?.status === 'COMPLETED' &&
+          savedOrder.captureId &&
+          (!captureId || savedOrder.captureId === captureId)
+        ),
         eventType,
       };
     }
