@@ -1,26 +1,133 @@
-import worker, { KccCloudflareEnv } from '../worker.js';
-import type { CloudflareD1Database, CloudflareD1Prepared } from '../server/cloudflareStore.js';
+import worker, { KccCloudflareEnv, processQueueMessage } from '../worker.js';
+import type {
+  CloudflareD1Database,
+  CloudflareD1Prepared,
+  CloudflareQueue
+} from '../server/cloudflareStore.js';
 
-class FakePrepared implements CloudflareD1Prepared {
-  constructor(private readonly query: string, private readonly db: FakeD1) {}
-  bind(..._values: unknown[]): CloudflareD1Prepared { return this; }
-  async first<T = Record<string, unknown>>(): Promise<T | null> { return null; }
-  async all<T = Record<string, unknown>>(): Promise<{ results: T[] }> {
-    if (this.query.includes('GROUP BY evidence_type')) return { results: this.db.evidence as T[] };
-    return { results: this.db.tasks as T[] };
-  }
-  async run(): Promise<{ success: boolean }> { return { success: true }; }
-}
+type Task = {
+  id: string;
+  type: string;
+  payload: string;
+  status: 'QUEUED' | 'RUNNING' | 'COMPLETED' | 'FAILED';
+  created_at: string;
+  updated_at: string;
+  attempts: number;
+  last_error: string | null;
+  result: string | null;
+};
 
 class FakeD1 implements CloudflareD1Database {
-  evidence: Record<string, unknown>[] = [];
-  tasks: Record<string, unknown>[] = [];
-  prepare(query: string): CloudflareD1Prepared { return new FakePrepared(query, this); }
+  tasks: Task[] = [];
+  evidence: Array<{ evidence_type: string; count: number }> = [];
+  private binds: unknown[] = [];
+
+  prepare(query: string): CloudflareD1Prepared {
+    const db = this;
+    return new (class implements CloudflareD1Prepared {
+      bind(...values: unknown[]): CloudflareD1Prepared {
+        db.binds = values;
+        return this;
+      }
+
+      async first<T = Record<string, unknown>>(): Promise<T | null> {
+        if (query.includes('FROM kcc_runtime_tasks WHERE id=?')) {
+          const id = String(db.binds[0]);
+          return (db.tasks.find((task) => task.id === id) as unknown as T) || null;
+        }
+        return null;
+      }
+
+      async all<T = Record<string, unknown>>(): Promise<{ results: T[] }> {
+        if (query.includes('GROUP BY evidence_type')) {
+          return { results: db.evidence as T[] };
+        }
+        if (query.includes('FROM kcc_runtime_tasks')) {
+          return { results: db.tasks as unknown as T[] };
+        }
+        return { results: [] };
+      }
+
+      async run(): Promise<{ success: boolean; meta?: { changes?: number } }> {
+        if (query.startsWith('INSERT INTO kcc_runtime_tasks')) {
+          const [id, type, payload, createdAt, updatedAt] = db.binds.map(String);
+          db.tasks.push({
+            id,
+            type,
+            payload,
+            status: 'QUEUED',
+            created_at: createdAt,
+            updated_at: updatedAt,
+            attempts: 0,
+            last_error: null,
+            result: null
+          });
+          return { success: true, meta: { changes: 1 } };
+        }
+
+        if (query.includes("SET status='RUNNING'")) {
+          const [updatedAt, id, staleBefore] = db.binds.map(String);
+          const task = db.tasks.find((candidate) => candidate.id === id);
+          const canClaim = Boolean(
+            task &&
+            (task.status === 'QUEUED' || (task.status === 'RUNNING' && task.updated_at < staleBefore))
+          );
+          if (!canClaim) return { success: true, meta: { changes: 0 } };
+          task!.status = 'RUNNING';
+          task!.attempts += 1;
+          task!.updated_at = updatedAt;
+          task!.last_error = null;
+          return { success: true, meta: { changes: 1 } };
+        }
+
+        if (query.includes("SET status='QUEUED'")) {
+          const [error, updatedAt, id] = db.binds.map(String);
+          const task = db.tasks.find((candidate) => candidate.id === id);
+          if (!task || task.status !== 'RUNNING') return { success: true, meta: { changes: 0 } };
+          task.status = 'QUEUED';
+          task.last_error = error;
+          task.updated_at = updatedAt;
+          return { success: true, meta: { changes: 1 } };
+        }
+
+        if (query.includes('SET status=?, last_error=?, result=?, updated_at=?')) {
+          const [status, error, result, updatedAt, id] = db.binds.map((value) => value as string | null);
+          const task = db.tasks.find((candidate) => candidate.id === id);
+          if (!task || task.status !== 'RUNNING') return { success: true, meta: { changes: 0 } };
+          task.status = status as Task['status'];
+          task.last_error = error ?? null;
+          task.result = result ?? null;
+          task.updated_at = updatedAt as string;
+          return { success: true, meta: { changes: 1 } };
+        }
+
+        if (query.startsWith('UPDATE kcc_runtime_tasks') && query.includes("status='FAILED'")) {
+          return { success: true, meta: { changes: 1 } };
+        }
+
+        return { success: true, meta: { changes: 0 } };
+      }
+    })();
+  }
+}
+
+class FakeQueue implements CloudflareQueue {
+  messages: unknown[] = [];
+  async send(message: unknown): Promise<void> {
+    this.messages.push(message);
+  }
 }
 
 const db = new FakeD1();
-const env: KccCloudflareEnv = { KCC_DB: db, KCC_WORKER_SECRET: 'test-secret' };
-const call = (path: string, init?: RequestInit) => worker.fetch(new Request(`https://kcc.test${path}`, init), env);
+const queue = new FakeQueue();
+const env: KccCloudflareEnv = {
+  KCC_DB: db,
+  KCC_TASK_QUEUE: queue,
+  KCC_WORKER_SECRET: 'test-secret'
+};
+
+const call = (path: string, init?: RequestInit) =>
+  worker.fetch(new Request(`https://kcc.test${path}`, init), env);
 
 const live = await call('/api/live');
 if (live.status !== 200) throw new Error(`Expected live 200, got ${live.status}`);
@@ -28,19 +135,91 @@ if (live.status !== 200) throw new Error(`Expected live 200, got ${live.status}`
 const health = await call('/api/kcc/health');
 if (health.status !== 503) throw new Error(`Expected fail-closed health 503, got ${health.status}`);
 const healthBody = await health.json() as any;
-if (healthBody.productionReadiness.kccAlive !== false) throw new Error('KCC_ALIVE must remain false without evidence.');
+if (healthBody.productionReadiness.kccAlive !== false) {
+  throw new Error('KCC_ALIVE must remain false without provider evidence.');
+}
 
-const unauthorized = await call('/api/kcc/tasks', { method: 'POST', body: JSON.stringify({ type: 'TEST' }) });
+const unauthorized = await call('/api/kcc/tasks', {
+  method: 'POST',
+  body: JSON.stringify({ type: 'KCC_HEALTH_CHECK' })
+});
 if (unauthorized.status !== 401) throw new Error(`Expected unauthorized task request 401, got ${unauthorized.status}`);
+
+const noQueueEnv: KccCloudflareEnv = {
+  KCC_DB: db,
+  KCC_WORKER_SECRET: 'test-secret'
+};
+const noQueue = await worker.fetch(new Request('https://kcc.test/api/kcc/tasks', {
+  method: 'POST',
+  headers: { 'content-type': 'application/json', 'x-kcc-worker-secret': 'test-secret' },
+  body: JSON.stringify({ type: 'KCC_HEALTH_CHECK' })
+}), noQueueEnv);
+if (noQueue.status !== 503) throw new Error(`Expected missing queue binding 503, got ${noQueue.status}`);
 
 const queued = await call('/api/kcc/tasks', {
   method: 'POST',
-  headers: { 'content-type': 'application/json', 'x-kcc-worker-secret': 'test-secret' },
-  body: JSON.stringify({ type: 'TEST', payload: { safe: true } })
+  headers: {
+    'content-type': 'application/json',
+    'x-kcc-worker-secret': 'test-secret'
+  },
+  body: JSON.stringify({ type: 'KCC_HEALTH_CHECK', payload: { safe: true } })
 });
 if (queued.status !== 202) throw new Error(`Expected queued task 202, got ${queued.status}`);
+const queuedBody = await queued.json() as any;
+const taskId = String(queuedBody.task?.id || '');
+if (!taskId || queue.messages.length !== 1) throw new Error('Expected durable queue message to be published.');
 
-const evidenceAttempt = await call('/api/kcc/evidence', { method: 'POST', body: '{}' });
-if (evidenceAttempt.status !== 403) throw new Error(`Expected evidence boundary 403, got ${evidenceAttempt.status}`);
+const message: any = {
+  id: 'message-1',
+  timestamp: new Date(),
+  body: queue.messages[0],
+  attempts: 1,
+  acked: false,
+  retried: false,
+  ack() { this.acked = true; },
+  retry() { this.retried = true; }
+};
+const queueResult = await processQueueMessage(env, message);
+if (queueResult !== 'ACK' || !message.acked || message.retried) {
+  throw new Error('Expected queue message to be processed and acknowledged.');
+}
+const completed = db.tasks.find((task) => task.id === taskId);
+if (!completed || completed.status !== 'COMPLETED') {
+  throw new Error('Expected KCC_HEALTH_CHECK to complete through the queue consumer.');
+}
 
-console.log('Cloudflare Worker runtime verification: PASS');
+const evidenceAttempt = await call('/api/kcc/evidence', {
+  method: 'POST',
+  body: '{}'
+});
+if (evidenceAttempt.status !== 403) {
+  throw new Error(`Expected evidence boundary 403, got ${evidenceAttempt.status}`);
+}
+
+const aliveCheck = await call('/api/kcc/tasks', {
+  method: 'POST',
+  headers: {
+    'content-type': 'application/json',
+    'x-kcc-worker-secret': 'test-secret'
+  },
+  body: JSON.stringify({ type: 'KCC_ALIVE_STATUS_CHECK' })
+});
+if (aliveCheck.status !== 202) throw new Error(`Expected KCC alive status task 202, got ${aliveCheck.status}`);
+const aliveTaskId = String((await aliveCheck.clone().json() as any).task.id);
+const aliveMessage: any = {
+  id: 'message-2',
+  timestamp: new Date(),
+  body: queue.messages[1],
+  attempts: 1,
+  acked: false,
+  retried: false,
+  ack() { this.acked = true; },
+  retry() { this.retried = true; }
+};
+await processQueueMessage(env, aliveMessage);
+const aliveTask = db.tasks.find((task) => task.id === aliveTaskId);
+if (!aliveTask || aliveTask.status !== 'COMPLETED') {
+  throw new Error('Expected KCC_ALIVE status check to complete without making KCC_ALIVE true.');
+}
+
+console.log('Cloudflare Worker + D1 + Queue verification: PASS');
