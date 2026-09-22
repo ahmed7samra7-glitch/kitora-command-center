@@ -1,6 +1,7 @@
 export interface CloudflareD1Result {
   results?: unknown[];
   success?: boolean;
+  meta?: { changes?: number };
 }
 
 export interface CloudflareD1Prepared {
@@ -15,7 +16,7 @@ export interface CloudflareD1Database {
 }
 
 export interface CloudflareQueue {
-  send(message: unknown): Promise<void>;
+  send(message: unknown): Promise<unknown>;
 }
 
 export interface CloudflareRuntimeEnv {
@@ -40,8 +41,9 @@ export interface KccTaskRecord {
   status: 'QUEUED' | 'RUNNING' | 'COMPLETED' | 'FAILED';
   created_at: string;
   updated_at: string;
-  attempts?: number;
+  attempts: number;
   last_error?: string | null;
+  result?: string | null;
 }
 
 const TABLES = {
@@ -68,7 +70,8 @@ export async function ensureCloudflareSchema(db: CloudflareD1Database): Promise<
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
       attempts INTEGER NOT NULL DEFAULT 0,
-      last_error TEXT
+      last_error TEXT,
+      result TEXT
     )`
   ).run();
 
@@ -86,6 +89,7 @@ export async function ensureCloudflareSchema(db: CloudflareD1Database): Promise<
   // Backward-compatible column upgrades for an already-created D1 database.
   try { await db.prepare(`ALTER TABLE ${TABLES.tasks} ADD COLUMN attempts INTEGER NOT NULL DEFAULT 0`).run(); } catch {}
   try { await db.prepare(`ALTER TABLE ${TABLES.tasks} ADD COLUMN last_error TEXT`).run(); } catch {}
+  try { await db.prepare(`ALTER TABLE ${TABLES.tasks} ADD COLUMN result TEXT`).run(); } catch {}
 }
 
 export async function readEvidenceSummary(db: CloudflareD1Database): Promise<KccEvidenceSummary> {
@@ -120,8 +124,9 @@ export async function enqueueCloudflareTask(
   const serializedPayload = JSON.stringify(payload ?? {});
 
   await db.prepare(
-    `INSERT INTO ${TABLES.tasks} (id, type, payload, status, created_at, updated_at, attempts, last_error)
-     VALUES (?, ?, ?, 'QUEUED', ?, ?, 0, NULL)`
+    `INSERT INTO ${TABLES.tasks}
+      (id, type, payload, status, created_at, updated_at, attempts, last_error, result)
+     VALUES (?, ?, ?, 'QUEUED', ?, ?, 0, NULL, NULL)`
   ).bind(id, type, serializedPayload, now, now).run();
 
   try {
@@ -141,7 +146,7 @@ export async function enqueueCloudflareTask(
 
 export async function listCloudflareTasks(db: CloudflareD1Database): Promise<Record<string, unknown>[]> {
   const rows = await db.prepare(
-    `SELECT id, type, payload, status, created_at, updated_at, attempts, last_error
+    `SELECT id, type, payload, status, created_at, updated_at, attempts, last_error, result
      FROM ${TABLES.tasks}
      ORDER BY created_at DESC
      LIMIT 100`
@@ -161,23 +166,31 @@ export async function claimCloudflareTask(
      WHERE id=? AND status='QUEUED'`
   ).bind(now, taskId).run();
 
-  if (!updated.success) return null;
+  if (Number(updated.meta?.changes || 0) !== 1) return null;
 
-  return db.prepare(`SELECT id, type, payload, status, created_at, updated_at, attempts, last_error FROM ${TABLES.tasks} WHERE id=?`)
-    .bind(taskId).first<KccTaskRecord>();
+  return db.prepare(
+    `SELECT id, type, payload, status, created_at, updated_at, attempts, last_error, result
+     FROM ${TABLES.tasks} WHERE id=?`
+  ).bind(taskId).first<KccTaskRecord>();
 }
 
 export async function completeCloudflareTask(
   db: CloudflareD1Database,
   taskId: string,
   status: 'COMPLETED' | 'FAILED',
-  error?: string
+  options?: { error?: string; result?: unknown }
 ): Promise<void> {
   await db.prepare(
     `UPDATE ${TABLES.tasks}
-     SET status=?, last_error=?, updated_at=?
+     SET status=?, last_error=?, result=?, updated_at=?
      WHERE id=? AND status='RUNNING'`
-  ).bind(status, error ?? null, new Date().toISOString(), taskId).run();
+  ).bind(
+    status,
+    options?.error ?? null,
+    options?.result === undefined ? null : JSON.stringify(options.result),
+    new Date().toISOString(),
+    taskId
+  ).run();
 }
 
 export function hasConfiguredLiveProvider(env: CloudflareRuntimeEnv): boolean {
