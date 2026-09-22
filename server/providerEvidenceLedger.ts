@@ -117,5 +117,10 @@ export function verifyProviderEvidenceReceipt(
     metadata: receipt.metadata
   });
 
-  return Boolean(expectedSignature && crypto.timingSafeEqual(Buffer.from(receipt.signature), Buffer.from(expectedSignature)));
+  if (!expectedSignature || receipt.signature.length !== expectedSignature.length) return false;
+  try {
+    return crypto.timingSafeEqual(Buffer.from(receipt.signature), Buffer.from(expectedSignature));
+  } catch {
+    return false;
+  }
 }
