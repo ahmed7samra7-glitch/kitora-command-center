@@ -63,5 +63,8 @@ jobs:
       - name: Verify PayPal fail-closed capture semantics
         run: npm run verify:paypal-fail-closed
 
+      - name: Verify PayPal capture response evidence
+        run: npm run verify:paypal-capture-evidence
+
       - name: Verify autonomous production commerce guard
         run: npm run verify:production-commerce-guard
