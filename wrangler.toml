@@ -4,11 +4,23 @@ compatibility_date = "2026-09-23"
 workers_dev = true
 
 [vars]
-# Set secrets with: npx wrangler secret put KCC_WORKER_SECRET
-# Set provider keys only when a real provider account is configured.
+# Secret runtime values must be configured in Cloudflare Secrets.
+# KCC_WORKER_SECRET is required for owner/worker task submission.
 
 [[d1_databases]]
 binding = "KCC_DB"
 database_name = "kitora-command-center"
 database_id = "74190e7b-5ff0-4d91-bfcb-b0e51d081e15"
 migrations_dir = "migrations"
+
+[[queues.producers]]
+binding = "KCC_TASK_QUEUE"
+queue = "kitora-command-center-tasks"
+
+[[queues.consumers]]
+queue = "kitora-command-center-tasks"
+max_batch_size = 10
+max_batch_timeout = 5
+max_retries = 3
+max_concurrency = 1
+dead_letter_queue = "kitora-command-center-tasks-dlq"
