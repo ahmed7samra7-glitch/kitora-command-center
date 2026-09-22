@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { dbRuntime } from './dbStorage.js';
 import { kitoraStoreAdapter } from './kitoraStoreAdapter.js';
+import { getProviderEvidenceReceipt, verifyProviderEvidenceReceipt } from './providerEvidenceLedger.js';
 
 export interface VerificationProof {
   verified: boolean;
@@ -129,16 +130,52 @@ export class KCCRealityVerifier {
         evidence.push('Workspace manifest check failed.');
       }
     } else if (method === 'API_CHECK') {
-      // Check CJ Orders or Store Catalog in dbRuntime
-      const catalog = dbRuntime.get('storeCatalog') || [];
-      const cjOrders = dbRuntime.get('cjOrders') || [];
-      evidence.push(`Verified runtime DB storage: Catalog size = ${catalog.length}, CJ synced orders = ${cjOrders.length}.`);
-      if (executionOutput && executionOutput.kitoraInspection) {
-        evidence.push(`Verified Live KITORA Store (${executionOutput.kitoraInspection.storeUrl}): HTTP Status = ${executionOutput.kitoraInspection.httpStatusCode || 200}, Live Accessible = ${executionOutput.kitoraInspection.liveHttpAccessible}.`);
+      const inspection = executionOutput?.kitoraInspection;
+      const receiptId = typeof inspection?.providerReceiptId === 'string' ? inspection.providerReceiptId.trim() : '';
+      const receipt = getProviderEvidenceReceipt(receiptId);
+      const receiptValid = verifyProviderEvidenceReceipt(receipt, {
+        provider: 'KITORA_STORE',
+        operation: 'STORE_INSPECTION',
+        resourceId: typeof inspection?.storeUrl === 'string' ? inspection.storeUrl : undefined,
+        observedAt: typeof inspection?.inspectedAt === 'string' ? inspection.inspectedAt : undefined,
+        metadata: {
+          liveHttpAccessible: inspection?.liveHttpAccessible === true,
+          httpStatusCode: inspection?.httpStatusCode ?? null,
+          checkoutStatus: inspection?.checkoutStatus,
+          title: inspection?.title ?? null
+        }
+      });
+
+      if (!receiptValid) {
+        verified = false;
+        confidenceScore = 0.0;
+        evidence.push('API verification rejected: caller-supplied store inspection is not backed by a fresh signed provider evidence receipt.');
+      } else {
+        evidence.push(`Verified fresh KITORA Store provider receipt ${receipt!.receiptId} for ${receipt!.resourceId}.`);
       }
     } else if (method === 'PAYMENT_STATE') {
+      const paymentEvidence = executionOutput?.paymentEvidence;
+      const orderId = typeof paymentEvidence?.orderId === 'string' ? paymentEvidence.orderId.trim() : '';
+      const captureId = typeof paymentEvidence?.captureId === 'string' ? paymentEvidence.captureId.trim() : '';
+      const expectedOrderId = String(task?.payload?.paypalOrderId || task?.payload?.orderId || '').trim();
       const orders = dbRuntime.get('paypalOrders') || [];
-      evidence.push(`Verified PayPal payment gateway orders count = ${orders.length}.`);
+      const persistedOrder = orders.find((order: any) => order?.id === orderId);
+      const providerBackedCapture =
+        Boolean(persistedOrder) &&
+        persistedOrder.status === 'COMPLETED' &&
+        persistedOrder.mode === 'live' &&
+        typeof persistedOrder.captureId === 'string' &&
+        persistedOrder.captureId.trim() === captureId &&
+        Boolean(captureId) &&
+        (!expectedOrderId || expectedOrderId === orderId);
+
+      if (!providerBackedCapture) {
+        verified = false;
+        confidenceScore = 0.0;
+        evidence.push('Payment verification rejected: paymentEvidence did not match a persisted live PayPal completed capture tied to the task.');
+      } else {
+        evidence.push(`Verified persisted live PayPal capture ${captureId} for order ${orderId}.`);
+      }
     } else if (method === 'AI_AUDIT') {
       const hasContent = executionOutput && executionOutput.success !== false && (executionOutput.output || executionOutput.result || executionOutput.message || executionOutput.provider);
       if (hasContent) {
