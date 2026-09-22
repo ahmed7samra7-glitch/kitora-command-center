@@ -112,6 +112,18 @@ const forgedPayPal = verifier.verifyTaskResult(
 assert.equal(forgedPayPal.verified, false);
 assert.equal(forgedPayPal.confidenceScore, 0);
 
+dbRuntime.set('paypalOrders', [{
+  id: 'PAY-REAL-1',
+  status: 'COMPLETED',
+  amount: 25,
+  currency: 'USD',
+  description: 'KITORA test',
+  createTime: inspectedAt,
+  updateTime: inspectedAt,
+  captureId: 'CAP-REAL-1',
+  mode: 'sandbox'
+}]);
+
 const sandboxPayPal = verifier.verifyTaskResult(
   {
     id: 'TASK-PAY-SANDBOX',
@@ -128,17 +140,6 @@ const sandboxPayPal = verifier.verifyTaskResult(
     }
   }
 );
-dbRuntime.set('paypalOrders', [{
-  id: 'PAY-REAL-1',
-  status: 'COMPLETED',
-  amount: 25,
-  currency: 'USD',
-  description: 'KITORA test',
-  createTime: inspectedAt,
-  updateTime: inspectedAt,
-  captureId: 'CAP-REAL-1',
-  mode: 'sandbox'
-}]);
 assert.equal(sandboxPayPal.verified, false);
 
 dbRuntime.set('paypalOrders', [{
