@@ -157,14 +157,21 @@ export async function listCloudflareTasks(db: CloudflareD1Database): Promise<Rec
 
 export async function claimCloudflareTask(
   db: CloudflareD1Database,
-  taskId: string
+  taskId: string,
+  staleAfterMs = 120000
 ): Promise<KccTaskRecord | null> {
-  const now = new Date().toISOString();
+  const now = new Date();
+  const nowIso = now.toISOString();
+  const staleBefore = new Date(now.getTime() - staleAfterMs).toISOString();
+
   const updated = await db.prepare(
     `UPDATE ${TABLES.tasks}
      SET status='RUNNING', attempts=attempts+1, updated_at=?, last_error=NULL
-     WHERE id=? AND status='QUEUED'`
-  ).bind(now, taskId).run();
+     WHERE id=? AND (
+       status='QUEUED'
+       OR (status='RUNNING' AND updated_at < ?)
+     )`
+  ).bind(nowIso, taskId, staleBefore).run();
 
   if (Number(updated.meta?.changes || 0) !== 1) return null;
 
@@ -172,6 +179,18 @@ export async function claimCloudflareTask(
     `SELECT id, type, payload, status, created_at, updated_at, attempts, last_error, result
      FROM ${TABLES.tasks} WHERE id=?`
   ).bind(taskId).first<KccTaskRecord>();
+}
+
+export async function releaseCloudflareTaskForRetry(
+  db: CloudflareD1Database,
+  taskId: string,
+  error: string
+): Promise<void> {
+  await db.prepare(
+    `UPDATE ${TABLES.tasks}
+     SET status='QUEUED', last_error=?, updated_at=?
+     WHERE id=? AND status='RUNNING'`
+  ).bind(error, new Date().toISOString(), taskId).run();
 }
 
 export async function completeCloudflareTask(
