@@ -10,5 +10,5 @@ workers_dev = true
 [[d1_databases]]
 binding = "KCC_DB"
 database_name = "kitora-command-center"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "74190e7b-5ff0-4d91-bfcb-b0e51d081e15"
 migrations_dir = "migrations"
