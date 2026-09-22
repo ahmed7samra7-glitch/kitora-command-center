@@ -57,5 +57,11 @@ jobs:
       - name: Verify security startup and authentication fail-closed behavior
         run: npm run verify:security-fail-closed
 
+      - name: Verify reality evidence boundary
+        run: npm run verify:reality-evidence-boundary
+
+      - name: Verify PayPal fail-closed capture semantics
+        run: npm run verify:paypal-fail-closed
+
       - name: Verify autonomous production commerce guard
         run: npm run verify:production-commerce-guard
