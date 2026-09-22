@@ -22,7 +22,8 @@
     "verify:kcc-alive-gate": "tsx scripts/verifyKccAliveGate.ts",
     "verify:canonical-fulfillment-path": "tsx scripts/verifyCanonicalFulfillmentPath.ts",
     "verify:paypal-fail-closed": "tsx scripts/verifyPayPalFailClosed.ts",
-    "test": "npm run verify:kcc-brain-fail-closed && npm run verify:provider-execution-fail-closed && npm run verify:async-worker-fail-closed && tsx scripts/verifyProductionFailClosed.ts && npm run verify:kcc-alive-gate && npm run verify:canonical-fulfillment-path && npm run verify:paypal-fail-closed"
+    "verify:reality-evidence-boundary": "tsx scripts/verifyRealityEvidenceBoundary.ts",
+    "test": "npm run verify:kcc-brain-fail-closed && npm run verify:provider-execution-fail-closed && npm run verify:async-worker-fail-closed && tsx scripts/verifyProductionFailClosed.ts && npm run verify:kcc-alive-gate && npm run verify:canonical-fulfillment-path && npm run verify:paypal-fail-closed && npm run verify:reality-evidence-boundary"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
