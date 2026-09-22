@@ -10,7 +10,10 @@ CREATE TABLE IF NOT EXISTS kcc_runtime_tasks (
   payload TEXT NOT NULL,
   status TEXT NOT NULL CHECK (status IN ('QUEUED', 'RUNNING', 'COMPLETED', 'FAILED')),
   created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL
+  updated_at TEXT NOT NULL,
+  attempts INTEGER NOT NULL DEFAULT 0,
+  last_error TEXT,
+  result TEXT
 );
 
 CREATE TABLE IF NOT EXISTS kcc_provider_evidence (
