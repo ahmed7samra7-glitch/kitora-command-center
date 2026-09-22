@@ -1,18 +1,35 @@
 # KCC Cloudflare runtime
 
-This repository now contains a standalone Cloudflare Workers entrypoint in `worker.ts`. It does not pretend that the existing Node/Express process, synchronous filesystem JSON store, or timer-based daemons are durable on Workers.
+The repository contains a standalone Cloudflare Workers entrypoint in `worker.ts`. This path does not treat the existing Node/Express process, local JSON filesystem store, or timer-based daemons as durable Workers infrastructure.
 
-The Workers path uses a Cloudflare D1 binding named `KCC_DB`. The schema in `migrations/0001_kcc_runtime.sql` provides durable runtime state, a queue boundary, and a provider-evidence ledger. The queue only records `QUEUED` work; it does not manufacture completion or provider evidence. Long-running execution must be connected later to an explicitly authorized event-driven worker/queue consumer.
+## Runtime architecture
 
-## Free-tier setup
+- **HTTP:** Cloudflare Worker fetch handler.
+- **Persistent state:** Cloudflare D1 binding `KCC_DB`.
+- **Asynchronous execution:** Cloudflare Queue `kitora-command-center-tasks`.
+- **Queue consumer:** the same Worker exposes a `queue()` handler.
+- **Task state:** D1 records QUEUED/RUNNING/COMPLETED/FAILED state, retry attempts, errors, and results.
+- **Evidence:** client-authored evidence is rejected. KCC_ALIVE remains fail-closed.
 
-1. Create a D1 database in the Cloudflare dashboard or with Wrangler.
-2. Replace `REPLACE_WITH_D1_DATABASE_ID` in `wrangler.toml` with the real database ID.
-3. Apply the migration with `npx wrangler d1 migrations apply kitora-command-center --remote`.
-4. Store the worker secret with `npx wrangler secret put KCC_WORKER_SECRET`.
-5. Configure a real AI provider secret only if that provider is intentionally enabled.
-6. Deploy with `npx wrangler deploy`.
+The queue consumer currently executes only explicitly implemented safe runtime task types such as `KCC_HEALTH_CHECK` and `KCC_ALIVE_STATUS_CHECK`. Unsupported business/provider task types fail closed rather than pretending they were executed. Provider-backed business adapters still need to be wired to the Worker runtime before those operations can be treated as production-capable.
 
-The `/api/live` endpoint only proves that the Worker responds. `/api/kcc/health` remains unsuccessful until the D1 ledger contains both provider-verified `REAL_FULFILLMENT_EVIDENCE` and provider-verified `REAL_NOTIFICATION_EVIDENCE`. The public evidence endpoint is deliberately blocked; evidence must be written by a verified provider adapter.
+## Cloudflare setup
 
-This is a staging/runtime migration path. It does not authorize PayPal Live, production CJ fulfillment, WhatsApp production actions, or automatic merging to `main`.
+1. Create the D1 database named `kitora-command-center`. The current repository config is already bound to the real database ID.
+2. Create the Queue named `kitora-command-center-tasks`.
+3. Apply the checked-in D1 migration:
+   `npx wrangler d1 migrations apply kitora-command-center --remote`
+4. Add the runtime secret `KCC_WORKER_SECRET` in Cloudflare Secrets.
+5. Add real provider secrets only when a provider is intentionally enabled and its production action is authorized.
+6. Deploy with the Cloudflare Git integration or `npx wrangler deploy`.
+
+Cloudflare Queues is included on the Workers Free plan with a daily operations allowance; keep KCC usage inside the free limits. The queue consumer is deliberately configured with bounded concurrency and retries.
+
+## Verification boundaries
+
+- `/api/live` only proves the Worker responds.
+- `/api/kcc/health` returns fail-closed until D1 has provider-verified `REAL_FULFILLMENT_EVIDENCE` and `REAL_NOTIFICATION_EVIDENCE`.
+- `POST /api/kcc/evidence` is always rejected from clients.
+- No PayPal Live transaction, production CJ fulfillment, or WhatsApp production action is authorized by this runtime path.
+
+This migration path is intentionally incremental: it makes the Cloudflare runtime durable and event-driven without falsely claiming that the full Node business runtime has already been ported.
