@@ -1,6 +1,7 @@
 import { dbRuntime } from './dbStorage.js';
 import { kccRealityVerifier } from './kccRealityVerifier.js';
 import { payPalRuntime } from './paypal.js';
+import { issueProviderEvidenceReceipt } from './providerEvidenceLedger.js';
 
 export interface StoreProduct {
   id: string;
@@ -39,6 +40,7 @@ export interface StoreInspectionResult {
   checkoutStatus: 'HEALTHY' | 'DEGRADED' | 'UNAVAILABLE';
   inspectedAt: string;
   evidence: string[];
+  providerReceiptId?: string;
 }
 
 export class KitoraStoreAdapter {
@@ -83,6 +85,28 @@ export class KitoraStoreAdapter {
     const catalog = await this.getProducts();
     const orders = await this.getOrders();
     const checkoutStatus = await this.getCheckoutStatus();
+    const inspectedAt = new Date().toISOString();
+    let providerReceiptId: string | undefined;
+
+    if (liveHttpAccessible && checkoutStatus.status === 'HEALTHY' && process.env.KCC_PROVIDER_EVIDENCE_SECRET) {
+      try {
+        const receipt = issueProviderEvidenceReceipt({
+          provider: 'KITORA_STORE',
+          operation: 'STORE_INSPECTION',
+          resourceId: this.liveStoreUrl,
+          observedAt: inspectedAt,
+          metadata: {
+            liveHttpAccessible: true,
+            httpStatusCode,
+            checkoutStatus: checkoutStatus.status,
+            title
+          }
+        });
+        providerReceiptId = receipt.receiptId;
+      } catch (err: any) {
+        evidence.push(`Provider evidence receipt issuance failed: ${err?.message || String(err)}`);
+      }
+    }
 
     return {
       storeUrl: this.liveStoreUrl,
@@ -95,8 +119,9 @@ export class KitoraStoreAdapter {
       totalProductsCount: catalog.length,
       totalOrdersCount: orders.length,
       checkoutStatus: checkoutStatus.status,
-      inspectedAt: new Date().toISOString(),
-      evidence
+      inspectedAt,
+      evidence,
+      ...(providerReceiptId ? { providerReceiptId } : {})
     };
   }
 
