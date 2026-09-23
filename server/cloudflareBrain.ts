@@ -28,6 +28,19 @@ export interface CloudflareBrainDecision {
   error?: string;
 }
 
+async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit, timeoutMs: number): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } catch (error) {
+    if (controller.signal.aborted) throw new Error('KCC_PROVIDER_TIMEOUT_' + timeoutMs + 'MS');
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 const PROMPTS: Record<string, string> = {
   PRODUCT_HUNTER: 'You are KITORA PRODUCT_HUNTER. Evaluate product opportunities from supplied evidence. Return JSON with product ideas, margin assumptions, risks, next verification actions, and optional workerDelegations when a specialist external AI worker could materially improve accuracy or speed. Never claim supplier or purchase actions happened.',
   MARKETING_COPYWRITER: 'You are KITORA MARKETING_COPYWRITER. Produce conversion-oriented copy and ad concepts from supplied evidence. Return optional read-only workerDelegations when an external specialist could improve accuracy or speed. Never claim a campaign was launched or delivered.',
@@ -65,7 +78,7 @@ async function callGemini(env: BrainEnv, goal: string, systemPrompt: string, con
   const errors: string[] = [];
 
   for (const model of models) {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`, {
+    const response = await fetchWithTimeout(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
@@ -73,7 +86,7 @@ async function callGemini(env: BrainEnv, goal: string, systemPrompt: string, con
         contents: [{ role: 'user', parts: [{ text: `[TRACE: ${traceId}] Goal: ${goal}\\nContext: ${JSON.stringify(context ?? {})}` }] }],
         generationConfig: { responseMimeType: 'application/json' }
       })
-    });
+    }, 20000);
 
     const data = await response.json().catch(() => ({})) as any;
     if (response.ok) {
@@ -93,7 +106,7 @@ async function callGemini(env: BrainEnv, goal: string, systemPrompt: string, con
 
 async function callOpenAI(env: BrainEnv, goal: string, systemPrompt: string, context: unknown, traceId: string): Promise<{ model: string; output: unknown }> {
   const model = (env.OPENAI_MODEL || 'gpt-4o').trim();
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await fetchWithTimeout('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: { 'content-type': 'application/json', authorization: `Bearer ${env.OPENAI_API_KEY!.trim()}` },
     body: JSON.stringify({
@@ -104,7 +117,7 @@ async function callOpenAI(env: BrainEnv, goal: string, systemPrompt: string, con
       ],
       response_format: { type: 'json_object' }
     })
-  });
+  }, 20000);
   const data = await response.json().catch(() => ({})) as any;
   if (!response.ok) throw new Error(`OpenAI HTTP ${response.status}: ${data?.error?.message || 'request failed'}`);
   return { model, output: parseOutput(String(data?.choices?.[0]?.message?.content || '')) };
@@ -112,7 +125,7 @@ async function callOpenAI(env: BrainEnv, goal: string, systemPrompt: string, con
 
 async function callClaude(env: BrainEnv, goal: string, systemPrompt: string, context: unknown, traceId: string): Promise<{ model: string; output: unknown }> {
   const model = (env.CLAUDE_MODEL || 'claude-3-5-sonnet-20241022').trim();
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const response = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
@@ -125,7 +138,7 @@ async function callClaude(env: BrainEnv, goal: string, systemPrompt: string, con
       system: systemPrompt,
       messages: [{ role: 'user', content: `[TRACE: ${traceId}] Goal: ${goal}\nContext: ${JSON.stringify(context ?? {})}` }]
     })
-  });
+  }, 20000);
   const data = await response.json().catch(() => ({})) as any;
   if (!response.ok) throw new Error(`Claude HTTP ${response.status}: ${data?.error?.message || 'request failed'}`);
   return { model, output: parseOutput(String(data?.content?.[0]?.text || '')) };
