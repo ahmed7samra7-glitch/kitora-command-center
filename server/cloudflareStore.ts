@@ -160,6 +160,25 @@ export async function listCloudflareTasks(db: CloudflareD1Database): Promise<Rec
   return rows.results || [];
 }
 
+export function taskLeaseSnapshot(task: Pick<KccTaskRecord, 'status' | 'updated_at' | 'attempts'>, now = Date.now()): {
+  status: KccTaskRecord['status'];
+  attempts: number;
+  leaseMs: number;
+  leaseRemainingMs: number;
+  stale: boolean;
+} {
+  const leaseMs = TASK_LEASE_MS;
+  const updatedAt = Date.parse(task.updated_at);
+  const ageMs = Number.isFinite(updatedAt) ? Math.max(0, now - updatedAt) : leaseMs;
+  return {
+    status: task.status,
+    attempts: Number(task.attempts || 0),
+    leaseMs,
+    leaseRemainingMs: Math.max(0, leaseMs - ageMs),
+    stale: task.status === 'RUNNING' && ageMs >= leaseMs
+  };
+}
+
 const TASK_LEASE_MS = 5 * 60 * 1000;
 
 export async function claimCloudflareTask(
