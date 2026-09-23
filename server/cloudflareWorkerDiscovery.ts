@@ -104,7 +104,6 @@ function makeWorkerId(record: RegistryRecord, index: number): string {
 export async function discoverPublicAiWorkers(query = 'AI agent ecommerce product research automation coding marketing analytics'): Promise<DiscoveredAiWorker[]> {
   const url = new URL('https://api.a2a-registry.org/public/agents');
   url.searchParams.set('q', query.slice(0, 240));
-  url.searchParams.set('limit', '12');
 
   const response = await fetch(url.toString(), {
     headers: { accept: 'application/json' }
@@ -205,10 +204,6 @@ function extractA2AText(result: any): string {
     .trim();
 }
 
-async function updateWorkerConnectionStateStub(worker: DiscoveredAiWorker, state: WorkerConnectionState): Promise<void> {
-  // The persisted registry record is updated by the caller after collaboration.
-  worker.connectionState = state;
-}
 export async function collaborateWithA2AWorker(
   worker: DiscoveredAiWorker,
   delegation: WorkerDelegation,
@@ -236,7 +231,7 @@ export async function collaborateWithA2AWorker(
     );
 
     if (first.response.status === 401 || first.response.status === 403 || first.result?.error?.code === -32001) {
-      await updateWorkerConnectionStateStub(worker, 'REQUIRES_AUTH');
+      worker.connectionState = 'REQUIRES_AUTH';
       return { workerId: worker.workerId, task: delegation.task, status: 'REQUIRES_AUTH', error: 'Worker requires authentication for collaboration.', checkedAt };
     }
     if (!first.response.ok || first.result?.error) {
