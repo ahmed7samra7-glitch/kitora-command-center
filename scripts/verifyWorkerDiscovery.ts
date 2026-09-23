@@ -2,6 +2,7 @@ import {
   collaborateWithA2AWorker,
   discoverPublicAiWorkers,
   rankWorkersForGoal,
+  runWorkerCanary,
   sanitizeDelegationText,
   scoutAiWorkerEcosystem
 } from '../server/cloudflareWorkerDiscovery.js';
@@ -68,6 +69,87 @@ try {
   privacyBlocked = String(error).includes('WORKER_DELEGATION_SENSITIVE_DATA_BLOCKED');
 }
 if (!privacyBlocked) throw new Error('Expected sensitive delegation text to be blocked.');
+
+let canaryFetchCount = 0;
+globalThis.fetch = (async (input: RequestInfo | URL) => {
+  const url = String(input);
+  canaryFetchCount += 1;
+  if (url.includes('/.well-known/agent-card.json')) {
+    return new Response(JSON.stringify({
+      name: 'Canary Worker',
+      version: '1.0.0',
+      url: 'https://canary.example/a2a',
+      capabilities: [{ name: 'research' }]
+    }), { status: 200, headers: { 'content-type': 'application/json' } });
+  }
+  if (url === 'https://canary.example/a2a') {
+    return new Response(JSON.stringify({
+      result: {
+        message: {
+          parts: [{ text: '{"canary":"KCC_CANARY_PASS","action":"NONE","capabilityEcho":["research"]}' }]
+        }
+      }
+    }), { status: 200, headers: { 'content-type': 'application/json' } });
+  }
+  throw new Error('Unexpected URL in canary verification');
+}) as typeof globalThis.fetch;
+
+try {
+  const worker = {
+    workerId: 'A2A:canary-worker',
+    name: 'Canary Worker',
+    provider: 'test',
+    description: 'safe test worker',
+    protocol: 'A2A' as const,
+    endpoint: 'https://canary.example/a2a',
+    capabilities: ['research'],
+    connectionState: 'DISCOVERED' as const,
+    discoveredAt: new Date().toISOString(),
+    lastCheckedAt: new Date().toISOString(),
+    source: 'test'
+  };
+  const trust = await runWorkerCanary(worker);
+  if (trust.level !== 'TRUSTED' || trust.canaryStatus !== 'PASSED' || trust.score !== 100 || worker.connectionState !== 'VERIFIED') {
+    throw new Error('Expected a compliant worker to pass the KCC canary gate.');
+  }
+  if (canaryFetchCount !== 2) throw new Error('Expected agent-card plus canary message.');
+} finally {
+  globalThis.fetch = originalFetch;
+}
+
+let quarantineFetchCount = 0;
+globalThis.fetch = (async (input: RequestInfo | URL) => {
+  const url = String(input);
+  quarantineFetchCount += 1;
+  if (url.includes('/.well-known/agent-card.json')) {
+    return new Response(JSON.stringify({ name: 'Bad Worker', url: 'https://bad.example/a2a' }), { status: 200, headers: { 'content-type': 'application/json' } });
+  }
+  return new Response(JSON.stringify({
+    result: { message: { parts: [{ text: '{"canary":"KCC_CANARY_PASS","action":"NONE","api_key":"SECRET"}' }] } }
+  }), { status: 200, headers: { 'content-type': 'application/json' } });
+}) as typeof globalThis.fetch;
+
+try {
+  const worker = {
+    workerId: 'A2A:bad-worker',
+    name: 'Bad Worker',
+    provider: 'test',
+    description: 'unsafe test worker',
+    protocol: 'A2A' as const,
+    endpoint: 'https://bad.example/a2a',
+    capabilities: ['research'],
+    connectionState: 'DISCOVERED' as const,
+    discoveredAt: new Date().toISOString(),
+    lastCheckedAt: new Date().toISOString(),
+    source: 'test'
+  };
+  const trust = await runWorkerCanary(worker);
+  if (trust.level !== 'QUARANTINED' || trust.canaryStatus !== 'QUARANTINED' || worker.connectionState !== 'QUARANTINED') {
+    throw new Error('Expected a boundary-violating worker to be quarantined.');
+  }
+} finally {
+  globalThis.fetch = originalFetch;
+}
 
 let repairTurns = 0;
 globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
