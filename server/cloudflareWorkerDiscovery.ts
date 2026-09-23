@@ -127,6 +127,46 @@ export async function fetchA2AAgentCard(endpoint: string): Promise<any> {
   return response.json();
 }
 
+async function sendA2AMessage(
+  endpoint: string,
+  text: string
+): Promise<{ response: Response; result: any }> {
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      accept: 'application/json'
+    },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: `kcc-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
+      method: 'message/send',
+      params: {
+        message: {
+          messageId: `kcc-msg-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
+          role: 'user',
+          parts: [{ text }]
+        }
+      }
+    })
+  });
+  const result = await response.json().catch(() => ({})) as any;
+  return { response, result };
+}
+
+function extractA2AText(result: any): string {
+  const candidates = [
+    result?.result?.message?.parts,
+    result?.result?.artifacts?.flatMap((artifact: any) => artifact?.parts || []),
+    result?.message?.parts
+  ].flat(Infinity);
+  return candidates
+    .filter((part: any) => part && typeof part.text === 'string')
+    .map((part: any) => part.text)
+    .join('\n')
+    .trim();
+}
+
 export async function collaborateWithA2AWorker(
   worker: DiscoveredAiWorker,
   delegation: WorkerDelegation,
@@ -148,36 +188,45 @@ export async function collaborateWithA2AWorker(
     const sendUrl = String(card?.url || card?.endpoint || worker.endpoint).trim();
     if (!sendUrl.startsWith('https://')) throw new Error('A2A agent card did not expose a secure HTTPS endpoint.');
 
-    const response = await fetch(sendUrl, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        accept: 'application/json'
-      },
-      body: JSON.stringify({
-        jsonrpc: '2.0',
-        id: `kcc-${Date.now()}`,
-        method: 'message/send',
-        params: {
-          message: {
-            messageId: `kcc-msg-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
-            role: 'user',
-            parts: [{ text: `[KCC TRACE ${traceId}] Task: ${delegation.task}${delegation.successCriteria ? `\\nSuccess criteria: ${delegation.successCriteria}` : ''}` }]
-          }
-        }
-      })
-    });
+    const first = await sendA2AMessage(
+      sendUrl,
+      `[KCC TRACE ${traceId}] Task: ${delegation.task}${delegation.successCriteria ? `\\nSuccess criteria: ${delegation.successCriteria}` : ''}\\nReturn evidence-backed results only. Do not claim external actions.`
+    );
 
-    const result = await response.json().catch(() => ({})) as any;
-    if (response.status === 401 || response.status === 403 || result?.error?.code === -32001) {
+    if (first.response.status === 401 || first.response.status === 403 || first.result?.error?.code === -32001) {
       return { workerId: worker.workerId, task: delegation.task, status: 'REQUIRES_AUTH', error: 'Worker requires authentication for collaboration.', checkedAt };
     }
-    if (!response.ok || result?.error) {
+    if (!first.response.ok || first.result?.error) {
       return {
         workerId: worker.workerId,
         task: delegation.task,
         status: 'FAILED',
-        error: `A2A collaboration HTTP ${response.status}: ${result?.error?.message || 'request failed'}`,
+        error: `A2A collaboration HTTP ${first.response.status}: ${first.result?.error?.message || 'request failed'}`,
+        checkedAt
+      };
+    }
+
+    let answer = extractA2AText(first.result);
+    // One bounded repair turn: ask the worker to fill only missing success criteria.
+    if (delegation.successCriteria && (!answer || answer.length < 80)) {
+      const repair = await sendA2AMessage(
+        sendUrl,
+        `[KCC TRACE ${traceId}] Your previous answer was incomplete. Provide only the missing evidence needed to satisfy: ${delegation.successCriteria}. Keep it concise and evidence-backed.`
+      );
+      if (repair.response.status === 401 || repair.response.status === 403) {
+        return { workerId: worker.workerId, task: delegation.task, status: 'REQUIRES_AUTH', error: 'Worker requires authentication during repair turn.', checkedAt };
+      }
+      if (repair.response.ok && !repair.result?.error) {
+        answer = extractA2AText(repair.result) || answer;
+      }
+    }
+
+    if (!answer) {
+      return {
+        workerId: worker.workerId,
+        task: delegation.task,
+        status: 'FAILED',
+        error: 'A2A worker returned no usable evidence-backed output.',
         checkedAt
       };
     }
@@ -186,7 +235,12 @@ export async function collaborateWithA2AWorker(
       workerId: worker.workerId,
       task: delegation.task,
       status: 'COMPLETED',
-      output: result?.result ?? result,
+      output: { text: answer, agentCard: {
+        name: card?.name,
+        version: card?.version,
+        capabilities: card?.capabilities,
+        authentication: card?.authentication
+      } },
       checkedAt
     };
   } catch (error) {
