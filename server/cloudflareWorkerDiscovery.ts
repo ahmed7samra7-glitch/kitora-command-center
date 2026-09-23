@@ -153,8 +153,14 @@ export async function discoverPublicAiWorkers(query = 'AI agent ecommerce produc
 }
 
 export function rankWorkersForGoal(workers: DiscoveredAiWorker[], goal: string, limit = 5): DiscoveredAiWorker[] {
+  const now = Date.now();
   const terms = goal.toLowerCase().split(/[^a-z0-9]+/).filter(term => term.length >= 4);
   return workers
+    .filter(worker => {
+      if (worker.connectionState === 'UNAVAILABLE' || worker.connectionState === 'REQUIRES_AUTH') return false;
+      const checkedAt = Date.parse(worker.lastCheckedAt);
+      return Number.isFinite(checkedAt) && now - checkedAt <= 24 * 60 * 60 * 1000;
+    })
     .map(worker => {
       const haystack = `${worker.name} ${worker.provider} ${worker.description} ${worker.capabilities.join(' ')}`.toLowerCase();
       const overlap = terms.reduce((score, term) => score + (haystack.includes(term) ? 1 : 0), 0);
