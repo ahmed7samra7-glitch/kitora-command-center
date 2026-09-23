@@ -1,6 +1,7 @@
 import {
   collaborateWithA2AWorker,
   discoverPublicAiWorkers,
+  evolveWorkerTrust,
   rankWorkersForGoal,
   runWorkerCanary,
   sanitizeDelegationText,
@@ -237,6 +238,27 @@ try {
   if (scouted.length < 2 || scouted.length > 5) throw new Error('Expected deduplicated multi-specialty worker results.');
 } finally {
   globalThis.fetch = originalFetch;
+}
+
+const reputationStart = evolveWorkerTrust({
+  workerId: 'A2A:rep',
+  level: 'TRUSTED',
+  canaryStatus: 'PASSED',
+  score: 100,
+  checkedAt: new Date().toISOString()
+}, 'COLLAB_SUCCESS');
+if (reputationStart.score !== 100 || reputationStart.level !== 'TRUSTED') {
+  throw new Error('Expected successful trusted worker reputation to remain capped at 100.');
+}
+
+const reputationDrop = evolveWorkerTrust(reputationStart, 'COLLAB_FAILURE');
+if (reputationDrop.score !== 90 || reputationDrop.level !== 'TRUSTED') {
+  throw new Error('Expected one collaboration failure to reduce reputation by 10.');
+}
+
+const quarantined = evolveWorkerTrust(reputationStart, 'BOUNDARY_VIOLATION');
+if (quarantined.score !== 0 || quarantined.level !== 'QUARANTINED' || quarantined.canaryStatus !== 'QUARANTINED') {
+  throw new Error('Expected a boundary violation to force immediate quarantine.');
 }
 
 console.log('KCC AI Worker Discovery verification: PASS');
