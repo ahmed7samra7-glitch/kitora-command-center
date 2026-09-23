@@ -10,6 +10,7 @@ import {
   listCloudflareTasks,
   parseQueuedTaskPayload,
   readEvidenceSummary,
+  recoverStaleCloudflareTasks,
   releaseCloudflareTaskForRetry
 } from './server/cloudflareStore.js';
 import { executeCloudflareBrainTask, persistCloudflareBrainDecision } from './server/cloudflareBrain.js';
@@ -462,6 +463,13 @@ export default {
       return json({ success: true, tasks: await listCloudflareTasks(env.KCC_DB) });
     }
 
+    if (request.method === 'POST' && url.pathname === '/api/kcc/tasks/recover') {
+      if (!workerAuthorized(request, env)) return json({ success: false, error: 'WORKER_AUTH_REQUIRED', failClosed: true }, 401);
+      if (!env.KCC_TASK_QUEUE) return json({ success: false, error: 'KCC_TASK_QUEUE binding is required', failClosed: true }, 503);
+      const recovery = await recoverStaleCloudflareTasks(env.KCC_DB, env.KCC_TASK_QUEUE, 60000, 3);
+      return json({ success: true, recovery, failClosed: true });
+    }
+
     if (request.method === 'GET' && url.pathname === '/api/kcc/workers') {
       if (!workerAuthorized(request, env)) return json({ success: false, error: 'WORKER_AUTH_REQUIRED', failClosed: true }, 401);
       await ensureWorkerDiscoverySchema(env.KCC_DB);
@@ -503,6 +511,7 @@ export default {
     }
 
     try {
+      await recoverStaleCloudflareTasks(env.KCC_DB, env.KCC_TASK_QUEUE, 120000, 3);
       const mission = controller.cron === '*/15 * * * *'
         ? { agentId: 'PRODUCT_HUNTER', goal: 'Find and evaluate promising KITORA product opportunities from verified inputs. Do not claim supplier or purchase actions.' }
         : controller.cron === '0 * * * *'
