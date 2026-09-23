@@ -22,12 +22,26 @@ if (blockedAdmission.admitted.length !== 0 || blockedAdmission.rejected.length !
   throw new Error('Expected external-write next actions to be rejected by the passport.');
 }
 
+const constrainedReadOnly = issueAutonomyPassport({
+  goal: 'Research KITORA product opportunities. Do not purchase, spend money, contact suppliers, fulfill orders, or send notifications.'
+});
+if (constrainedReadOnly.mode !== 'READ_ONLY') {
+  throw new Error('Explicitly prohibited external actions must not block a read-only research mission.');
+}
+
 const blocked = issueAutonomyPassport({
   goal: 'Purchase inventory from the supplier now.',
   costUSD: 10
 });
 if (blocked.mode !== 'BLOCKED') {
   throw new Error('Expected an external-write mission to be blocked before Brain execution.');
+}
+
+const gerundBlocked = issueAutonomyPassport({
+  goal: 'Purchase inventory by spending money from the supplier.'
+});
+if (gerundBlocked.mode !== 'BLOCKED') {
+  throw new Error('Positive purchase/spend request must remain blocked.');
 }
 
 const approval = issueAutonomyPassport({
