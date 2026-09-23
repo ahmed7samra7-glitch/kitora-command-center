@@ -557,8 +557,18 @@ export async function persistDiscoveredWorkers(
         protocol=excluded.protocol,
         endpoint=excluded.endpoint,
         capabilities=excluded.capabilities,
-        connection_state=excluded.connection_state,
-        last_checked_at=excluded.last_checked_at,
+        connection_state=CASE
+          WHEN kcc_discovered_workers.connection_state='QUARANTINED' THEN 'QUARANTINED'
+          WHEN kcc_discovered_workers.connection_state IN ('VERIFIED','REACHABLE')
+            AND datetime(kcc_discovered_workers.last_checked_at) > datetime('now', '-24 hours')
+            THEN kcc_discovered_workers.connection_state
+          ELSE excluded.connection_state
+        END,
+        last_checked_at=CASE
+          WHEN kcc_discovered_workers.connection_state='QUARANTINED'
+            THEN kcc_discovered_workers.last_checked_at
+          ELSE excluded.last_checked_at
+        END,
         source=excluded.source,
         evidence_url=excluded.evidence_url,
         updated_at=excluded.updated_at`
