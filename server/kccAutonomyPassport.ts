@@ -37,7 +37,7 @@ const ANALYSIS_CAPABILITIES = ['ANALYZE', 'RECOMMEND', 'DRAFT', 'READ_TELEMETRY'
 const FORBIDDEN_CAPABILITIES = ['PURCHASE', 'PAYMENT', 'SUPPLIER_WRITE', 'FULFILLMENT', 'NOTIFICATION', 'PUBLISH', 'AD_SPEND', 'EXTERNAL_WRITE', 'DELETE'];
 
 const NEGATION_MARKER = /(?:\bdo\s+not\b|\bdon't\b|\bnever\b|\bmust\s+not\b|\bshould\s+not\b|\bnot\s+to\b|\bwithout\b)/ig;
-const OVERRIDE_MARKER = /(?:\bbut\b|\bexcept\b|\bhowever\b|\bonly\bthen\b)/ig;
+const OVERRIDE_MARKER = /(?:\bbut\b|\bexcept\b|\bhowever\b|\bonly\bthen\b)/i;
 
 function isNegatedExternalWrite(value: string, matchIndex: number): boolean {
   const sentenceStart = Math.max(
