@@ -3,9 +3,8 @@ main = "worker.ts"
 compatibility_date = "2026-09-22"
 workers_dev = true
 
-[vars]
-# Secret runtime values must be configured in Cloudflare Secrets.
-# KCC_WORKER_SECRET is required for owner/worker task submission.
+[secrets]
+required = ["KCC_WORKER_SECRET"]
 
 [[d1_databases]]
 binding = "KCC_DB"
