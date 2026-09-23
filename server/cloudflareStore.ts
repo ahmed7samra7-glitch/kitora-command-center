@@ -25,6 +25,8 @@ export interface CloudflareRuntimeEnv {
   KCC_WORKER_SECRET?: string;
   GEMINI_API_KEY?: string;
   GEMINI_MODEL?: string;
+  KCC_AI_PROVIDER?: string;
+  KCC_ALLOW_PAID_AI_FALLBACK?: string;
   OPENAI_MODEL?: string;
   CLAUDE_MODEL?: string;
   OPENAI_API_KEY?: string;
