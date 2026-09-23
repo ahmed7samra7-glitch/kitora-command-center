@@ -152,6 +152,31 @@ export async function discoverPublicAiWorkers(query = 'AI agent ecommerce produc
   }));
 }
 
+export async function scoutAiWorkerEcosystem(): Promise<DiscoveredAiWorker[]> {
+  const queries = [
+    'ecommerce product research sourcing merchandising automation',
+    'market research competitor intelligence analytics',
+    'software engineering coding testing security automation',
+    'marketing SEO copywriting growth content automation',
+    'customer support operations finance workflow automation'
+  ];
+
+  const batches = await Promise.all(
+    queries.map(query => discoverPublicAiWorkers(query).catch(() => []))
+  );
+
+  const deduped = new Map<string, DiscoveredAiWorker>();
+  for (const worker of batches.flat()) {
+    const existing = deduped.get(worker.workerId);
+    if (!existing || Date.parse(worker.lastCheckedAt) > Date.parse(existing.lastCheckedAt)) {
+      deduped.set(worker.workerId, worker);
+    }
+  }
+
+  return Array.from(deduped.values()).slice(0, 40);
+}
+
+
 export function rankWorkersForGoal(workers: DiscoveredAiWorker[], goal: string, limit = 5): DiscoveredAiWorker[] {
   const now = Date.now();
   const terms = goal.toLowerCase().split(/[^a-z0-9]+/).filter(term => term.length >= 4);
