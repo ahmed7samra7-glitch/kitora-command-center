@@ -196,6 +196,41 @@ if (evidenceAttempt.status !== 403) {
   throw new Error(`Expected evidence boundary 403, got ${evidenceAttempt.status}`);
 }
 
+const brainQueued = await call('/api/kcc/tasks', {
+  method: 'POST',
+  headers: {
+    'content-type': 'application/json',
+    'x-kcc-worker-secret': 'test-secret'
+  },
+  body: JSON.stringify({
+    type: 'KCC_BRAIN_EXECUTE',
+    payload: {
+      agentId: 'EXECUTIVE_AUDITOR',
+      goal: 'Return the next safe action from an empty evidence set.'
+    }
+  })
+});
+if (brainQueued.status !== 202) throw new Error(`Expected Brain task 202, got ${brainQueued.status}`);
+const brainTaskId = String((await brainQueued.clone().json() as any).task.id);
+const brainMessage: any = {
+  id: 'message-brain',
+  timestamp: new Date(),
+  body: queue.messages[2],
+  attempts: 1,
+  acked: false,
+  retried: false,
+  ack() { this.acked = true; },
+  retry() { this.retried = true; }
+};
+const brainResult = await processQueueMessage(env, brainMessage);
+if (brainResult !== 'ACK' || !brainMessage.acked || brainMessage.retried) {
+  throw new Error('Expected Brain queue message to be acknowledged.');
+}
+const brainTask = db.tasks.find((task) => task.id === brainTaskId);
+if (!brainTask || brainTask.status !== 'FAILED' || !brainTask.result?.includes('BLOCKED')) {
+  throw new Error('Expected missing AI provider to block Brain execution without synthetic success.');
+}
+
 const aliveCheck = await call('/api/kcc/tasks', {
   method: 'POST',
   headers: {
