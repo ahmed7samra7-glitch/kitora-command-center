@@ -40,7 +40,7 @@ export function sanitizeDelegationText(value: string, maxLength: number): string
 
 export function sanitizeWorkerOutput(value: unknown, maxLength = 12000): string {
   let text = typeof value === 'string' ? value : JSON.stringify(value ?? '');
-  text = text.replace(/(?:api[_-]?key|access[_-]?token|secret|password|authorization)\s*[:=]\s*[^\s,;]+/gi, '$1=[REDACTED]');
+  text = text.replace(/(api[_-]?key|access[_-]?token|secret|password|authorization)\s*[:=]\s*[^\s,;]+/gi, '$1=[REDACTED]');
   text = text.replace(/bearer\s+[a-z0-9._-]{12,}/gi, 'Bearer [REDACTED]');
   text = text.replace(/\bsk-[a-z0-9_-]{16,}\b/gi, 'sk-[REDACTED]');
   return text.slice(0, maxLength);
