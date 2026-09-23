@@ -25,13 +25,15 @@ globalThis.fetch = (async (input: RequestInfo | URL) => {
           skills: ['research', 'market-analysis']
         },
         {
-          identifier: 'worker.copy',
-          name: 'Copy Worker',
-          provider: 'Example',
-          description: 'Marketing copy agent',
-          protocol: 'A2A',
-          endpoint: 'https://copy.example.com/a2a',
-          capabilities: ['marketing', 'copywriting']
+          id: 'worker.copy',
+          displayName: 'Copy Worker',
+          agentCard: {
+            name: 'Copy Worker',
+            description: 'Marketing copy agent',
+            protocolVersion: '1.0',
+            url: 'https://copy.example.com/a2a',
+            skills: [{ id: 'marketing', name: 'marketing' }, { id: 'copywriting', name: 'copywriting' }]
+          }
         }
       ]
     }), { status: 200, headers: { 'content-type': 'application/json' } });
@@ -42,6 +44,9 @@ globalThis.fetch = (async (input: RequestInfo | URL) => {
 try {
   const workers = await discoverPublicAiWorkers('ecommerce market research');
   if (workers.length !== 2) throw new Error('Expected two discovered workers.');
+  if (workers[1].name !== 'Copy Worker' || workers[1].endpoint !== 'https://copy.example.com/a2a' || !workers[1].capabilities.includes('marketing')) {
+    throw new Error('Expected nested Agent Card metadata to be normalized.');
+  }
   if (workers[0].protocol !== 'A2A' || workers[0].connectionState !== 'DISCOVERED') {
     throw new Error('Expected an A2A discovered worker with DISCOVERED state.');
   }
