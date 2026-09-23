@@ -251,7 +251,7 @@ export default {
     }
   },
 
-  async scheduled(controller: ScheduledController, env: KccCloudflareEnv): Promise<void> {
+  async scheduled(controller: { cron: string; noRetry(): void }, env: KccCloudflareEnv): Promise<void> {
     if (!env.KCC_TASK_QUEUE) {
       console.error('[KCC Cron] KCC_TASK_QUEUE binding is required');
       controller.noRetry();
