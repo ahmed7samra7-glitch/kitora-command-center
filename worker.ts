@@ -108,8 +108,13 @@ async function executeMissionTask(env: KccCloudflareEnv, taskId: string, payload
 
   await ensureWorkerDiscoverySchema(env.KCC_DB);
   let workerCatalog = await listDiscoveredWorkers(env.KCC_DB, 100);
+  if (payload.agentId === 'WORKER_DISCOVERY') {
+    const scouted = await scoutAiWorkerEcosystem();
+    await persistDiscoveredWorkers(env.KCC_DB, scouted);
+    workerCatalog = await listDiscoveredWorkers(env.KCC_DB, 100);
+  }
   let helpfulWorkers = rankWorkersForGoal(workerCatalog, goal, 5);
-  if (helpfulWorkers.length === 0) {
+  if (helpfulWorkers.length === 0 && payload.agentId !== 'WORKER_DISCOVERY') {
     const discovered = await discoverPublicAiWorkers(goal);
     await persistDiscoveredWorkers(env.KCC_DB, discovered);
     workerCatalog = await listDiscoveredWorkers(env.KCC_DB, 100);
