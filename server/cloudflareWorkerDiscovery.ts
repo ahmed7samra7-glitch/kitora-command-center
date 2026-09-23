@@ -119,8 +119,9 @@ export function rankWorkersForGoal(workers: DiscoveredAiWorker[], goal: string, 
 }
 
 export async function fetchA2AAgentCard(endpoint: string): Promise<any> {
-  const base = endpoint.replace(/\/$/, '');
-  const response = await fetch(`${base}/.well-known/agent-card.json`, {
+  const baseUrl = new URL(endpoint);
+  const cardUrl = `${baseUrl.origin}/.well-known/agent-card.json`;
+  const response = await fetch(cardUrl, {
     headers: { accept: 'application/json' }
   });
   if (!response.ok) throw new Error(`A2A agent-card HTTP ${response.status}`);
@@ -252,6 +253,18 @@ export async function collaborateWithA2AWorker(
       checkedAt
     };
   }
+}
+
+export async function updateWorkerConnectionState(
+  db: { prepare(query: string): any },
+  workerId: string,
+  state: WorkerConnectionState
+): Promise<void> {
+  await db.prepare(
+    `UPDATE kcc_discovered_workers
+     SET connection_state=?, last_checked_at=?, updated_at=?
+     WHERE worker_id=?`
+  ).bind(state, new Date().toISOString(), new Date().toISOString(), workerId).run();
 }
 
 export async function persistDiscoveredWorkers(
