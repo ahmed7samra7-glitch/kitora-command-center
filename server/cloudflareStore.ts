@@ -160,10 +160,12 @@ export async function listCloudflareTasks(db: CloudflareD1Database): Promise<Rec
   return rows.results || [];
 }
 
+const TASK_LEASE_MS = 5 * 60 * 1000;
+
 export async function claimCloudflareTask(
   db: CloudflareD1Database,
   taskId: string,
-  staleAfterMs = 120000
+  staleAfterMs = TASK_LEASE_MS
 ): Promise<KccTaskRecord | null> {
   const now = new Date();
   const nowIso = now.toISOString();
@@ -201,7 +203,7 @@ export async function releaseCloudflareTaskForRetry(
 export async function recoverStaleCloudflareTasks(
   db: CloudflareD1Database,
   queue: CloudflareQueue,
-  staleAfterMs = 120000,
+  staleAfterMs = TASK_LEASE_MS,
   maxAttempts = 3
 ): Promise<{ requeued: string[]; failed: string[] }> {
   const staleBefore = new Date(Date.now() - staleAfterMs).toISOString();
