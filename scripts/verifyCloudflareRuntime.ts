@@ -231,6 +231,84 @@ if (!brainTask || brainTask.status !== 'FAILED' || !brainTask.result?.includes('
   throw new Error('Expected missing AI provider to block Brain execution without synthetic success.');
 }
 
+
+// Transient Gemini overload must use the Queue retry path, not a terminal FAILED state.
+const transientDb = new FakeD1();
+const transientQueue = new FakeQueue();
+const transientEnv: KccCloudflareEnv = {
+  KCC_DB: transientDb,
+  KCC_TASK_QUEUE: transientQueue,
+  KCC_WORKER_SECRET: 'test-secret',
+  GEMINI_API_KEY: 'test-key',
+  GEMINI_MODEL: 'gemini-3.5-flash-lite',
+  KCC_AI_PROVIDER: 'gemini',
+  KCC_ALLOW_PAID_AI_FALLBACK: 'false'
+};
+
+const originalFetch = globalThis.fetch;
+let transientCalls = 0;
+globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+  const url = String(input);
+  if (url.includes('generativelanguage.googleapis.com')) {
+    transientCalls += 1;
+    if (transientCalls <= 3) {
+      return new Response(JSON.stringify({
+        error: { message: 'This model is currently experiencing high demand.' }
+      }), {
+        status: 503,
+        headers: { 'content-type': 'application/json' }
+      });
+    }
+    return new Response(JSON.stringify({
+      candidates: [{
+        content: {
+          parts: [{ text: JSON.stringify({ status: 'PASS', nextActions: [] }) }]
+        }
+      }]
+    }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' }
+    });
+  }
+  return originalFetch(input, init);
+}) as typeof globalThis.fetch;
+
+try {
+  const transientTask = await import('../server/cloudflareStore.js').then(({ enqueueCloudflareTask }) =>
+    enqueueCloudflareTask(transientDb, transientQueue, 'KCC_MISSION', {
+      agentId: 'EXECUTIVE_AUDITOR',
+      goal: 'Exercise transient provider retry handling.'
+    })
+  );
+  const transientMessage: any = {
+    id: 'message-transient',
+    timestamp: new Date(),
+    body: transientQueue.messages[0],
+    attempts: 1,
+    acked: false,
+    retried: false,
+    ack() { this.acked = true; },
+    retry() { this.retried = true; }
+  };
+
+  const retryResult = await processQueueMessage(transientEnv, transientMessage);
+  const retryTask = transientDb.tasks.find((task) => task.id === transientTask.id);
+  if (retryResult !== 'RETRY' || !transientMessage.retried || transientMessage.acked || retryTask?.status !== 'QUEUED') {
+    throw new Error('Expected transient Gemini overload to release the task and request a Queue retry.');
+  }
+
+  transientMessage.attempts = 2;
+  transientMessage.retried = false;
+  transientMessage.acked = false;
+  const recoveredResult = await processQueueMessage(transientEnv, transientMessage);
+  const recoveredTask = transientDb.tasks.find((task) => task.id === transientTask.id);
+  if (recoveredResult !== 'ACK' || !transientMessage.acked || transientMessage.retried || recoveredTask?.status !== 'COMPLETED') {
+    throw new Error('Expected transient Gemini task to complete after the provider recovers.');
+  }
+} finally {
+  globalThis.fetch = originalFetch;
+}
+
 const aliveCheck = await call('/api/kcc/tasks', {
   method: 'POST',
   headers: {
