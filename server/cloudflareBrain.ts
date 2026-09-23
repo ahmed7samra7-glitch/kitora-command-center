@@ -54,20 +54,40 @@ function approval(input: { sensitivityScore?: number; costUSD?: number }) {
 
 async function callGemini(env: BrainEnv, goal: string, systemPrompt: string, context: unknown, traceId: string): Promise<{ model: string; output: unknown }> {
   const key = env.GEMINI_API_KEY!.trim();
-  const model = (env.GEMINI_MODEL || 'gemini-3.6-flash').trim();
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({
-      system_instruction: { parts: [{ text: systemPrompt }] },
-      contents: [{ role: 'user', parts: [{ text: `[TRACE: ${traceId}] Goal: ${goal}\nContext: ${JSON.stringify(context ?? {})}` }] }],
-      generationConfig: { responseMimeType: 'application/json' }
-    })
-  });
-  const data = await response.json().catch(() => ({})) as any;
-  if (!response.ok) throw new Error(`Gemini HTTP ${response.status}: ${data?.error?.message || 'request failed'}`);
-  const text = data?.candidates?.[0]?.content?.parts?.map((p: any) => p?.text || '').join('');
-  return { model, output: parseOutput(String(text || '')) };
+  const configuredModel = (env.GEMINI_MODEL || 'gemini-3.8-flash').trim();
+  const models = Array.from(new Set([
+    configuredModel,
+    'gemini-3.5-flash-lite',
+    'gemini-3.8-flash'
+  ]));
+
+  const errors: string[] = [];
+
+  for (const model of models) {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: systemPrompt }] },
+        contents: [{ role: 'user', parts: [{ text: `[TRACE: ${traceId}] Goal: ${goal}\\nContext: ${JSON.stringify(context ?? {})}` }] }],
+        generationConfig: { responseMimeType: 'application/json' }
+      })
+    });
+
+    const data = await response.json().catch(() => ({})) as any;
+    if (response.ok) {
+      const text = data?.candidates?.[0]?.content?.parts?.map((p: any) => p?.text || '').join('');
+      return { model, output: parseOutput(String(text || '')) };
+    }
+
+    const detail = String(data?.error?.message || 'request failed');
+    const error = `Gemini HTTP ${response.status}: ${detail}`;
+    errors.push(`${model}: ${error}`);
+
+    if (![429, 500, 502, 503, 504].includes(response.status)) break;
+  }
+
+  throw new Error(errors.join(' | ') || 'Gemini request failed');
 }
 
 async function callOpenAI(env: BrainEnv, goal: string, systemPrompt: string, context: unknown, traceId: string): Promise<{ model: string; output: unknown }> {
