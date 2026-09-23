@@ -37,6 +37,14 @@ export function sanitizeDelegationText(value: string, maxLength: number): string
   return text;
 }
 
+export function sanitizeWorkerOutput(value: unknown, maxLength = 12000): string {
+  let text = typeof value === 'string' ? value : JSON.stringify(value ?? '');
+  text = text.replace(/(?:api[_-]?key|access[_-]?token|secret|password|authorization)\s*[:=]\s*[^\s,;]+/gi, '$1=[REDACTED]');
+  text = text.replace(/bearer\s+[a-z0-9._-]{12,}/gi, 'Bearer [REDACTED]');
+  text = text.replace(/\bsk-[a-z0-9_-]{16,}\b/gi, 'sk-[REDACTED]');
+  return text.slice(0, maxLength);
+}
+
 
 export interface WorkerCollaborationResult {
   workerId: string;
@@ -323,10 +331,10 @@ export async function collaborateWithA2AWorker(
       workerId: worker.workerId,
       task: delegation.task,
       status: 'COMPLETED',
-      output: { text: answer, agentCard: {
-        name: card?.name,
-        version: card?.version,
-        capabilities: card?.capabilities,
+      output: { text: sanitizeWorkerOutput(answer), agentCard: {
+        name: String(card?.name || '').slice(0, 200),
+        version: String(card?.version || '').slice(0, 64),
+        capabilities: Array.isArray(card?.capabilities) ? card.capabilities.slice(0, 32) : [],
         authentication: card?.authentication
       } },
       checkedAt
