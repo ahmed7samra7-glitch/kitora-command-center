@@ -25,5 +25,22 @@ CREATE TABLE IF NOT EXISTS kcc_provider_evidence (
   created_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS kcc_brain_decisions (
+  id TEXT PRIMARY KEY,
+  task_id TEXT NOT NULL,
+  agent_id TEXT NOT NULL,
+  provider TEXT NOT NULL,
+  model TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('COMPLETED', 'FAILED', 'BLOCKED')),
+  output TEXT,
+  requires_owner_approval INTEGER NOT NULL CHECK (requires_owner_approval IN (0, 1)),
+  approval_reason TEXT,
+  execution_time_ms INTEGER NOT NULL,
+  created_at TEXT NOT NULL,
+  error TEXT
+);
+
 CREATE INDEX IF NOT EXISTS idx_kcc_tasks_status ON kcc_runtime_tasks(status, created_at);
 CREATE INDEX IF NOT EXISTS idx_kcc_evidence_type ON kcc_provider_evidence(evidence_type, provider_verified);
+CREATE INDEX IF NOT EXISTS idx_kcc_brain_decisions_created ON kcc_brain_decisions(created_at);
+CREATE INDEX IF NOT EXISTS idx_kcc_brain_decisions_agent ON kcc_brain_decisions(agent_id, created_at);
