@@ -12,6 +12,7 @@ import {
   readEvidenceSummary,
   releaseCloudflareTaskForRetry
 } from './server/cloudflareStore.js';
+import { executeCloudflareBrainTask, persistCloudflareBrainDecision } from './server/cloudflareBrain.js';
 
 export interface KccCloudflareEnv extends CloudflareRuntimeEnv {
   KCC_DB: CloudflareD1Database;
@@ -57,6 +58,26 @@ function workerAuthorized(request: Request, env: KccCloudflareEnv): boolean {
   const expected = env.KCC_WORKER_SECRET?.trim();
   const provided = request.headers.get('x-kcc-worker-secret')?.trim() || '';
   return Boolean(expected && constantTimeEqual(provided, expected));
+}
+
+async function executeMissionTask(env: KccCloudflareEnv, taskId: string, payload: Record<string, unknown>): Promise<'COMPLETED' | 'FAILED'> {
+  const decision = await executeCloudflareBrainTask(env, {
+    taskId,
+    agentId: typeof payload.agentId === 'string' ? payload.agentId : 'EXECUTIVE_AUDITOR',
+    goal: typeof payload.goal === 'string'
+      ? payload.goal
+      : 'Review KITORA runtime state and identify the next safe autonomous action.',
+    context: payload.context || {},
+    sensitivityScore: typeof payload.sensitivityScore === 'number' ? payload.sensitivityScore : undefined,
+    costUSD: typeof payload.costUSD === 'number' ? payload.costUSD : undefined
+  });
+
+  await persistCloudflareBrainDecision(env.KCC_DB, decision);
+  await completeCloudflareTask(env.KCC_DB, taskId, decision.status === 'COMPLETED' ? 'COMPLETED' : 'FAILED', {
+    error: decision.error,
+    result: decision
+  });
+  return decision.status === 'COMPLETED' ? 'COMPLETED' : 'FAILED';
 }
 
 async function health(env: KccCloudflareEnv): Promise<Response> {
@@ -120,6 +141,14 @@ export async function executeQueuedTask(
         }
       });
       return { status: 'COMPLETED' };
+    }
+
+    case 'KCC_BRAIN_EXECUTE':
+    case 'KCC_MISSION': {
+      const status = await executeMissionTask(env, task.id, payload);
+      return status === 'COMPLETED'
+        ? { status: 'COMPLETED' }
+        : { status: 'FAILED', reason: 'BRAIN_EXECUTION_BLOCKED_OR_FAILED' };
     }
 
     default:
@@ -188,6 +217,7 @@ export default {
         runtime: 'cloudflare-workers',
         storage: 'cloudflare-d1',
         backgroundExecution: 'cloudflare-queues',
+        brainExecution: 'native-worker',
         localFilesystemPersistence: false,
         failClosed: true
       });
@@ -218,6 +248,32 @@ export default {
   async queue(batch: MessageBatch<KccTaskEnvelope>, env: KccCloudflareEnv): Promise<void> {
     for (const message of batch.messages) {
       await processQueueMessage(env, message);
+    }
+  },
+
+  async scheduled(controller: ScheduledController, env: KccCloudflareEnv): Promise<void> {
+    if (!env.KCC_TASK_QUEUE) {
+      console.error('[KCC Cron] KCC_TASK_QUEUE binding is required');
+      controller.noRetry();
+      return;
+    }
+
+    try {
+      const mission = controller.cron === '*/15 * * * *'
+        ? { agentId: 'PRODUCT_HUNTER', goal: 'Find and evaluate promising KITORA product opportunities from verified inputs. Do not claim supplier or purchase actions.' }
+        : controller.cron === '0 * * * *'
+          ? { agentId: 'INVENTORY_SYNC', goal: 'Review current inventory synchronization requirements from verified inputs and identify safe next steps. Do not execute supplier writes.' }
+          : controller.cron === '0 */6 * * *'
+            ? { agentId: 'COMPETITOR_SCAN', goal: 'Review competitor and pricing signals from verified inputs and prepare safe recommendations.' }
+            : { agentId: 'EXECUTIVE_AUDITOR', goal: 'Produce the daily executive/runtime review from verified evidence, surface blockers and owner approvals.' };
+
+      await enqueueCloudflareTask(env.KCC_DB, env.KCC_TASK_QUEUE, 'KCC_MISSION', {
+        ...mission,
+        context: { source: 'cloudflare-cron', cron: controller.cron }
+      });
+    } catch (error) {
+      console.error('[KCC Cron] Failed to enqueue mission', error);
+      controller.noRetry();
     }
   }
 };
