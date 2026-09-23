@@ -6,7 +6,6 @@ import {
   claimCloudflareTask,
   completeCloudflareTask,
   enqueueCloudflareTask,
-  ensureCloudflareSchema,
   hasConfiguredLiveProvider,
   listCloudflareTasks,
   parseQueuedTaskPayload,
@@ -198,7 +197,6 @@ export default {
       if (!workerAuthorized(request, env)) return json({ success: false, error: 'WORKER_AUTH_REQUIRED', failClosed: true }, 401);
       if (!env.KCC_TASK_QUEUE) return json({ success: false, error: 'KCC_TASK_QUEUE binding is required', failClosed: true }, 503);
 
-      await ensureCloudflareSchema(env.KCC_DB);
       const body = await request.json().catch(() => ({})) as Record<string, unknown>;
       const type = String(body.type || 'KCC_TASK').trim().slice(0, 128);
       const task = await enqueueCloudflareTask(env.KCC_DB, env.KCC_TASK_QUEUE, type, body.payload || {});
@@ -207,7 +205,6 @@ export default {
 
     if (request.method === 'GET' && url.pathname === '/api/kcc/tasks') {
       if (!workerAuthorized(request, env)) return json({ success: false, error: 'WORKER_AUTH_REQUIRED', failClosed: true }, 401);
-      await ensureCloudflareSchema(env.KCC_DB);
       return json({ success: true, tasks: await listCloudflareTasks(env.KCC_DB) });
     }
 
