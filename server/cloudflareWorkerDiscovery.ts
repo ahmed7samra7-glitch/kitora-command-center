@@ -55,6 +55,19 @@ export interface WorkerCollaborationResult {
   checkedAt: string;
 }
 
+async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit = {}, timeoutMs = 10000): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } catch (error) {
+    if (controller.signal.aborted) throw new Error('KCC_A2A_TIMEOUT_' + timeoutMs + 'MS');
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export async function ensureWorkerDiscoverySchema(db: { prepare(query: string): any }): Promise<void> {
   await db.prepare(`CREATE TABLE IF NOT EXISTS kcc_discovered_workers (
     worker_id TEXT PRIMARY KEY,
@@ -152,9 +165,9 @@ export async function discoverPublicAiWorkers(query = 'AI agent ecommerce produc
   const url = new URL('https://api.a2a-registry.org/public/agents');
   url.searchParams.set('q', query.slice(0, 240));
 
-  const response = await fetch(url.toString(), {
+  const response = await fetchWithTimeout(url.toString(), {
     headers: { accept: 'application/json' }
-  });
+  }, 10000);
   if (!response.ok) throw new Error(`A2A registry discovery HTTP ${response.status}`);
 
   const body = await response.json().catch(() => ({})) as any;
@@ -236,9 +249,9 @@ export function rankWorkersForGoal(workers: DiscoveredAiWorker[], goal: string, 
 export async function fetchA2AAgentCard(endpoint: string): Promise<any> {
   const baseUrl = new URL(endpoint);
   const cardUrl = `${baseUrl.origin}/.well-known/agent-card.json`;
-  const response = await fetch(cardUrl, {
+  const response = await fetchWithTimeout(cardUrl, {
     headers: { accept: 'application/json' }
-  });
+  }, 10000);
   if (response.status === 401 || response.status === 403) {
     throw new Error(`A2A_AUTH_REQUIRED: agent-card HTTP ${response.status}`);
   }
@@ -250,7 +263,7 @@ async function sendA2AMessage(
   endpoint: string,
   text: string
 ): Promise<{ response: Response; result: any }> {
-  const response = await fetch(endpoint, {
+  const response = await fetchWithTimeout(endpoint, {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
@@ -268,7 +281,7 @@ async function sendA2AMessage(
         }
       }
     })
-  });
+  }, 12000);
   const result = await response.json().catch(() => ({})) as any;
   return { response, result };
 }
