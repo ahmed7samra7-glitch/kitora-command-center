@@ -9,7 +9,7 @@ GEMINI_MODEL = "gemini-3.6-flash"
 KCC_ALLOW_PAID_AI_FALLBACK = "false"
 
 [secrets]
-required = ["KCC_WORKER_SECRET"]
+required = ["KCC_WORKER_SECRET", "GEMINI_API_KEY"]
 
 [[d1_databases]]
 binding = "KCC_DB"
