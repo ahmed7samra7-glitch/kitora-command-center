@@ -429,6 +429,13 @@ export default {
         storage: 'cloudflare-d1',
         backgroundExecution: 'cloudflare-queues',
         brainExecution: 'native-worker',
+        workerDiscovery: {
+          enabled: true,
+          refreshSchedule: '10 */6 * * *',
+          protocol: 'A2A',
+          collaboration: 'bounded-dialogue+synthesis',
+          privacyFirewall: true
+        },
         localFilesystemPersistence: false,
         failClosed: true
       });
