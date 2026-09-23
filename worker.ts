@@ -112,7 +112,7 @@ async function executeMissionTask(env: KccCloudflareEnv, taskId: string, payload
 
 function isTransientBrainFailure(error?: string): boolean {
   const value = (error || '').toLowerCase();
-  return /\\bhttp\\s+(?:429|500|502|503|504)\\b/.test(value)
+  return /\\bhttp\\s+(?:429|500|502|503|504)\\b/i.test(value)
     || value.includes('timeout')
     || value.includes('temporarily unavailable')
     || value.includes('high demand');
