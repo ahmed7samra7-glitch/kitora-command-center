@@ -3,6 +3,10 @@ main = "worker.ts"
 compatibility_date = "2026-09-22"
 workers_dev = true
 
+[vars]
+KCC_AI_PROVIDER = "gemini"
+GEMINI_MODEL = "gemini-3.6-flash"
+
 [secrets]
 required = ["KCC_WORKER_SECRET"]
 
@@ -23,3 +27,11 @@ max_batch_timeout = 5
 max_retries = 3
 max_concurrency = 1
 dead_letter_queue = "kitora-command-center-tasks-dlq"
+
+[triggers]
+crons = [
+  "*/15 * * * *",
+  "0 * * * *",
+  "0 */6 * * *",
+  "0 0 * * *"
+]
