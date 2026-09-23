@@ -72,7 +72,7 @@ try {
 if (!privacyBlocked) throw new Error('Expected sensitive delegation text to be blocked.');
 
 let canaryFetchCount = 0;
-globalThis.fetch = (async (input: RequestInfo | URL) => {
+globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   const url = String(input);
   canaryFetchCount += 1;
   if (url.includes('/.well-known/agent-card.json')) {
