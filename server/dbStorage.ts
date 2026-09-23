@@ -45,6 +45,7 @@ export interface DatabaseSchema {
   kccConversations?: any[];
   kccConsensusDecisions?: any[];
   kccExecutiveDiscussions?: any[];
+  kccProviderEvidence?: any[];
   updatedAt: string;
 }
 

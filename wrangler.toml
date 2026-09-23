@@ -1,0 +1,38 @@
+name = "kitora-command-center"
+main = "worker.ts"
+compatibility_date = "2026-09-22"
+workers_dev = true
+
+[vars]
+KCC_AI_PROVIDER = "gemini"
+GEMINI_MODEL = "gemini-3.6-flash"
+KCC_ALLOW_PAID_AI_FALLBACK = "false"
+
+[secrets]
+required = ["KCC_WORKER_SECRET"]
+
+[[d1_databases]]
+binding = "KCC_DB"
+database_name = "kitora-command-center"
+database_id = "74190e7b-5ff0-4d91-bfcb-b0e51d081e15"
+migrations_dir = "migrations"
+
+[[queues.producers]]
+binding = "KCC_TASK_QUEUE"
+queue = "kitora-command-center-tasks"
+
+[[queues.consumers]]
+queue = "kitora-command-center-tasks"
+max_batch_size = 10
+max_batch_timeout = 5
+max_retries = 3
+max_concurrency = 1
+dead_letter_queue = "kitora-command-center-tasks-dlq"
+
+[triggers]
+crons = [
+  "*/15 * * * *",
+  "0 * * * *",
+  "0 */6 * * *",
+  "0 0 * * *"
+]
