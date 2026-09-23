@@ -36,8 +36,16 @@ const EXTERNAL_WRITE_PATTERNS = [
 const ANALYSIS_CAPABILITIES = ['ANALYZE', 'RECOMMEND', 'DRAFT', 'READ_TELEMETRY'];
 const FORBIDDEN_CAPABILITIES = ['PURCHASE', 'PAYMENT', 'SUPPLIER_WRITE', 'FULFILLMENT', 'NOTIFICATION', 'PUBLISH', 'AD_SPEND', 'EXTERNAL_WRITE', 'DELETE'];
 
+const NEGATION_CONTEXT = /(?:\bdo\s+not\b|\bdon't\b|\bnever\b|\bmust\s+not\b|\bshould\s+not\b|\bnot\s+to\b|\bwithout\b)\s+[^.!?;:]{0,48}$/i;
+
 function looksLikeExternalWrite(text: string): boolean {
-  return EXTERNAL_WRITE_PATTERNS.some((pattern) => pattern.test(text));
+  return EXTERNAL_WRITE_PATTERNS.some((pattern) => {
+    const value = String(text || '');
+    const match = pattern.exec(value);
+    if (!match || typeof match.index !== 'number') return false;
+    const prefix = value.slice(Math.max(0, match.index - 64), match.index);
+    return !NEGATION_CONTEXT.test(prefix);
+  });
 }
 
 export function issueAutonomyPassport(input: {
