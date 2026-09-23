@@ -482,7 +482,7 @@ export default {
     if (request.method === 'POST' && url.pathname === '/api/kcc/tasks/recover') {
       if (!workerAuthorized(request, env)) return json({ success: false, error: 'WORKER_AUTH_REQUIRED', failClosed: true }, 401);
       if (!env.KCC_TASK_QUEUE) return json({ success: false, error: 'KCC_TASK_QUEUE binding is required', failClosed: true }, 503);
-      const recovery = await recoverStaleCloudflareTasks(env.KCC_DB, env.KCC_TASK_QUEUE, 60000, 3);
+      const recovery = await recoverStaleCloudflareTasks(env.KCC_DB, env.KCC_TASK_QUEUE, 5 * 60 * 1000, 3);
       return json({ success: true, recovery, failClosed: true });
     }
 
@@ -527,7 +527,7 @@ export default {
     }
 
     try {
-      await recoverStaleCloudflareTasks(env.KCC_DB, env.KCC_TASK_QUEUE, 120000, 3);
+      await recoverStaleCloudflareTasks(env.KCC_DB, env.KCC_TASK_QUEUE, 5 * 60 * 1000, 3);
       const mission = controller.cron === '*/15 * * * *'
         ? { agentId: 'PRODUCT_HUNTER', goal: 'Find and evaluate promising KITORA product opportunities from verified inputs. Do not claim supplier or purchase actions.' }
         : controller.cron === '0 * * * *'
