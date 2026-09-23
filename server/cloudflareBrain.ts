@@ -119,11 +119,14 @@ function configured(env: BrainEnv, provider: BrainProvider): boolean {
 
 function providerOrder(env: BrainEnv): BrainProvider[] {
   const preferred = (env.KCC_AI_PROVIDER || 'gemini').trim().toLowerCase();
-  const paidFallbackAllowed = (env.KCC_ALLOW_PAID_AI_FALLBACK || '').trim().toLowerCase() === 'true';
+  const paidProvidersAllowed = (env.KCC_ALLOW_PAID_AI_FALLBACK || '').trim().toLowerCase() === 'true';
 
-  if (preferred === 'openai') return paidFallbackAllowed ? ['openai', 'gemini', 'claude'] : ['openai'];
-  if (preferred === 'claude') return paidFallbackAllowed ? ['claude', 'gemini', 'openai'] : ['claude'];
-  return paidFallbackAllowed ? ['gemini', 'openai', 'claude'] : ['gemini'];
+  // Hard $0 boundary: Gemini is the only provider path when paid providers are not explicitly enabled.
+  if (!paidProvidersAllowed) return ['gemini'];
+
+  if (preferred === 'openai') return ['openai', 'gemini', 'claude'];
+  if (preferred === 'claude') return ['claude', 'gemini', 'openai'];
+  return ['gemini', 'openai', 'claude'];
 }
 
 export async function executeCloudflareBrainTask(
