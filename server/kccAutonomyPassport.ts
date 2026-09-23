@@ -14,11 +14,11 @@ export interface KccAutonomyPassport {
 }
 
 const EXTERNAL_WRITE_PATTERNS = [
-  /\bbuy\b/i,
-  /\bpurchase\b/i,
+  /\bbuy(?:ing)?\b/i,
+  /\bpurchas(?:e|ing)\b/i,
   /\bpay(?:ment)?\b/i,
   /\bcharge\b/i,
-  /\bspend\b/i,
+  /\bspend(?:ing)?\b/i,
   /\bplace\s+an?\s+order\b/i,
   /\bfulfill(?:ment)?\b/i,
   /\bsupplier\b/i,
@@ -36,15 +36,31 @@ const EXTERNAL_WRITE_PATTERNS = [
 const ANALYSIS_CAPABILITIES = ['ANALYZE', 'RECOMMEND', 'DRAFT', 'READ_TELEMETRY'];
 const FORBIDDEN_CAPABILITIES = ['PURCHASE', 'PAYMENT', 'SUPPLIER_WRITE', 'FULFILLMENT', 'NOTIFICATION', 'PUBLISH', 'AD_SPEND', 'EXTERNAL_WRITE', 'DELETE'];
 
-const NEGATION_CONTEXT = /(?:\bdo\s+not\b|\bdon't\b|\bnever\b|\bmust\s+not\b|\bshould\s+not\b|\bnot\s+to\b|\bwithout\b)\s+[^.!?;:]{0,48}$/i;
+const NEGATION_MARKER = /(?:\bdo\s+not\b|\bdon't\b|\bnever\b|\bmust\s+not\b|\bshould\s+not\b|\bnot\s+to\b|\bwithout\b)/ig;
+const OVERRIDE_MARKER = /(?:\bbut\b|\bexcept\b|\bhowever\b|\bonly\bthen\b)/ig;
+
+function isNegatedExternalWrite(value: string, matchIndex: number): boolean {
+  const sentenceStart = Math.max(
+    value.lastIndexOf('.', matchIndex - 1),
+    value.lastIndexOf('!', matchIndex - 1),
+    value.lastIndexOf('?', matchIndex - 1),
+    value.lastIndexOf(';', matchIndex - 1),
+    value.lastIndexOf(':', matchIndex - 1)
+  ) + 1;
+  const prefix = value.slice(sentenceStart, matchIndex);
+  let lastNegation = -1;
+  for (const match of prefix.matchAll(NEGATION_MARKER)) lastNegation = match.index ?? lastNegation;
+  if (lastNegation < 0) return false;
+  const suffixAfterNegation = prefix.slice(lastNegation);
+  return !OVERRIDE_MARKER.test(suffixAfterNegation);
+}
 
 function looksLikeExternalWrite(text: string): boolean {
+  const value = String(text || '');
   return EXTERNAL_WRITE_PATTERNS.some((pattern) => {
-    const value = String(text || '');
     const match = pattern.exec(value);
     if (!match || typeof match.index !== 'number') return false;
-    const prefix = value.slice(Math.max(0, match.index - 64), match.index);
-    return !NEGATION_CONTEXT.test(prefix);
+    return !isNegatedExternalWrite(value, match.index);
   });
 }
 
