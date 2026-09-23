@@ -21,7 +21,8 @@ import {
   listWorkerCollaborations,
   persistDiscoveredWorkers,
   persistWorkerCollaboration,
-  rankWorkersForGoal
+  rankWorkersForGoal,
+  updateWorkerConnectionState
 } from './server/cloudflareWorkerDiscovery.js';
 
 export interface KccCloudflareEnv extends CloudflareRuntimeEnv {
@@ -173,6 +174,12 @@ async function executeMissionTask(env: KccCloudflareEnv, taskId: string, payload
         }, `KCC-${taskId}`);
 
     await persistWorkerCollaboration(env.KCC_DB, taskId, collaboration);
+    const state = collaboration.status === 'COMPLETED'
+      ? 'REACHABLE'
+      : collaboration.status === 'REQUIRES_AUTH'
+        ? 'REQUIRES_AUTH'
+        : 'UNAVAILABLE';
+    await updateWorkerConnectionState(env.KCC_DB, candidate.workerId, state);
     collaborations = [...collaborations, collaboration];
   }
 
