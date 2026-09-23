@@ -484,7 +484,9 @@ export default {
           ? { agentId: 'INVENTORY_SYNC', goal: 'Review current inventory synchronization requirements from verified inputs and identify safe next steps. Do not execute supplier writes.' }
           : controller.cron === '0 */6 * * *'
             ? { agentId: 'COMPETITOR_SCAN', goal: 'Review competitor and pricing signals from verified inputs and prepare safe recommendations.' }
-            : { agentId: 'EXECUTIVE_AUDITOR', goal: 'Produce the daily executive/runtime review from verified evidence, surface blockers and owner approvals.' };
+            : controller.cron === '10 */6 * * *'
+              ? { agentId: 'WORKER_DISCOVERY', goal: 'Discover new AI workers that can improve KITORA task accuracy or speed. Verify reachable capabilities before treating a worker as connected.' }
+              : { agentId: 'EXECUTIVE_AUDITOR', goal: 'Produce the daily executive/runtime review from verified evidence, surface blockers and owner approvals.' };
 
       await enqueueCloudflareTask(env.KCC_DB, env.KCC_TASK_QUEUE, 'KCC_MISSION', {
         ...mission,
