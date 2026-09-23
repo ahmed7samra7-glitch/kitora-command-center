@@ -143,7 +143,8 @@ function endpointFrom(record: RegistryRecord): string | null {
 }
 
 function makeWorkerId(record: RegistryRecord, index: number): string {
-  const raw = String(record.identifier || record.name || `registry-agent-${index}`).trim();
+  const card = nestedAgentCard(record);
+  const raw = String(record.identifier || record.id || record.name || record.displayName || card.name || `registry-agent-${index}`).trim();
   return `A2A:${raw.slice(0, 180)}`;
 }
 
@@ -171,7 +172,11 @@ export async function discoverPublicAiWorkers(query = 'AI agent ecommerce produc
     name: String(raw.name || raw.displayName || raw.identifier || raw.id || nestedAgentCard(raw).name || `A2A Worker ${index + 1}`).slice(0, 200),
     provider: String(raw.provider || nestedAgentCard(raw).provider || 'a2a-registry').slice(0, 120),
     description: String(raw.description || nestedAgentCard(raw).description || '').slice(0, 2000),
-    protocol: String(raw.protocol || raw.protocolVersion || raw.protocols?.[0] || nestedAgentCard(raw).protocol || nestedAgentCard(raw).protocolVersion || '').toUpperCase().includes('A2A') ? 'A2A' : 'UNKNOWN',
+    protocol: (() => {
+      const card = nestedAgentCard(raw);
+      const signal = String(raw.protocol || raw.protocolVersion || raw.protocols?.[0] || card.protocol || card.protocolVersion || '').toUpperCase();
+      return signal.includes('A2A') || Boolean(card.url || card.protocolVersion) ? 'A2A' : 'UNKNOWN';
+    })(),
     endpoint: endpointFrom(raw),
     capabilities: normalizeCapabilities(raw),
     connectionState: endpointFrom(raw) ? 'DISCOVERED' : 'UNAVAILABLE',
