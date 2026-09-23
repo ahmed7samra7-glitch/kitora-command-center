@@ -83,10 +83,13 @@ globalThis.fetch = (async (input: RequestInfo | URL) => {
     }), { status: 200, headers: { 'content-type': 'application/json' } });
   }
   if (url === 'https://canary.example/a2a') {
+    const requestText = typeof init?.body === 'string' ? init.body : '';
+    const match = requestText.match(/KCC_CANARY_PASS_[a-z0-9-]+/i);
+    const token = match ? match[0] : 'INVALID';
     return new Response(JSON.stringify({
       result: {
         message: {
-          parts: [{ text: '{"canary":"KCC_CANARY_PASS","action":"NONE","capabilityEcho":["research"]}' }]
+          parts: [{ text: JSON.stringify({ canary: token, action: 'NONE', capabilityEcho: ['research'] }) }]
         }
       }
     }), { status: 200, headers: { 'content-type': 'application/json' } });
