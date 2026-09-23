@@ -23,6 +23,7 @@ import {
   listWorkerCollaborations,
   persistDiscoveredWorkers,
   persistWorkerCollaboration,
+  evolveWorkerTrust,
   persistWorkerTrust,
   rankWorkersForGoal,
   runWorkerCanary,
@@ -203,6 +204,15 @@ async function executeMissionTask(env: KccCloudflareEnv, taskId: string, payload
         ? 'REQUIRES_AUTH'
         : 'UNAVAILABLE';
     await updateWorkerConnectionState(env.KCC_DB, candidate.workerId, state);
+
+    const trustEvent = collaboration.status === 'COMPLETED' ? 'COLLAB_SUCCESS'
+      : collaboration.status === 'FAILED' ? 'COLLAB_FAILURE'
+      : undefined;
+    if (trustEvent) {
+      const trust = evolveWorkerTrust(candidate.trust, trustEvent);
+      trust.workerId = candidate.workerId;
+      await persistWorkerTrust(env.KCC_DB, trust);
+    }
     collaborations = [...collaborations, collaboration];
   }
 
