@@ -14,6 +14,15 @@ import {
 } from './server/cloudflareStore.js';
 import { executeCloudflareBrainTask, persistCloudflareBrainDecision } from './server/cloudflareBrain.js';
 import { issueAutonomyPassport, admitNextActions } from './server/kccAutonomyPassport.js';
+import {
+  collaborateWithA2AWorker,
+  discoverPublicAiWorkers,
+  listDiscoveredWorkers,
+  listWorkerCollaborations,
+  persistDiscoveredWorkers,
+  persistWorkerCollaboration,
+  rankWorkersForGoal
+} from './server/cloudflareWorkerDiscovery.js';
 
 export interface KccCloudflareEnv extends CloudflareRuntimeEnv {
   KCC_DB: CloudflareD1Database;
@@ -71,8 +80,6 @@ async function executeMissionTask(env: KccCloudflareEnv, taskId: string, payload
     costUSD: typeof payload.costUSD === 'number' ? payload.costUSD : undefined
   });
 
-  // The deterministic governor runs before the probabilistic Brain.
-  // A mission can never acquire capabilities that the passport did not grant.
   if (passport.mode !== 'READ_ONLY') {
     const decision = {
       decisionId: `CF-GOV-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
@@ -91,33 +98,109 @@ async function executeMissionTask(env: KccCloudflareEnv, taskId: string, payload
     await persistCloudflareBrainDecision(env.KCC_DB, decision);
     await completeCloudflareTask(env.KCC_DB, taskId, 'FAILED', {
       error: passport.reason,
-      result: {
-        governor: 'KCC_AUTONOMY_PASSPORT',
-        passport,
-        decision
-      }
+      result: { governor: 'KCC_AUTONOMY_PASSPORT', passport, decision }
     });
     return 'FAILED';
   }
 
-  const decision = await executeCloudflareBrainTask(env, {
+  let workerCatalog = await listDiscoveredWorkers(env.KCC_DB, 100);
+  let helpfulWorkers = rankWorkersForGoal(workerCatalog, goal, 5);
+  if (helpfulWorkers.length === 0) {
+    const discovered = await discoverPublicAiWorkers(goal);
+    await persistDiscoveredWorkers(env.KCC_DB, discovered);
+    workerCatalog = await listDiscoveredWorkers(env.KCC_DB, 100);
+    helpfulWorkers = rankWorkersForGoal(workerCatalog, goal, 5);
+  }
+
+  const baseContext = {
+    ...(payload.context && typeof payload.context === 'object' ? payload.context : {}),
+    autonomyPassport: passport,
+    availableExternalWorkers: helpfulWorkers.map(worker => ({
+      workerId: worker.workerId,
+      name: worker.name,
+      provider: worker.provider,
+      protocol: worker.protocol,
+      connectionState: worker.connectionState,
+      capabilities: worker.capabilities,
+      description: worker.description,
+      endpointAvailable: Boolean(worker.endpoint)
+    }))
+  };
+
+  let decision = await executeCloudflareBrainTask(env, {
     taskId,
     agentId: typeof payload.agentId === 'string' ? payload.agentId : 'EXECUTIVE_AUDITOR',
     goal,
-    context: {
-      ...(payload.context && typeof payload.context === 'object' ? payload.context : {}),
-      autonomyPassport: passport
-    },
+    context: baseContext,
     sensitivityScore: typeof payload.sensitivityScore === 'number' ? payload.sensitivityScore : undefined,
     costUSD: typeof payload.costUSD === 'number' ? payload.costUSD : undefined
   });
 
-  // Preserve transient provider failures for Queue retry before any terminal task update.
   if (decision.status !== 'COMPLETED' && isTransientBrainFailure(decision.error)) {
     throw new Error(decision.error || 'TRANSIENT_BRAIN_PROVIDER_FAILURE');
   }
 
   await persistCloudflareBrainDecision(env.KCC_DB, decision);
+
+  let collaborations = await listWorkerCollaborations(env.KCC_DB, taskId);
+  const requestedDelegations: any[] = decision.output && typeof decision.output === 'object' && Array.isArray((decision.output as any).workerDelegations)
+    ? (decision.output as any).workerDelegations.slice(0, 2)
+    : [];
+
+  for (const raw of requestedDelegations) {
+    const workerId = typeof raw?.workerId === 'string' ? raw.workerId.trim() : '';
+    const task = typeof raw?.task === 'string' ? raw.task.trim().slice(0, 4000) : '';
+    const successCriteria = typeof raw?.successCriteria === 'string' ? raw.successCriteria.trim().slice(0, 2000) : undefined;
+    if (!workerId || !task) continue;
+    if (collaborations.some(result => result.workerId === workerId && result.task === task && result.status === 'COMPLETED')) continue;
+
+    const candidate = workerCatalog.find(worker => worker.workerId === workerId) || rankWorkersForGoal(workerCatalog, task, 1)[0];
+    if (!candidate) continue;
+
+    const workerPassport = issueAutonomyPassport({ goal: task, ttlSeconds: 600 });
+    const collaboration = workerPassport.mode !== 'READ_ONLY'
+      ? {
+          workerId: candidate.workerId,
+          task,
+          status: 'FAILED' as const,
+          error: workerPassport.reason || 'Worker delegation blocked by autonomy governor.',
+          checkedAt: new Date().toISOString()
+        }
+      : await collaborateWithA2AWorker(candidate, {
+          workerId: candidate.workerId,
+          task,
+          successCriteria
+        }, `KCC-${taskId}`);
+
+    await persistWorkerCollaboration(env.KCC_DB, taskId, collaboration);
+    collaborations = [...collaborations, collaboration];
+  }
+
+  const completedCollaborations = collaborations.filter(result => result.status === 'COMPLETED');
+  if (completedCollaborations.length > 0) {
+    const synthesized = await executeCloudflareBrainTask(env, {
+      taskId,
+      agentId: typeof payload.agentId === 'string' ? payload.agentId : 'EXECUTIVE_AUDITOR',
+      goal: `Synthesize the original analysis with the verified specialist worker results. Preserve uncertainty and reject unsupported claims. Original goal: ${goal}`,
+      context: {
+        ...baseContext,
+        delegationPhase: 'synthesis',
+        originalBrainDecision: decision.output,
+        externalWorkerResults: completedCollaborations.map(result => ({
+          workerId: result.workerId,
+          task: result.task,
+          output: result.output
+        }))
+      },
+      sensitivityScore: typeof payload.sensitivityScore === 'number' ? payload.sensitivityScore : undefined,
+      costUSD: typeof payload.costUSD === 'number' ? payload.costUSD : undefined
+    });
+    if (synthesized.status !== 'COMPLETED' && isTransientBrainFailure(synthesized.error)) {
+      throw new Error(synthesized.error || 'TRANSIENT_BRAIN_PROVIDER_FAILURE');
+    }
+    await persistCloudflareBrainDecision(env.KCC_DB, synthesized);
+    if (synthesized.status === 'COMPLETED') decision = synthesized;
+  }
 
   const context = payload.context && typeof payload.context === 'object' ? payload.context as Record<string, unknown> : {};
   const depth = Number(context.depth || 0);
@@ -149,6 +232,10 @@ async function executeMissionTask(env: KccCloudflareEnv, taskId: string, payload
       ...decision,
       governor: 'KCC_AUTONOMY_PASSPORT',
       autonomyPassport: passport,
+      discoveredWorkersConsidered: helpfulWorkers.length,
+      collaborationsAttempted: requestedDelegations.length,
+      collaborationsCompleted: completedCollaborations.length,
+      collaborations: collaborations.slice(0, 4),
       admittedActions: admission.admitted.length,
       rejectedActions: admission.rejected.length,
       rejectedActionReasons: admission.rejected.slice(0, 4)
@@ -213,6 +300,23 @@ export async function executeQueuedTask(
         }
       });
       return { status: 'COMPLETED' };
+
+    case 'KCC_WORKER_DISCOVERY': {
+      const query = typeof payload.query === 'string' && payload.query.trim()
+        ? payload.query.trim().slice(0, 240)
+        : 'AI worker agent ecommerce research marketing coding analytics automation';
+      const discovered = await discoverPublicAiWorkers(query);
+      await persistDiscoveredWorkers(env.KCC_DB, discovered);
+      await completeCloudflareTask(env.KCC_DB, task.id, 'COMPLETED', {
+        result: {
+          source: 'a2a-registry-public',
+          query,
+          discoveredCount: discovered.length,
+          workers: discovered.slice(0, 12)
+        }
+      });
+      return { status: 'COMPLETED' };
+    }
 
     case 'KCC_ALIVE_STATUS_CHECK': {
       const evidence = await readEvidenceSummary(env.KCC_DB);
@@ -333,6 +437,24 @@ export default {
     if (request.method === 'GET' && url.pathname === '/api/kcc/tasks') {
       if (!workerAuthorized(request, env)) return json({ success: false, error: 'WORKER_AUTH_REQUIRED', failClosed: true }, 401);
       return json({ success: true, tasks: await listCloudflareTasks(env.KCC_DB) });
+    }
+
+    if (request.method === 'GET' && url.pathname === '/api/kcc/workers') {
+      if (!workerAuthorized(request, env)) return json({ success: false, error: 'WORKER_AUTH_REQUIRED', failClosed: true }, 401);
+      return json({
+        success: true,
+        discoverySource: 'a2a-registry-public',
+        workers: await listDiscoveredWorkers(env.KCC_DB, 100)
+      });
+    }
+
+    if (request.method === 'POST' && url.pathname === '/api/kcc/workers/discover') {
+      if (!workerAuthorized(request, env)) return json({ success: false, error: 'WORKER_AUTH_REQUIRED', failClosed: true }, 401);
+      const body = await request.json().catch(() => ({})) as Record<string, unknown>;
+      const query = typeof body.query === 'string' ? body.query : undefined;
+      const discovered = await discoverPublicAiWorkers(query);
+      await persistDiscoveredWorkers(env.KCC_DB, discovered);
+      return json({ success: true, source: 'a2a-registry-public', discovered });
     }
 
     if (request.method === 'POST' && url.pathname === '/api/kcc/evidence') {
