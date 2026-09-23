@@ -90,27 +90,49 @@ export async function ensureWorkerDiscoverySchema(db: { prepare(query: string): 
 
 
 interface RegistryRecord {
+  id?: string;
   identifier?: string;
   name?: string;
+  displayName?: string;
   provider?: string;
   description?: string;
   protocol?: string;
+  protocolVersion?: string;
   protocols?: string[];
   endpoint?: string;
   url?: string;
-  capabilities?: string[];
-  skills?: string[];
+  capabilities?: unknown[];
+  skills?: unknown[];
+  agentCard?: RegistryRecord;
+  agent_card?: RegistryRecord;
+  metadata?: { agentCard?: RegistryRecord; agent_card?: RegistryRecord };
+}
+
+function nestedAgentCard(record: RegistryRecord): RegistryRecord {
+  return record.agentCard || record.agent_card || record.metadata?.agentCard || record.metadata?.agent_card || {};
 }
 
 function normalizeCapabilities(record: RegistryRecord): string[] {
-  return Array.from(new Set([
+  const card = nestedAgentCard(record);
+  const values = [
     ...(Array.isArray(record.capabilities) ? record.capabilities : []),
-    ...(Array.isArray(record.skills) ? record.skills : [])
-  ].map(value => String(value).trim().toLowerCase()).filter(Boolean))).slice(0, 32);
+    ...(Array.isArray(record.skills) ? record.skills : []),
+    ...(Array.isArray(card.capabilities) ? card.capabilities : []),
+    ...(Array.isArray(card.skills) ? card.skills : [])
+  ];
+  return Array.from(new Set(values.map(value => {
+    if (typeof value === 'string') return value;
+    if (value && typeof value === 'object') {
+      const item = value as Record<string, unknown>;
+      return String(item.name || item.id || item.description || '').trim();
+    }
+    return '';
+  }).map(value => value.toLowerCase()).filter(Boolean))).slice(0, 32);
 }
 
 function endpointFrom(record: RegistryRecord): string | null {
-  const candidate = String(record.endpoint || record.url || '').trim();
+  const card = nestedAgentCard(record);
+  const candidate = String(record.endpoint || record.url || card.endpoint || card.url || '').trim();
   if (!candidate) return null;
   try {
     const url = new URL(candidate);
@@ -146,10 +168,10 @@ export async function discoverPublicAiWorkers(query = 'AI agent ecommerce produc
   const now = new Date().toISOString();
   return records.slice(0, 12).map((raw: RegistryRecord, index: number): DiscoveredAiWorker => ({
     workerId: makeWorkerId(raw, index),
-    name: String(raw.name || raw.identifier || `A2A Worker ${index + 1}`).slice(0, 200),
-    provider: String(raw.provider || 'a2a-registry').slice(0, 120),
-    description: String(raw.description || '').slice(0, 2000),
-    protocol: String(raw.protocol || (raw.protocols?.[0] || '')).toUpperCase().includes('A2A') ? 'A2A' : 'UNKNOWN',
+    name: String(raw.name || raw.displayName || raw.identifier || raw.id || nestedAgentCard(raw).name || `A2A Worker ${index + 1}`).slice(0, 200),
+    provider: String(raw.provider || nestedAgentCard(raw).provider || 'a2a-registry').slice(0, 120),
+    description: String(raw.description || nestedAgentCard(raw).description || '').slice(0, 2000),
+    protocol: String(raw.protocol || raw.protocolVersion || raw.protocols?.[0] || nestedAgentCard(raw).protocol || nestedAgentCard(raw).protocolVersion || '').toUpperCase().includes('A2A') ? 'A2A' : 'UNKNOWN',
     endpoint: endpointFrom(raw),
     capabilities: normalizeCapabilities(raw),
     connectionState: endpointFrom(raw) ? 'DISCOVERED' : 'UNAVAILABLE',
