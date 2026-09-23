@@ -198,6 +198,80 @@ export async function releaseCloudflareTaskForRetry(
   ).bind(error, new Date().toISOString(), taskId).run();
 }
 
+export async function recoverStaleCloudflareTasks(
+  db: CloudflareD1Database,
+  queue: CloudflareQueue,
+  staleAfterMs = 120000,
+  maxAttempts = 3
+): Promise<{ requeued: string[]; failed: string[] }> {
+  const staleBefore = new Date(Date.now() - staleAfterMs).toISOString();
+  const rows = await db.prepare(
+    `SELECT id, attempts FROM ${TABLES.tasks}
+     WHERE status='RUNNING' AND updated_at < ?
+     ORDER BY updated_at ASC
+     LIMIT 20`
+  ).bind(staleBefore).all<{ id: string; attempts: number }>();
+
+  const requeued: string[] = [];
+  const failed: string[] = [];
+
+  for (const row of (rows.results || [])) {
+    const taskId = String(row.id);
+    const attempts = Number(row.attempts || 0);
+    if (attempts >= maxAttempts) {
+      await db.prepare(
+        `UPDATE ${TABLES.tasks}
+         SET status='FAILED', last_error=?, updated_at=?
+         WHERE id=? AND status='RUNNING'`
+      ).bind('STALE_TASK_MAX_ATTEMPTS_EXCEEDED', new Date().toISOString(), taskId).run();
+      failed.push(taskId);
+      continue;
+    }
+
+    const update = await db.prepare(
+      `UPDATE ${TABLES.tasks}
+       SET status='QUEUED', last_error=?, updated_at=?
+       WHERE id=? AND status='RUNNING'`
+    ).bind('STALE_TASK_RECOVERED', new Date().toISOString(), taskId).run();
+
+    if (Number(update.meta?.changes || 0) !== 1) continue;
+
+    const task = await db.prepare(
+      `SELECT id, type, payload FROM ${TABLES.tasks} WHERE id=?`
+    ).bind(taskId).first<{ id: string; type: string; payload: string }>();
+
+    if (!task) continue;
+
+    try {
+      await queue.send({
+        taskId: task.id,
+        type: task.type,
+        payload: parseQueuedTaskPayload({
+          id: task.id,
+          type: task.type,
+          payload: task.payload,
+          status: 'QUEUED',
+          created_at: '',
+          updated_at: '',
+          attempts: attempts
+        } as KccTaskRecord),
+        enqueuedAt: new Date().toISOString(),
+        recovery: true
+      });
+      requeued.push(taskId);
+    } catch {
+      await db.prepare(
+        `UPDATE ${TABLES.tasks}
+         SET status='FAILED', last_error=?, updated_at=?
+         WHERE id=? AND status='QUEUED'`
+      ).bind('STALE_TASK_RECOVERY_QUEUE_SEND_FAILED', new Date().toISOString(), taskId).run();
+      failed.push(taskId);
+    }
+  }
+
+  return { requeued, failed };
+}
+
 export async function completeCloudflareTask(
   db: CloudflareD1Database,
   taskId: string,
