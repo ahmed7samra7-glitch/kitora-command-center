@@ -215,7 +215,7 @@ const brainTaskId = String((await brainQueued.clone().json() as any).task.id);
 const brainMessage: any = {
   id: 'message-brain',
   timestamp: new Date(),
-  body: queue.messages[2],
+  body: queue.messages.find((candidate: any) => candidate?.taskId === brainTaskId),
   attempts: 1,
   acked: false,
   retried: false,
@@ -244,7 +244,7 @@ const aliveTaskId = String((await aliveCheck.clone().json() as any).task.id);
 const aliveMessage: any = {
   id: 'message-2',
   timestamp: new Date(),
-  body: queue.messages[1],
+  body: queue.messages.find((candidate: any) => candidate?.taskId === aliveTaskId),
   attempts: 1,
   acked: false,
   retried: false,
