@@ -6,6 +6,7 @@ workers_dev = true
 [vars]
 KCC_AI_PROVIDER = "gemini"
 GEMINI_MODEL = "gemini-3.6-flash"
+KCC_ALLOW_PAID_AI_FALLBACK = "false"
 
 [secrets]
 required = ["KCC_WORKER_SECRET"]
