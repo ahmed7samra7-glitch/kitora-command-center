@@ -17,6 +17,7 @@ import { issueAutonomyPassport, admitNextActions } from './server/kccAutonomyPas
 import {
   collaborateWithA2AWorker,
   discoverPublicAiWorkers,
+  ensureWorkerDiscoverySchema,
   listDiscoveredWorkers,
   listWorkerCollaborations,
   persistDiscoveredWorkers,
@@ -104,6 +105,7 @@ async function executeMissionTask(env: KccCloudflareEnv, taskId: string, payload
     return 'FAILED';
   }
 
+  await ensureWorkerDiscoverySchema(env.KCC_DB);
   let workerCatalog = await listDiscoveredWorkers(env.KCC_DB, 100);
   let helpfulWorkers = rankWorkersForGoal(workerCatalog, goal, 5);
   if (helpfulWorkers.length === 0) {
@@ -309,6 +311,7 @@ export async function executeQueuedTask(
       return { status: 'COMPLETED' };
 
     case 'KCC_WORKER_DISCOVERY': {
+      await ensureWorkerDiscoverySchema(env.KCC_DB);
       const query = typeof payload.query === 'string' && payload.query.trim()
         ? payload.query.trim().slice(0, 240)
         : 'AI worker agent ecommerce research marketing coding analytics automation';
@@ -448,6 +451,7 @@ export default {
 
     if (request.method === 'GET' && url.pathname === '/api/kcc/workers') {
       if (!workerAuthorized(request, env)) return json({ success: false, error: 'WORKER_AUTH_REQUIRED', failClosed: true }, 401);
+      await ensureWorkerDiscoverySchema(env.KCC_DB);
       return json({
         success: true,
         discoverySource: 'a2a-registry-public',
@@ -457,6 +461,7 @@ export default {
 
     if (request.method === 'POST' && url.pathname === '/api/kcc/workers/discover') {
       if (!workerAuthorized(request, env)) return json({ success: false, error: 'WORKER_AUTH_REQUIRED', failClosed: true }, 401);
+      await ensureWorkerDiscoverySchema(env.KCC_DB);
       const body = await request.json().catch(() => ({})) as Record<string, unknown>;
       const query = typeof body.query === 'string' ? body.query : undefined;
       const discovered = await discoverPublicAiWorkers(query);
