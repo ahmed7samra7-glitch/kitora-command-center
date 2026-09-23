@@ -7,6 +7,7 @@ interface BrainEnv {
   CLAUDE_API_KEY?: string;
   ANTHROPIC_API_KEY?: string;
   KCC_AI_PROVIDER?: string;
+  KCC_ALLOW_PAID_AI_FALLBACK?: string;
   GEMINI_MODEL?: string;
   OPENAI_MODEL?: string;
   CLAUDE_MODEL?: string;
@@ -118,9 +119,11 @@ function configured(env: BrainEnv, provider: BrainProvider): boolean {
 
 function providerOrder(env: BrainEnv): BrainProvider[] {
   const preferred = (env.KCC_AI_PROVIDER || 'gemini').trim().toLowerCase();
-  if (preferred === 'openai') return ['openai', 'gemini', 'claude'];
-  if (preferred === 'claude') return ['claude', 'gemini', 'openai'];
-  return ['gemini', 'openai', 'claude'];
+  const paidFallbackAllowed = (env.KCC_ALLOW_PAID_AI_FALLBACK || '').trim().toLowerCase() === 'true';
+
+  if (preferred === 'openai') return paidFallbackAllowed ? ['openai', 'gemini', 'claude'] : ['openai'];
+  if (preferred === 'claude') return paidFallbackAllowed ? ['claude', 'gemini', 'openai'] : ['claude'];
+  return paidFallbackAllowed ? ['gemini', 'openai', 'claude'] : ['gemini'];
 }
 
 export async function executeCloudflareBrainTask(
