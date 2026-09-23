@@ -74,6 +74,12 @@ async function executeMissionTask(env: KccCloudflareEnv, taskId: string, payload
 
   await persistCloudflareBrainDecision(env.KCC_DB, decision);
 
+  // Transient provider failures must bubble to the Queue retry path.
+  // Do not mark the task terminal before the retry decision is made.
+  if (decision.status !== 'COMPLETED' && isTransientBrainFailure(decision.error)) {
+    throw new Error(decision.error || 'TRANSIENT_BRAIN_PROVIDER_FAILURE');
+  }
+
   // A completed Brain decision may request bounded reasoning follow-ups.
   // Never fan out after owner-approval decisions; never fan out beyond depth 3.
   const context = payload.context && typeof payload.context === 'object' ? payload.context as Record<string, unknown> : {};
@@ -106,7 +112,7 @@ async function executeMissionTask(env: KccCloudflareEnv, taskId: string, payload
 
 function isTransientBrainFailure(error?: string): boolean {
   const value = (error || '').toLowerCase();
-  return /(?:gemini|openai|claude):\\s*(?:.*\\s)?http\\s+(?:429|500|502|503|504)\\b/.test(value)
+  return /\\bhttp\\s+(?:429|500|502|503|504)\\b/.test(value)
     || value.includes('timeout')
     || value.includes('temporarily unavailable')
     || value.includes('high demand');
@@ -223,7 +229,6 @@ export async function processQueueMessage(
     return 'ACK';
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
-    await releaseCloudflareTaskForRetry(env.KCC_DB, taskId, `QUEUE_EXECUTION_FAILED: ${detail}`);
     if (message.attempts >= 3) {
       await completeCloudflareTask(env.KCC_DB, taskId, 'FAILED', {
         error: `QUEUE_EXECUTION_MAX_RETRIES: ${detail}`,
@@ -232,13 +237,9 @@ export async function processQueueMessage(
       message.ack();
       return 'ACK';
     }
-    const transientProviderFailure = detail.includes('Gemini HTTP 503')
-      || detail.includes('Gemini HTTP 429')
-      || detail.includes('OpenAI HTTP 429')
-      || detail.includes('OpenAI HTTP 500')
-      || detail.includes('Claude HTTP 429')
-      || detail.includes('Claude HTTP 500')
-      || detail.toLowerCase().includes('high demand');
+
+    await releaseCloudflareTaskForRetry(env.KCC_DB, taskId, `QUEUE_EXECUTION_FAILED: ${detail}`);
+    const transientProviderFailure = isTransientBrainFailure(detail);
     const delaySeconds = transientProviderFailure
       ? Math.min(60, 15 * message.attempts)
       : Math.min(60, 2 ** Math.max(0, message.attempts - 1));
