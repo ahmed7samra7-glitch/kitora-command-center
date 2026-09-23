@@ -73,9 +73,33 @@ async function executeMissionTask(env: KccCloudflareEnv, taskId: string, payload
   });
 
   await persistCloudflareBrainDecision(env.KCC_DB, decision);
+
+  // A completed Brain decision may request bounded reasoning follow-ups.
+  // Never fan out after owner-approval decisions; never fan out beyond depth 3.
+  const context = payload.context && typeof payload.context === 'object' ? payload.context as Record<string, unknown> : {};
+  const depth = Number(context.depth || 0);
+  const nextActions = decision.status === 'COMPLETED' && !decision.requiresOwnerApproval && depth < 3 &&
+    decision.output && typeof decision.output === 'object' && Array.isArray((decision.output as any).nextActions)
+    ? (decision.output as any).nextActions.slice(0, 4)
+    : [];
+
+  if (nextActions.length > 0 && env.KCC_TASK_QUEUE) {
+    for (const action of nextActions) {
+      if (!action || typeof action !== 'object') continue;
+      const goal = typeof action.goal === 'string' ? action.goal.trim().slice(0, 4000) : '';
+      if (!goal) continue;
+      await enqueueCloudflareTask(env.KCC_DB, env.KCC_TASK_QUEUE, 'KCC_MISSION', {
+        agentId: typeof action.agentId === 'string' ? action.agentId.slice(0, 128) : 'EXECUTIVE_AUDITOR',
+        goal,
+        priority: 'HIGH',
+        context: { parentTaskId: taskId, parentDecisionId: decision.decisionId, depth: depth + 1 }
+      });
+    }
+  }
+
   await completeCloudflareTask(env.KCC_DB, taskId, decision.status === 'COMPLETED' ? 'COMPLETED' : 'FAILED', {
     error: decision.error,
-    result: decision
+    result: { ...decision, spawnedActions: nextActions.length }
   });
   return decision.status === 'COMPLETED' ? 'COMPLETED' : 'FAILED';
 }
