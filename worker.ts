@@ -104,6 +104,14 @@ async function executeMissionTask(env: KccCloudflareEnv, taskId: string, payload
   return decision.status === 'COMPLETED' ? 'COMPLETED' : 'FAILED';
 }
 
+function isTransientBrainFailure(error?: string): boolean {
+  const value = (error || '').toLowerCase();
+  return /(?:gemini|openai|claude):\\s*(?:.*\\s)?http\\s+(?:429|500|502|503|504)\\b/.test(value)
+    || value.includes('timeout')
+    || value.includes('temporarily unavailable')
+    || value.includes('high demand');
+}
+
 async function health(env: KccCloudflareEnv): Promise<Response> {
   try {
     const evidence = await readEvidenceSummary(env.KCC_DB);
@@ -170,9 +178,16 @@ export async function executeQueuedTask(
     case 'KCC_BRAIN_EXECUTE':
     case 'KCC_MISSION': {
       const status = await executeMissionTask(env, task.id, payload);
-      return status === 'COMPLETED'
-        ? { status: 'COMPLETED' }
-        : { status: 'FAILED', reason: 'BRAIN_EXECUTION_BLOCKED_OR_FAILED' };
+      if (status === 'COMPLETED') return { status: 'COMPLETED' };
+
+      const failedTask = await env.KCC_DB.prepare(
+        'SELECT last_error FROM kcc_runtime_tasks WHERE id=?'
+      ).bind(task.id).first<{ last_error?: string | null }>();
+      if (isTransientBrainFailure(failedTask?.last_error || '')) {
+        throw new Error(failedTask?.last_error || 'TRANSIENT_BRAIN_PROVIDER_FAILURE');
+      }
+
+      return { status: 'FAILED', reason: 'BRAIN_EXECUTION_BLOCKED_OR_FAILED' };
     }
 
     default:
@@ -217,7 +232,17 @@ export async function processQueueMessage(
       message.ack();
       return 'ACK';
     }
-    message.retry({ delaySeconds: Math.min(60, 2 ** Math.max(0, message.attempts - 1)) });
+    const transientProviderFailure = detail.includes('Gemini HTTP 503')
+      || detail.includes('Gemini HTTP 429')
+      || detail.includes('OpenAI HTTP 429')
+      || detail.includes('OpenAI HTTP 500')
+      || detail.includes('Claude HTTP 429')
+      || detail.includes('Claude HTTP 500')
+      || detail.toLowerCase().includes('high demand');
+    const delaySeconds = transientProviderFailure
+      ? Math.min(60, 15 * message.attempts)
+      : Math.min(60, 2 ** Math.max(0, message.attempts - 1));
+    message.retry({ delaySeconds });
     return 'RETRY';
   }
 }
