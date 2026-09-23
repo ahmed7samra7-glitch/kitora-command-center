@@ -265,3 +265,25 @@ export async function listDiscoveredWorkers(
     ...(row.evidence_url ? { evidenceUrl: String(row.evidence_url) } : {})
   }));
 }
+
+
+export async function persistWorkerCollaboration(
+  db: { prepare(query: string): any },
+  parentTaskId: string,
+  result: WorkerCollaborationResult
+): Promise<void> {
+  await db.prepare(
+    `INSERT INTO kcc_worker_collaborations
+      (id, parent_task_id, worker_id, task, status, output, error, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(
+    `KCC-COLLAB-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
+    parentTaskId,
+    result.workerId,
+    result.task,
+    result.status,
+    result.output === undefined ? null : JSON.stringify(result.output),
+    result.error || null,
+    result.checkedAt
+  ).run();
+}
