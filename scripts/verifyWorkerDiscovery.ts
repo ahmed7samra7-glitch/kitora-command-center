@@ -2,7 +2,8 @@ import {
   collaborateWithA2AWorker,
   discoverPublicAiWorkers,
   rankWorkersForGoal,
-  sanitizeDelegationText
+  sanitizeDelegationText,
+  scoutAiWorkerEcosystem
 } from '../server/cloudflareWorkerDiscovery.js';
 
 const originalFetch = globalThis.fetch;
@@ -113,6 +114,36 @@ try {
   if (result.status !== 'COMPLETED' || repairTurns !== 2) {
     throw new Error('Expected one initial A2A turn plus one bounded repair turn.');
   }
+} finally {
+  globalThis.fetch = originalFetch;
+}
+
+
+let scoutCalls = 0;
+globalThis.fetch = (async (input: RequestInfo | URL) => {
+  const url = String(input);
+  if (url.startsWith('https://api.a2a-registry.org/public/agents')) {
+    scoutCalls += 1;
+    const q = new URL(url).searchParams.get('q') || '';
+    return new Response(JSON.stringify({
+      agents: [{
+        identifier: q.includes('coding') ? 'shared.worker' : `worker.${scoutCalls}`,
+        name: q.includes('coding') ? 'Shared Worker' : `Scout Worker ${scoutCalls}`,
+        provider: 'Example',
+        description: q,
+        protocol: 'A2A',
+        endpoint: `https://scout-${scoutCalls}.example/a2a`,
+        skills: ['research']
+      }]
+    }), { status: 200, headers: { 'content-type': 'application/json' } });
+  }
+  throw new Error('Unexpected URL in scout verification');
+}) as typeof globalThis.fetch;
+
+try {
+  const scouted = await scoutAiWorkerEcosystem();
+  if (scoutCalls !== 5) throw new Error(`Expected 5 specialty discovery searches, got ${scoutCalls}.`);
+  if (scouted.length < 2 || scouted.length > 5) throw new Error('Expected deduplicated multi-specialty worker results.');
 } finally {
   globalThis.fetch = originalFetch;
 }
