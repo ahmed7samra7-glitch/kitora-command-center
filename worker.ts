@@ -23,7 +23,9 @@ import {
   listWorkerCollaborations,
   persistDiscoveredWorkers,
   persistWorkerCollaboration,
+  persistWorkerTrust,
   rankWorkersForGoal,
+  runWorkerCanary,
   scoutAiWorkerEcosystem,
   updateWorkerConnectionState
 } from './server/cloudflareWorkerDiscovery.js';
@@ -114,6 +116,7 @@ async function executeMissionTask(env: KccCloudflareEnv, taskId: string, payload
     await persistDiscoveredWorkers(env.KCC_DB, scouted);
     workerCatalog = await listDiscoveredWorkers(env.KCC_DB, 100);
   }
+
   let helpfulWorkers = rankWorkersForGoal(workerCatalog, goal, 5);
   if (helpfulWorkers.length === 0 && payload.agentId !== 'WORKER_DISCOVERY') {
     const discovered = await discoverPublicAiWorkers(goal);
@@ -121,6 +124,17 @@ async function executeMissionTask(env: KccCloudflareEnv, taskId: string, payload
     workerCatalog = await listDiscoveredWorkers(env.KCC_DB, 100);
     helpfulWorkers = rankWorkersForGoal(workerCatalog, goal, 5);
   }
+
+  // KCC Worker Immune System: newly discovered workers must pass a harmless canary
+  // before Brain is allowed to consider them for delegation.
+  for (const candidate of helpfulWorkers.slice(0, 3)) {
+    if (candidate.connectionState !== 'DISCOVERED') continue;
+    const trust = await runWorkerCanary(candidate);
+    await persistWorkerTrust(env.KCC_DB, trust);
+    await updateWorkerConnectionState(env.KCC_DB, candidate.workerId, candidate.connectionState);
+  }
+  workerCatalog = await listDiscoveredWorkers(env.KCC_DB, 100);
+  helpfulWorkers = rankWorkersForGoal(workerCatalog, goal, 5);
 
   const baseContext = {
     ...(payload.context && typeof payload.context === 'object' ? payload.context : {}),
@@ -441,7 +455,9 @@ export default {
           refreshSchedule: '10 */6 * * *',
           protocol: 'A2A',
           collaboration: 'bounded-dialogue+synthesis',
-          privacyFirewall: true
+          privacyFirewall: true,
+          canaryTrustGate: true,
+          quarantineOnBoundaryViolation: true
         },
         localFilesystemPersistence: false,
         failClosed: true
