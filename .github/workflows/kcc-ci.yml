@@ -72,5 +72,8 @@ jobs:
       - name: Verify KCC Autonomy Passport
         run: npm run verify:autonomy-passport
 
+      - name: Verify AI worker discovery
+        run: npm run verify:worker-discovery
+
       - name: Verify autonomous production commerce guard
         run: npm run verify:production-commerce-guard
