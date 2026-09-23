@@ -124,6 +124,9 @@ export async function fetchA2AAgentCard(endpoint: string): Promise<any> {
   const response = await fetch(cardUrl, {
     headers: { accept: 'application/json' }
   });
+  if (response.status === 401 || response.status === 403) {
+    throw new Error(`A2A_AUTH_REQUIRED: agent-card HTTP ${response.status}`);
+  }
   if (!response.ok) throw new Error(`A2A agent-card HTTP ${response.status}`);
   return response.json();
 }
@@ -168,6 +171,10 @@ function extractA2AText(result: any): string {
     .trim();
 }
 
+async function updateWorkerConnectionStateStub(worker: DiscoveredAiWorker, state: WorkerConnectionState): Promise<void> {
+  // The persisted registry record is updated by the caller after collaboration.
+  worker.connectionState = state;
+}
 export async function collaborateWithA2AWorker(
   worker: DiscoveredAiWorker,
   delegation: WorkerDelegation,
@@ -195,6 +202,7 @@ export async function collaborateWithA2AWorker(
     );
 
     if (first.response.status === 401 || first.response.status === 403 || first.result?.error?.code === -32001) {
+      await updateWorkerConnectionStateStub(worker, 'REQUIRES_AUTH');
       return { workerId: worker.workerId, task: delegation.task, status: 'REQUIRES_AUTH', error: 'Worker requires authentication for collaboration.', checkedAt };
     }
     if (!first.response.ok || first.result?.error) {
@@ -232,6 +240,7 @@ export async function collaborateWithA2AWorker(
       };
     }
 
+    worker.connectionState = 'REACHABLE';
     return {
       workerId: worker.workerId,
       task: delegation.task,
@@ -245,11 +254,13 @@ export async function collaborateWithA2AWorker(
       checkedAt
     };
   } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    worker.connectionState = detail.includes('A2A_AUTH_REQUIRED') ? 'REQUIRES_AUTH' : 'UNAVAILABLE';
     return {
       workerId: worker.workerId,
       task: delegation.task,
-      status: 'UNAVAILABLE',
-      error: error instanceof Error ? error.message : String(error),
+      status: detail.includes('A2A_AUTH_REQUIRED') ? 'REQUIRES_AUTH' : 'UNAVAILABLE',
+      error: detail,
       checkedAt
     };
   }
