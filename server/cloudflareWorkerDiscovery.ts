@@ -287,3 +287,25 @@ export async function persistWorkerCollaboration(
     result.checkedAt
   ).run();
 }
+
+
+export async function listWorkerCollaborations(
+  db: { prepare(query: string): any },
+  parentTaskId: string
+): Promise<WorkerCollaborationResult[]> {
+  const rows = await db.prepare(
+    `SELECT worker_id, task, status, output, error, created_at
+     FROM kcc_worker_collaborations
+     WHERE parent_task_id=?
+     ORDER BY created_at ASC`
+  ).bind(parentTaskId).all();
+
+  return (rows.results || []).map((row: any) => ({
+    workerId: String(row.worker_id),
+    task: String(row.task),
+    status: String(row.status) as WorkerCollaborationResult['status'],
+    output: row.output ? (() => { try { return JSON.parse(row.output); } catch { return row.output; } })() : undefined,
+    error: row.error ? String(row.error) : undefined,
+    checkedAt: String(row.created_at)
+  }));
+}
