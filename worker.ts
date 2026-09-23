@@ -13,6 +13,7 @@ import {
   releaseCloudflareTaskForRetry
 } from './server/cloudflareStore.js';
 import { executeCloudflareBrainTask, persistCloudflareBrainDecision } from './server/cloudflareBrain.js';
+import { issueAutonomyPassport, admitNextActions } from './server/kccAutonomyPassport.js';
 
 export interface KccCloudflareEnv extends CloudflareRuntimeEnv {
   KCC_DB: CloudflareD1Database;
@@ -61,51 +62,97 @@ function workerAuthorized(request: Request, env: KccCloudflareEnv): boolean {
 }
 
 async function executeMissionTask(env: KccCloudflareEnv, taskId: string, payload: Record<string, unknown>): Promise<'COMPLETED' | 'FAILED'> {
-  const decision = await executeCloudflareBrainTask(env, {
-    taskId,
-    agentId: typeof payload.agentId === 'string' ? payload.agentId : 'EXECUTIVE_AUDITOR',
-    goal: typeof payload.goal === 'string'
-      ? payload.goal
-      : 'Review KITORA runtime state and identify the next safe autonomous action.',
-    context: payload.context || {},
+  const goal = typeof payload.goal === 'string'
+    ? payload.goal
+    : 'Review KITORA runtime state and identify the next safe autonomous action.';
+  const passport = issueAutonomyPassport({
+    goal,
     sensitivityScore: typeof payload.sensitivityScore === 'number' ? payload.sensitivityScore : undefined,
     costUSD: typeof payload.costUSD === 'number' ? payload.costUSD : undefined
   });
 
-  await persistCloudflareBrainDecision(env.KCC_DB, decision);
+  // The deterministic governor runs before the probabilistic Brain.
+  // A mission can never acquire capabilities that the passport did not grant.
+  if (passport.mode !== 'READ_ONLY') {
+    const decision = {
+      decisionId: `CF-GOV-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
+      taskId,
+      agentId: typeof payload.agentId === 'string' ? payload.agentId : 'EXECUTIVE_AUDITOR',
+      provider: 'none' as const,
+      model: 'none',
+      status: 'BLOCKED' as const,
+      output: null,
+      requiresOwnerApproval: passport.mode === 'OWNER_APPROVAL',
+      ...(passport.reason ? { approvalReason: passport.mode === 'OWNER_APPROVAL' ? passport.reason : undefined } : {}),
+      executionTimeMs: 0,
+      createdAt: new Date().toISOString(),
+      error: passport.reason
+    };
+    await persistCloudflareBrainDecision(env.KCC_DB, decision);
+    await completeCloudflareTask(env.KCC_DB, taskId, 'FAILED', {
+      error: passport.reason,
+      result: {
+        governor: 'KCC_AUTONOMY_PASSPORT',
+        passport,
+        decision
+      }
+    });
+    return 'FAILED';
+  }
 
-  // Transient provider failures must bubble to the Queue retry path.
-  // Do not mark the task terminal before the retry decision is made.
+  const decision = await executeCloudflareBrainTask(env, {
+    taskId,
+    agentId: typeof payload.agentId === 'string' ? payload.agentId : 'EXECUTIVE_AUDITOR',
+    goal,
+    context: {
+      ...(payload.context && typeof payload.context === 'object' ? payload.context : {}),
+      autonomyPassport: passport
+    },
+    sensitivityScore: typeof payload.sensitivityScore === 'number' ? payload.sensitivityScore : undefined,
+    costUSD: typeof payload.costUSD === 'number' ? payload.costUSD : undefined
+  });
+
+  // Preserve transient provider failures for Queue retry before any terminal task update.
   if (decision.status !== 'COMPLETED' && isTransientBrainFailure(decision.error)) {
     throw new Error(decision.error || 'TRANSIENT_BRAIN_PROVIDER_FAILURE');
   }
 
-  // A completed Brain decision may request bounded reasoning follow-ups.
-  // Never fan out after owner-approval decisions; never fan out beyond depth 3.
+  await persistCloudflareBrainDecision(env.KCC_DB, decision);
+
   const context = payload.context && typeof payload.context === 'object' ? payload.context as Record<string, unknown> : {};
   const depth = Number(context.depth || 0);
-  const nextActions = decision.status === 'COMPLETED' && !decision.requiresOwnerApproval && depth < 3 &&
+  const proposedActions = decision.status === 'COMPLETED' && !decision.requiresOwnerApproval && depth < 3 &&
     decision.output && typeof decision.output === 'object' && Array.isArray((decision.output as any).nextActions)
-    ? (decision.output as any).nextActions.slice(0, 4)
+    ? (decision.output as any).nextActions
     : [];
+  const admission = admitNextActions(passport, proposedActions);
 
-  if (nextActions.length > 0 && env.KCC_TASK_QUEUE) {
-    for (const action of nextActions) {
-      if (!action || typeof action !== 'object') continue;
-      const goal = typeof action.goal === 'string' ? action.goal.trim().slice(0, 4000) : '';
-      if (!goal) continue;
+  if (admission.admitted.length > 0 && env.KCC_TASK_QUEUE) {
+    for (const action of admission.admitted) {
       await enqueueCloudflareTask(env.KCC_DB, env.KCC_TASK_QUEUE, 'KCC_MISSION', {
-        agentId: typeof action.agentId === 'string' ? action.agentId.slice(0, 128) : 'EXECUTIVE_AUDITOR',
-        goal,
+        agentId: action.agentId || 'EXECUTIVE_AUDITOR',
+        goal: action.goal,
         priority: 'HIGH',
-        context: { parentTaskId: taskId, parentDecisionId: decision.decisionId, depth: depth + 1 }
+        context: {
+          parentTaskId: taskId,
+          parentDecisionId: decision.decisionId,
+          parentPassportId: passport.passportId,
+          depth: depth + 1
+        }
       });
     }
   }
 
   await completeCloudflareTask(env.KCC_DB, taskId, decision.status === 'COMPLETED' ? 'COMPLETED' : 'FAILED', {
     error: decision.error,
-    result: { ...decision, spawnedActions: nextActions.length }
+    result: {
+      ...decision,
+      governor: 'KCC_AUTONOMY_PASSPORT',
+      autonomyPassport: passport,
+      admittedActions: admission.admitted.length,
+      rejectedActions: admission.rejected.length,
+      rejectedActionReasons: admission.rejected.slice(0, 4)
+    }
   });
   return decision.status === 'COMPLETED' ? 'COMPLETED' : 'FAILED';
 }
