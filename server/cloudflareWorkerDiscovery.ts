@@ -15,6 +15,7 @@ export interface DiscoveredAiWorker {
   lastCheckedAt: string;
   source: string;
   evidenceUrl?: string;
+  trust?: WorkerTrustRecord;
 }
 
 export interface WorkerDelegation {
