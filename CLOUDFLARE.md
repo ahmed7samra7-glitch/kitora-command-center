@@ -9,9 +9,18 @@ The repository contains a standalone Cloudflare Workers entrypoint in `worker.ts
 - **Asynchronous execution:** Cloudflare Queue `kitora-command-center-tasks`.
 - **Queue consumer:** the same Worker exposes a `queue()` handler.
 - **Task state:** D1 records QUEUED/RUNNING/COMPLETED/FAILED state, retry attempts, errors, and results.
-- **Evidence:** client-authored evidence is rejected. KCC_ALIVE remains fail-closed.
+- **Brain:** native Worker execution through configured Gemini, OpenAI, or Claude APIs, with decisions persisted in `kcc_brain_decisions`.
+- **Scheduling:** Cron Triggers enqueue autonomous Brain missions every 15 minutes, hourly, every 6 hours, and daily (UTC).
+- **Evidence:** client-authored commerce evidence is rejected. KCC_ALIVE remains fail-closed.
 
 The queue consumer currently executes only explicitly implemented safe runtime task types such as `KCC_HEALTH_CHECK` and `KCC_ALIVE_STATUS_CHECK`. Unsupported business/provider task types fail closed rather than pretending they were executed. Provider-backed business adapters still need to be wired to the Worker runtime before those operations can be treated as production-capable.
+
+## Brain execution
+
+- Brain execution requires a real configured provider; deterministic success is never synthesized.
+- Gemini is the default provider for the zero-cost staging path. Provider usage remains subject to the provider's current quota and pricing rules.
+- High-sensitivity or costed actions are persisted with an owner-approval requirement.
+- Brain output is reasoning/planning evidence only. It is not proof of payment, fulfillment, shipment, delivery, or notification.
 
 ## Cloudflare setup
 
