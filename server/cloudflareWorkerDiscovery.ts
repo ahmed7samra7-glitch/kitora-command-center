@@ -66,6 +66,37 @@ export interface WorkerTrustRecord {
   checkedAt: string;
 }
 
+export function trustLevelFromScore(score: number): WorkerTrustLevel {
+  if (score >= 90) return 'TRUSTED';
+  if (score >= 70) return 'CANARY_PASSED';
+  if (score <= 0) return 'QUARANTINED';
+  return 'UNKNOWN';
+}
+
+export function evolveWorkerTrust(
+  current: WorkerTrustRecord | undefined,
+  event: 'CANARY_PASS' | 'COLLAB_SUCCESS' | 'COLLAB_FAILURE' | 'BOUNDARY_VIOLATION'
+): WorkerTrustRecord {
+  const base = current?.score ?? (current?.level === 'TRUSTED' ? 100 : 0);
+  const score = event === 'CANARY_PASS'
+    ? Math.min(100, Math.max(70, base + 10))
+    : event === 'COLLAB_SUCCESS'
+      ? Math.min(100, base + 5)
+      : event === 'COLLAB_FAILURE'
+        ? Math.max(10, base - 10)
+        : 0;
+  const level = event === 'BOUNDARY_VIOLATION' ? 'QUARANTINED' : trustLevelFromScore(score);
+  return {
+    workerId: current?.workerId || '',
+    level,
+    canaryStatus: event === 'BOUNDARY_VIOLATION' ? 'QUARANTINED' : event === 'CANARY_PASS' ? 'PASSED' : (current?.canaryStatus || 'NOT_RUN'),
+    score,
+    reason: event === 'BOUNDARY_VIOLATION' ? 'Boundary violation detected during KCC worker interaction.' : undefined,
+    checkedAt: new Date().toISOString()
+  };
+}
+
+
 async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit = {}, timeoutMs = 10000): Promise<Response> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
