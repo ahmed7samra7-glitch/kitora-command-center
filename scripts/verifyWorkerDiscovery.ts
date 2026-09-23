@@ -1,4 +1,9 @@
-import { discoverPublicAiWorkers, rankWorkersForGoal } from '../server/cloudflareWorkerDiscovery.js';
+import {
+  collaborateWithA2AWorker,
+  discoverPublicAiWorkers,
+  rankWorkersForGoal,
+  sanitizeDelegationText
+} from '../server/cloudflareWorkerDiscovery.js';
 
 const originalFetch = globalThis.fetch;
 let calls: string[] = [];
@@ -44,6 +49,70 @@ try {
     throw new Error('Expected capability-overlap ranking to select the relevant worker.');
   }
   if (calls.length !== 1) throw new Error('Expected exactly one public discovery request.');
+} finally {
+  globalThis.fetch = originalFetch;
+}
+
+
+// Delegation privacy firewall must reject credential-like material.
+let privacyBlocked = false;
+try {
+  sanitizeDelegationText('Use api_key=SECRET_VALUE to continue', 4000);
+} catch (error) {
+  privacyBlocked = String(error).includes('WORKER_DELEGATION_SENSITIVE_DATA_BLOCKED');
+}
+if (!privacyBlocked) throw new Error('Expected sensitive delegation text to be blocked.');
+
+let repairTurns = 0;
+globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+  const url = String(input);
+  calls.push(url);
+  if (url.includes('/.well-known/agent-card.json')) {
+    return new Response(JSON.stringify({
+      name: 'Repair Worker',
+      version: '1.0.0',
+      url: 'https://worker.example/a2a',
+      capabilities: [{ name: 'research', description: 'research' }]
+    }), { status: 200, headers: { 'content-type': 'application/json' } });
+  }
+  if (url === 'https://worker.example/a2a') {
+    repairTurns += 1;
+    return new Response(JSON.stringify({
+      result: {
+        message: {
+          parts: repairTurns === 1 ? [{ text: 'short' }] : [{ text: 'Evidence: verified research result with enough detail to satisfy the requested criteria.' }]
+        }
+      }
+    }), { status: 200, headers: { 'content-type': 'application/json' } });
+  }
+  throw new Error('Unexpected URL in collaboration verification');
+}) as typeof globalThis.fetch;
+
+try {
+  const result = await collaborateWithA2AWorker(
+    {
+      workerId: 'A2A:repair-worker',
+      name: 'Repair Worker',
+      provider: 'test',
+      description: 'test',
+      protocol: 'A2A',
+      endpoint: 'https://worker.example/a2a',
+      capabilities: ['research'],
+      connectionState: 'DISCOVERED',
+      discoveredAt: new Date().toISOString(),
+      lastCheckedAt: new Date().toISOString(),
+      source: 'test'
+    },
+    {
+      workerId: 'A2A:repair-worker',
+      task: 'Research verified market evidence.',
+      successCriteria: 'Return at least one evidence-backed finding.'
+    },
+    'TRACE-TEST'
+  );
+  if (result.status !== 'COMPLETED' || repairTurns !== 2) {
+    throw new Error('Expected one initial A2A turn plus one bounded repair turn.');
+  }
 } finally {
   globalThis.fetch = originalFetch;
 }
