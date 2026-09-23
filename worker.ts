@@ -23,6 +23,7 @@ import {
   persistDiscoveredWorkers,
   persistWorkerCollaboration,
   rankWorkersForGoal,
+  scoutAiWorkerEcosystem,
   updateWorkerConnectionState
 } from './server/cloudflareWorkerDiscovery.js';
 
@@ -315,7 +316,7 @@ export async function executeQueuedTask(
       const query = typeof payload.query === 'string' && payload.query.trim()
         ? payload.query.trim().slice(0, 240)
         : 'AI worker agent ecommerce research marketing coding analytics automation';
-      const discovered = await discoverPublicAiWorkers(query);
+      const discovered = await scoutAiWorkerEcosystem();
       await persistDiscoveredWorkers(env.KCC_DB, discovered);
       await completeCloudflareTask(env.KCC_DB, task.id, 'COMPLETED', {
         result: {
