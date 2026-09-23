@@ -24,6 +24,9 @@ export interface CloudflareRuntimeEnv {
   KCC_TASK_QUEUE?: CloudflareQueue;
   KCC_WORKER_SECRET?: string;
   GEMINI_API_KEY?: string;
+  GEMINI_MODEL?: string;
+  OPENAI_MODEL?: string;
+  CLAUDE_MODEL?: string;
   OPENAI_API_KEY?: string;
   CLAUDE_API_KEY?: string;
   ANTHROPIC_API_KEY?: string;
