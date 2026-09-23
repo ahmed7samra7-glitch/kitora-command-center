@@ -539,7 +539,7 @@ export async function updateWorkerConnectionState(
     `UPDATE kcc_discovered_workers
      SET connection_state=?, last_checked_at=?, updated_at=?
      WHERE worker_id=?`
-  ).bind(state, new Date().toISOString(), new Date().toISOString(), workerId).run();
+  ).bind(state === 'QUARANTINED' ? 'UNAVAILABLE' : state, new Date().toISOString(), new Date().toISOString(), workerId).run();
 }
 
 export async function persistDiscoveredWorkers(
@@ -560,17 +560,12 @@ export async function persistDiscoveredWorkers(
         endpoint=excluded.endpoint,
         capabilities=excluded.capabilities,
         connection_state=CASE
-          WHEN kcc_discovered_workers.connection_state='QUARANTINED' THEN 'QUARANTINED'
           WHEN kcc_discovered_workers.connection_state IN ('VERIFIED','REACHABLE')
             AND datetime(kcc_discovered_workers.last_checked_at) > datetime('now', '-24 hours')
             THEN kcc_discovered_workers.connection_state
           ELSE excluded.connection_state
         END,
-        last_checked_at=CASE
-          WHEN kcc_discovered_workers.connection_state='QUARANTINED'
-            THEN kcc_discovered_workers.last_checked_at
-          ELSE excluded.last_checked_at
-        END,
+        last_checked_at=excluded.last_checked_at,
         source=excluded.source,
         evidence_url=excluded.evidence_url,
         updated_at=excluded.updated_at`
@@ -582,7 +577,7 @@ export async function persistDiscoveredWorkers(
       worker.protocol,
       worker.endpoint,
       JSON.stringify(worker.capabilities),
-      worker.connectionState,
+      worker.connectionState === 'QUARANTINED' ? 'UNAVAILABLE' : worker.connectionState,
       worker.discoveredAt,
       worker.lastCheckedAt,
       worker.source,
@@ -597,9 +592,11 @@ export async function listDiscoveredWorkers(
   limit = 100
 ): Promise<DiscoveredAiWorker[]> {
   const rows = await db.prepare(
-    `SELECT worker_id, name, provider, description, protocol, endpoint, capabilities, connection_state, discovered_at, last_checked_at, source, evidence_url
-     FROM kcc_discovered_workers
-     ORDER BY last_checked_at DESC LIMIT ?`
+    `SELECT w.worker_id, w.name, w.provider, w.description, w.protocol, w.endpoint, w.capabilities, w.connection_state, w.discovered_at, w.last_checked_at, w.source, w.evidence_url,
+       t.trust_level, t.canary_status, t.score AS trust_score, t.reason AS trust_reason, t.checked_at AS trust_checked_at
+     FROM kcc_discovered_workers w
+     LEFT JOIN kcc_worker_trust t ON t.worker_id = w.worker_id
+     ORDER BY w.last_checked_at DESC LIMIT ?`
   ).bind(Math.max(1, Math.min(100, limit))).all();
 
   return (rows.results || []).map((row: any) => ({
@@ -610,8 +607,15 @@ export async function listDiscoveredWorkers(
     protocol: row.protocol === 'A2A' ? 'A2A' : 'UNKNOWN',
     endpoint: row.endpoint ? String(row.endpoint) : null,
     capabilities: (() => { try { return JSON.parse(row.capabilities || '[]'); } catch { return []; } })(),
-    connectionState: String(row.connection_state) as WorkerConnectionState,
+    connectionState: row.trust_level === 'QUARANTINED' ? 'QUARANTINED' : String(row.connection_state) as WorkerConnectionState,
     discoveredAt: String(row.discovered_at),
+    ...(row.trust_level ? { trust: {
+      level: String(row.trust_level),
+      canaryStatus: String(row.canary_status),
+      score: Number(row.trust_score || 0),
+      reason: row.trust_reason ? String(row.trust_reason) : undefined,
+      checkedAt: row.trust_checked_at ? String(row.trust_checked_at) : undefined
+    } } : {}),
     lastCheckedAt: String(row.last_checked_at),
     source: String(row.source),
     ...(row.evidence_url ? { evidenceUrl: String(row.evidence_url) } : {})
