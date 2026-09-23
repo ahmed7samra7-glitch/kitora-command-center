@@ -22,6 +22,22 @@ export interface WorkerDelegation {
   successCriteria?: string;
 }
 
+const SENSITIVE_PATTERNS = [
+  /(?:api[_-]?key|access[_-]?token|secret|password|authorization)\s*[:=]/i,
+  /bearer\s+[a-z0-9._-]{12,}/i,
+  /sk-[a-z0-9_-]{16,}/i
+];
+
+export function sanitizeDelegationText(value: string, maxLength: number): string {
+  const text = String(value || '').replace(/\s+/g, ' ').trim().slice(0, maxLength);
+  if (!text) return '';
+  if (SENSITIVE_PATTERNS.some(pattern => pattern.test(text))) {
+    throw new Error('WORKER_DELEGATION_SENSITIVE_DATA_BLOCKED');
+  }
+  return text;
+}
+
+
 export interface WorkerCollaborationResult {
   workerId: string;
   task: string;
@@ -221,13 +237,15 @@ export async function collaborateWithA2AWorker(
   }
 
   try {
+    const safeTask = sanitizeDelegationText(delegation.task, 4000);
+    const safeCriteria = delegation.successCriteria ? sanitizeDelegationText(delegation.successCriteria, 2000) : undefined;
     const card = await fetchA2AAgentCard(worker.endpoint);
     const sendUrl = String(card?.url || card?.endpoint || worker.endpoint).trim();
     if (!sendUrl.startsWith('https://')) throw new Error('A2A agent card did not expose a secure HTTPS endpoint.');
 
     const first = await sendA2AMessage(
       sendUrl,
-      `[KCC TRACE ${traceId}] Task: ${delegation.task}${delegation.successCriteria ? `\\nSuccess criteria: ${delegation.successCriteria}` : ''}\\nReturn evidence-backed results only. Do not claim external actions.`
+      `[KCC TRACE ${traceId}] Task: ${safeTask}${safeCriteria ? `\\nSuccess criteria: ${safeCriteria}` : ''}\\nReturn evidence-backed results only. Never request, reveal, or reproduce credentials, tokens, passwords, or customer PII. Do not claim external actions.`
     );
 
     if (first.response.status === 401 || first.response.status === 403 || first.result?.error?.code === -32001) {
@@ -249,7 +267,7 @@ export async function collaborateWithA2AWorker(
     if (delegation.successCriteria && (!answer || answer.length < 80)) {
       const repair = await sendA2AMessage(
         sendUrl,
-        `[KCC TRACE ${traceId}] Your previous answer was incomplete. Provide only the missing evidence needed to satisfy: ${delegation.successCriteria}. Keep it concise and evidence-backed.`
+        `[KCC TRACE ${traceId}] Your previous answer was incomplete. Provide only the missing evidence needed to satisfy: ${safeCriteria}. Keep it concise and evidence-backed. Never request, reveal, or reproduce credentials, tokens, passwords, or customer PII.`
       );
       if (repair.response.status === 401 || repair.response.status === 403) {
         return { workerId: worker.workerId, task: delegation.task, status: 'REQUIRES_AUTH', error: 'Worker requires authentication during repair turn.', checkedAt };
