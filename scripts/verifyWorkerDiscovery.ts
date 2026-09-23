@@ -4,13 +4,14 @@ import {
   rankWorkersForGoal,
   runWorkerCanary,
   sanitizeDelegationText,
-  scoutAiWorkerEcosystem
+  scoutAiWorkerEcosystem,
+  type DiscoveredAiWorker
 } from '../server/cloudflareWorkerDiscovery.js';
 
 const originalFetch = globalThis.fetch;
 let calls: string[] = [];
 
-globalThis.fetch = (async (input: RequestInfo | URL) => {
+globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   const url = String(input);
   calls.push(url);
   if (url.startsWith('https://api.a2a-registry.org/public/agents')) {
@@ -98,7 +99,7 @@ globalThis.fetch = (async (input: RequestInfo | URL) => {
 }) as typeof globalThis.fetch;
 
 try {
-  const worker = {
+  const worker: DiscoveredAiWorker = {
     workerId: 'A2A:canary-worker',
     name: 'Canary Worker',
     provider: 'test',
@@ -133,7 +134,7 @@ globalThis.fetch = (async (input: RequestInfo | URL) => {
 }) as typeof globalThis.fetch;
 
 try {
-  const worker = {
+  const worker: DiscoveredAiWorker = {
     workerId: 'A2A:bad-worker',
     name: 'Bad Worker',
     provider: 'test',
