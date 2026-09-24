@@ -91,7 +91,6 @@ export async function ensureCloudflareSchema(db: CloudflareD1Database): Promise<
     )`
   ).run();
 
-  // Backward-compatible column upgrades for an already-created D1 database.
   try { await db.prepare(`ALTER TABLE ${TABLES.tasks} ADD COLUMN attempts INTEGER NOT NULL DEFAULT 0`).run(); } catch {}
   try { await db.prepare(`ALTER TABLE ${TABLES.tasks} ADD COLUMN last_error TEXT`).run(); } catch {}
   try { await db.prepare(`ALTER TABLE ${TABLES.tasks} ADD COLUMN result TEXT`).run(); } catch {}
@@ -312,8 +311,25 @@ export async function completeCloudflareTask(
   ).run();
 }
 
+function providerConfigured(env: CloudflareRuntimeEnv, provider: 'gemini' | 'openai' | 'claude'): boolean {
+  if (provider === 'gemini') return Boolean(env.GEMINI_API_KEY?.trim());
+  if (provider === 'openai') return Boolean(env.OPENAI_API_KEY?.trim());
+  return Boolean(env.CLAUDE_API_KEY?.trim() || env.ANTHROPIC_API_KEY?.trim());
+}
+
+function effectiveProviderOrder(env: CloudflareRuntimeEnv): Array<'gemini' | 'openai' | 'claude'> {
+  const preferred = (env.KCC_AI_PROVIDER || 'gemini').trim().toLowerCase();
+  const paidFallbackAllowed = (env.KCC_ALLOW_PAID_AI_FALLBACK || '').trim().toLowerCase() === 'true';
+
+  if (!paidFallbackAllowed) return ['gemini'];
+
+  if (preferred === 'openai') return ['openai', 'gemini', 'claude'];
+  if (preferred === 'claude') return ['claude', 'gemini', 'openai'];
+  return ['gemini', 'openai', 'claude'];
+}
+
 export function hasConfiguredLiveProvider(env: CloudflareRuntimeEnv): boolean {
-  return Boolean(env.GEMINI_API_KEY || env.OPENAI_API_KEY || env.CLAUDE_API_KEY || env.ANTHROPIC_API_KEY);
+  return effectiveProviderOrder(env).some((provider) => providerConfigured(env, provider));
 }
 
 export function parseQueuedTaskPayload(task: KccTaskRecord): Record<string, unknown> {
