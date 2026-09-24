@@ -1,4 +1,5 @@
 import worker, { KccCloudflareEnv, processQueueMessage } from '../worker.js';
+import { executeCloudflareBrainTask } from '../server/cloudflareBrain.js';
 import {
   hasConfiguredLiveProvider
 } from '../server/cloudflareStore.js';
@@ -357,6 +358,59 @@ await processQueueMessage(env, aliveMessage);
 const aliveTask = db.tasks.find((task) => task.id === aliveTaskId);
 if (!aliveTask || aliveTask.status !== 'COMPLETED') {
   throw new Error('Expected KCC_ALIVE status check to complete without making KCC_ALIVE true.');
+}
+
+// Brain-level governance must also fail closed when called directly.
+const brainGovernanceFetch = globalThis.fetch;
+globalThis.fetch = (async (input: RequestInfo | URL) => {
+  const url = String(input);
+  if (url.includes('generativelanguage.googleapis.com')) {
+    return new Response(JSON.stringify({
+      candidates: [{
+        content: {
+          parts: [{ text: JSON.stringify({ status: 'PASS', nextActions: [] }) }]
+        }
+      }]
+    }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' }
+    });
+  }
+  return brainGovernanceFetch(input);
+}) as typeof globalThis.fetch;
+
+try {
+  const invalidBrainSensitivity = await executeCloudflareBrainTask({
+    KCC_AI_PROVIDER: 'gemini',
+    KCC_ALLOW_PAID_AI_FALLBACK: 'false',
+    GEMINI_API_KEY: 'test-key',
+    GEMINI_MODEL: 'gemini-2.5-flash-lite'
+  }, {
+    taskId: 'brain-governance-naN',
+    agentId: 'EXECUTIVE_AUDITOR',
+    goal: 'Prepare a financial review.',
+    sensitivityScore: Number.NaN
+  });
+  if (!invalidBrainSensitivity.requiresOwnerApproval) {
+    throw new Error('Direct Brain execution must require owner approval for invalid sensitivity.');
+  }
+
+  const negativeBrainCost = await executeCloudflareBrainTask({
+    KCC_AI_PROVIDER: 'gemini',
+    KCC_ALLOW_PAID_AI_FALLBACK: 'false',
+    GEMINI_API_KEY: 'test-key',
+    GEMINI_MODEL: 'gemini-2.5-flash-lite'
+  }, {
+    taskId: 'brain-governance-negative-cost',
+    agentId: 'EXECUTIVE_AUDITOR',
+    goal: 'Prepare a financial review.',
+    costUSD: -10
+  });
+  if (!negativeBrainCost.requiresOwnerApproval) {
+    throw new Error('Direct Brain execution must require owner approval for negative cost.');
+  }
+} finally {
+  globalThis.fetch = brainGovernanceFetch;
 }
 
 console.log('Cloudflare Worker + D1 + Queue verification: PASS');
