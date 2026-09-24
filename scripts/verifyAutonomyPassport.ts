@@ -52,4 +52,28 @@ if (approval.mode !== 'OWNER_APPROVAL') {
   throw new Error('Expected high-sensitivity mission to require owner approval.');
 }
 
+const invalidSensitivity = issueAutonomyPassport({
+  goal: 'Prepare a financial decision.',
+  sensitivityScore: Number.NaN
+});
+if (invalidSensitivity.mode !== 'OWNER_APPROVAL') {
+  throw new Error('Invalid sensitivity input must fail closed to owner approval.');
+}
+
+const invalidCost = issueAutonomyPassport({
+  goal: 'Prepare a financial decision.',
+  costUSD: Number.NaN
+});
+if (invalidCost.mode !== 'OWNER_APPROVAL') {
+  throw new Error('Invalid cost input must fail closed to owner approval.');
+}
+
+const negativeCost = issueAutonomyPassport({
+  goal: 'Prepare a financial decision.',
+  costUSD: -500
+});
+if (negativeCost.mode !== 'OWNER_APPROVAL') {
+  throw new Error('Negative cost input must fail closed to owner approval.');
+}
+
 console.log('KCC Autonomy Passport verification: PASS');
