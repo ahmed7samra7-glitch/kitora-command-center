@@ -207,24 +207,59 @@ class PayPalRuntime {
       throw new Error(`PayPal Capture Order Error (${res.status}): ${errText}`);
     }
 
-    const data = await res.json();
+    let data = await res.json();
     const captures = Array.isArray(data.purchase_units)
       ? data.purchase_units.flatMap((unit: any) => Array.isArray(unit?.payments?.captures) ? unit.payments.captures : [])
       : [];
-    const completedCapture = captures.find((capture: any) =>
-      capture?.status === 'COMPLETED' &&
-      typeof capture?.id === 'string' &&
-      capture.id.trim()
+    const providerCapture = captures.find((capture: any) =>
+      typeof capture?.id === 'string' && capture.id.trim()
     );
-    if (data.status !== 'COMPLETED' || !completedCapture) {
-      throw new Error('PayPal capture response was incomplete: order status must be COMPLETED and a COMPLETED capture with a provider capture ID is required');
+
+    if (!providerCapture) {
+      throw new Error('PayPal capture response was incomplete: a provider capture ID is required');
     }
 
-    const captureId = String(completedCapture.id).trim();
-    const updatedRecord: PayPalOrderRecord = {
+    const captureId = String(providerCapture.id).trim();
+    let updatedRecord: PayPalOrderRecord = {
       ...savedOrders[index],
-      status: 'COMPLETED',
       captureId,
+      updateTime: new Date().toISOString()
+    };
+
+    if (data.status !== 'COMPLETED' || providerCapture.status !== 'COMPLETED') {
+      savedOrders[index] = updatedRecord;
+      dbRuntime.set('paypalOrders', savedOrders);
+
+      const reconcileResponse = await fetch(`${this.baseUrl}/v2/checkout/orders/${orderId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${await this.getAccessToken()}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!reconcileResponse.ok) {
+        const errText = await reconcileResponse.text();
+        throw new Error(`PayPal capture reconciliation failed (${reconcileResponse.status}): ${errText}`);
+      }
+
+      data = await reconcileResponse.json();
+      const reconciledCaptures = Array.isArray(data.purchase_units)
+        ? data.purchase_units.flatMap((unit: any) => Array.isArray(unit?.payments?.captures) ? unit.payments.captures : [])
+        : [];
+      const reconciledCompletedCapture = reconciledCaptures.find((capture: any) =>
+        String(capture?.id || '').trim() === captureId &&
+        capture?.status === 'COMPLETED'
+      );
+
+      if (data.status !== 'COMPLETED' || !reconciledCompletedCapture) {
+        throw new Error('PayPal capture response was incomplete: provider capture is not yet confirmed COMPLETED');
+      }
+    }
+
+    updatedRecord = {
+      ...updatedRecord,
+      status: 'COMPLETED',
       updateTime: new Date().toISOString(),
       payer: data.payer
     };
@@ -247,10 +282,13 @@ class PayPalRuntime {
       receivedAt: new Date().toISOString()
     });
 
-    const captureId = typeof resource?.id === 'string' ? resource.id.trim() : '';
-    const orderId = typeof resource?.supplementary_data?.related_ids?.order_id === 'string'
-      ? resource.supplementary_data.related_ids.order_id.trim()
-      : '';
+    const resourceId = typeof resource?.id === 'string' ? resource.id.trim() : '';
+    const captureId = eventType === 'PAYMENT.CAPTURE.COMPLETED' ? resourceId : '';
+    const orderId = eventType === 'CHECKOUT.ORDER.APPROVED'
+      ? resourceId
+      : (typeof resource?.supplementary_data?.related_ids?.order_id === 'string'
+        ? resource.supplementary_data.related_ids.order_id.trim()
+        : '');
 
     if (eventType === 'PAYMENT.CAPTURE.COMPLETED') {
       const savedOrder = this.getSavedOrders().find((order) =>
