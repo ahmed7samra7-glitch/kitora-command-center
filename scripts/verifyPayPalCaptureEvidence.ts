@@ -109,7 +109,31 @@ try {
   assert.equal(completed.captureId, 'CAP-VALID');
   assert.equal(dbRuntime.get('paypalOrders')[0].captureId, 'CAP-VALID');
 
-  console.log('PayPal capture evidence proof passed: incomplete responses never persist COMPLETED state, while a provider-shaped completed capture does.');
+  dbRuntime.set('paypalOrders', [{
+    id: 'ORDER-1',
+    status: 'APPROVED',
+    amount: 25,
+    currency: 'USD',
+    description: 'KCC test',
+    createTime: new Date().toISOString(),
+    updateTime: new Date().toISOString(),
+    mode: 'sandbox'
+  }]);
+  const approvedWebhook = await payPalRuntime.processWebhook({}, {
+    event_type: 'CHECKOUT.ORDER.APPROVED',
+    resource: { id: 'ORDER-1' }
+  });
+  assert.equal(approvedWebhook.processed, true);
+  assert.equal(dbRuntime.get('paypalOrders')[0].status, 'COMPLETED');
+  assert.equal(dbRuntime.get('paypalOrders')[0].captureId, 'CAP-VALID');
+
+  const completedWebhook = await payPalRuntime.processWebhook({}, {
+    event_type: 'PAYMENT.CAPTURE.COMPLETED',
+    resource: { id: 'CAP-VALID' }
+  });
+  assert.equal(completedWebhook.processed, true);
+
+  console.log('PayPal capture evidence proof passed: incomplete responses never persist COMPLETED state, pending captures remain traceable, and webhook order/capture identifiers reconcile correctly.');
 } finally {
   globalThis.fetch = originalFetch;
   fs.rmSync(isolatedDataDir, { recursive: true, force: true });
