@@ -1,4 +1,7 @@
 import worker, { KccCloudflareEnv, processQueueMessage } from '../worker.js';
+import {
+  hasConfiguredLiveProvider
+} from '../server/cloudflareStore.js';
 import type {
   CloudflareD1Database,
   CloudflareD1Prepared,
@@ -139,6 +142,28 @@ if (healthBody.productionReadiness.kccAlive !== false) {
   throw new Error('KCC_ALIVE must remain false without provider evidence.');
 }
 
+if (hasConfiguredLiveProvider({
+  KCC_AI_PROVIDER: 'gemini',
+  KCC_ALLOW_PAID_AI_FALLBACK: 'false',
+  OPENAI_API_KEY: 'test-paid-provider-key'
+})) {
+  throw new Error('Health/provider telemetry must not report an unused paid provider as executable when paid fallback is disabled.');
+}
+if (!hasConfiguredLiveProvider({
+  KCC_AI_PROVIDER: 'gemini',
+  KCC_ALLOW_PAID_AI_FALLBACK: 'false',
+  GEMINI_API_KEY: 'test-gemini-key'
+})) {
+  throw new Error('Configured zero-cost Gemini provider must be reported as executable.');
+}
+if (!hasConfiguredLiveProvider({
+  KCC_AI_PROVIDER: 'openai',
+  KCC_ALLOW_PAID_AI_FALLBACK: 'true',
+  OPENAI_API_KEY: 'test-openai-key'
+})) {
+  throw new Error('An explicitly enabled paid provider must be reported as executable.');
+}
+
 const unauthorized = await call('/api/kcc/tasks', {
   method: 'POST',
   body: JSON.stringify({ type: 'KCC_HEALTH_CHECK' })
@@ -230,7 +255,6 @@ const brainTask = db.tasks.find((task) => task.id === brainTaskId);
 if (!brainTask || brainTask.status !== 'FAILED' || !brainTask.result?.includes('BLOCKED')) {
   throw new Error('Expected missing AI provider to block Brain execution without synthetic success.');
 }
-
 
 // Transient Gemini overload must use the Queue retry path, not a terminal FAILED state.
 const transientDb = new FakeD1();
