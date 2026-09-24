@@ -58,9 +58,11 @@ function isNegatedExternalWrite(value: string, matchIndex: number): boolean {
 function looksLikeExternalWrite(text: string): boolean {
   const value = String(text || '');
   return EXTERNAL_WRITE_PATTERNS.some((pattern) => {
-    const match = pattern.exec(value);
-    if (!match || typeof match.index !== 'number') return false;
-    return !isNegatedExternalWrite(value, match.index);
+    const scanner = new RegExp(pattern.source, pattern.flags.includes('g') ? pattern.flags : pattern.flags + 'g');
+    for (const match of value.matchAll(scanner)) {
+      if (typeof match.index === 'number' && !isNegatedExternalWrite(value, match.index)) return true;
+    }
+    return false;
   });
 }
 
