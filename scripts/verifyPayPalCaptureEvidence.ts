@@ -155,11 +155,11 @@ try {
   assert.equal(dbRuntime.get('paypalOrders')[0].status, 'COMPLETED');
   assert.equal(dbRuntime.get('paypalOrders')[0].captureId, 'CAP-VALID');
 
-  const completedWebhook = await payPalRuntime.processWebhook({}, {
+  const duplicateCaptureWebhook = await payPalRuntime.processWebhook({}, {
     event_type: 'PAYMENT.CAPTURE.COMPLETED',
     resource: { id: 'CAP-VALID' }
   });
-  assert.equal(completedWebhook.processed, true);
+  assert.equal(duplicateCaptureWebhook.processed, true);
 
   console.log('PayPal capture evidence proof passed: incomplete responses never persist COMPLETED state, pending captures remain traceable, and webhook order/capture identifiers reconcile correctly.');
 } finally {
