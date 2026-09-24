@@ -72,8 +72,11 @@ export function issueAutonomyPassport(input: {
 }): KccAutonomyPassport {
   const issuedAt = new Date();
   const ttlSeconds = Math.max(60, Math.min(3600, Number(input.ttlSeconds || 900)));
-  const sensitivity = Number(input.sensitivityScore || 0);
-  const cost = Number(input.costUSD || 0);
+  const rawSensitivity = Number(input.sensitivityScore ?? 0);
+  const rawCost = Number(input.costUSD ?? 0);
+  // Invalid numeric governance inputs fail closed instead of becoming NaN/zero.
+  const sensitivity = Number.isFinite(rawSensitivity) && rawSensitivity >= 0 ? rawSensitivity : Number.POSITIVE_INFINITY;
+  const cost = Number.isFinite(rawCost) && rawCost >= 0 ? rawCost : Number.POSITIVE_INFINITY;
   const goal = String(input.goal || '').trim();
 
   let mode: KccAutonomyMode = 'READ_ONLY';
