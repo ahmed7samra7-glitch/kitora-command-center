@@ -154,12 +154,31 @@ export class KitoraStoreAdapter {
     return orders.find((o: StoreOrder) => o.id === orderId) || null;
   }
 
-  public async getCheckoutStatus(): Promise<{ status: 'HEALTHY' | 'DEGRADED' | 'UNAVAILABLE'; gateway: string; paypalVerified: boolean }> {
-    const configured = payPalRuntime.isConfigured();
+  public async getCheckoutStatus(): Promise<{
+    status: 'HEALTHY' | 'DEGRADED' | 'UNAVAILABLE';
+    gateway: string;
+    paypalConfigured: boolean;
+    providerReachable: boolean;
+    paypalVerified: boolean;
+  }> {
+    const paypalConfigured = payPalRuntime.isConfigured();
+    let providerReachable = false;
+
+    if (paypalConfigured) {
+      try {
+        const health = await payPalRuntime.getHealthStatus();
+        providerReachable = health.pingSuccess;
+      } catch {
+        providerReachable = false;
+      }
+    }
+
     return {
-      status: configured ? 'HEALTHY' : 'UNAVAILABLE',
+      status: providerReachable ? 'HEALTHY' : paypalConfigured ? 'DEGRADED' : 'UNAVAILABLE',
       gateway: 'PayPal Checkout Gateway',
-      paypalVerified: configured
+      paypalConfigured,
+      providerReachable,
+      paypalVerified: providerReachable
     };
   }
 
