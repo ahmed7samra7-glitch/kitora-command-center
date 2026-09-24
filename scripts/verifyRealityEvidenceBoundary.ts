@@ -69,6 +69,40 @@ const tamperedApi = verifier.verifyTaskResult(
 assert.equal(tamperedApi.verified, false);
 assert.equal(tamperedApi.confidenceScore, 0);
 
+const missingStoreUrl = verifier.verifyTaskResult(
+  { id: 'TASK-API-MISSING-URL', verificationMethod: 'API_CHECK' },
+  {
+    success: true,
+    kitoraInspection: {
+      providerReceiptId: receipt.receiptId,
+      inspectedAt,
+      liveHttpAccessible: true,
+      httpStatusCode: 200,
+      checkoutStatus: 'HEALTHY',
+      title: 'KITORA'
+    }
+  }
+);
+assert.equal(missingStoreUrl.verified, false);
+assert.equal(missingStoreUrl.confidenceScore, 0);
+
+const missingInspectedAt = verifier.verifyTaskResult(
+  { id: 'TASK-API-MISSING-TIME', verificationMethod: 'API_CHECK' },
+  {
+    success: true,
+    kitoraInspection: {
+      providerReceiptId: receipt.receiptId,
+      storeUrl: 'https://kitora.ai.studio/',
+      liveHttpAccessible: true,
+      httpStatusCode: 200,
+      checkoutStatus: 'HEALTHY',
+      title: 'KITORA'
+    }
+  }
+);
+assert.equal(missingInspectedAt.verified, false);
+assert.equal(missingInspectedAt.confidenceScore, 0);
+
 const validApi = verifier.verifyTaskResult(
   { id: 'TASK-API-VALID', verificationMethod: 'API_CHECK' },
   {
