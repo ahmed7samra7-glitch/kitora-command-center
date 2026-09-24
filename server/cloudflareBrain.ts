@@ -59,10 +59,13 @@ function parseOutput(text: string): unknown {
 }
 
 function approval(input: { sensitivityScore?: number; costUSD?: number }) {
-  const sensitivity = Number(input.sensitivityScore || 0);
-  const cost = Number(input.costUSD || 0);
+  const rawSensitivity = Number(input.sensitivityScore ?? 0);
+  const rawCost = Number(input.costUSD ?? 0);
+  // Invalid or negative governance values fail closed instead of becoming zero.
+  const sensitivity = Number.isFinite(rawSensitivity) && rawSensitivity >= 0 ? rawSensitivity : Number.POSITIVE_INFINITY;
+  const cost = Number.isFinite(rawCost) && rawCost >= 0 ? rawCost : Number.POSITIVE_INFINITY;
   return sensitivity > 0.8 || cost > 100
-    ? { requiresOwnerApproval: true, approvalReason: `Sensitivity ${sensitivity} or cost $${cost} exceeds zero-touch threshold.` }
+    ? { requiresOwnerApproval: true, approvalReason: `Sensitivity ${sensitivity} or cost ${cost} exceeds zero-touch threshold.` }
     : { requiresOwnerApproval: false as const };
 }
 
