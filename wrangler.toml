@@ -9,8 +9,12 @@ KCC_AI_PROVIDER = "gemini"
 GEMINI_MODEL = "gemini-3.5-flash-lite"
 KCC_ALLOW_PAID_AI_FALLBACK = "false"
 
-[secrets]
-required = ["KCC_WORKER_SECRET", "GEMINI_API_KEY"]
+# Secrets are intentionally not declared as deployment-required.
+# The runtime remains fail-closed when they are absent:
+# - worker-authenticated task endpoints return 401
+# - Brain execution blocks without a live provider
+# - /api/kcc/health stays 503 until provider-backed evidence exists
+# Add KCC_WORKER_SECRET and GEMINI_API_KEY in Cloudflare before enabling autonomous Brain execution.
 
 [[d1_databases]]
 binding = "KCC_DB"
