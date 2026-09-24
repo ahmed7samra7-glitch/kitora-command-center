@@ -88,6 +88,34 @@ try {
   assert.equal(dbRuntime.get('paypalOrders')[0].status, 'APPROVED');
   assert.equal(dbRuntime.get('paypalOrders')[0].captureId, 'CAP-INCOMPLETE');
 
+  reconciliationResponse = {
+    status: 'COMPLETED',
+    payer: { payer_id: 'PENDING-COMPLETED' },
+    purchase_units: [{
+      payments: {
+        captures: [{ id: 'CAP-INCOMPLETE', status: 'COMPLETED' }]
+      }
+    }]
+  };
+  const completedWebhook = await payPalRuntime.processWebhook({}, {
+    event_type: 'PAYMENT.CAPTURE.COMPLETED',
+    resource: { id: 'CAP-INCOMPLETE' }
+  });
+  assert.equal(completedWebhook.processed, true);
+  assert.equal(dbRuntime.get('paypalOrders')[0].status, 'COMPLETED');
+  assert.equal(dbRuntime.get('paypalOrders')[0].captureId, 'CAP-INCOMPLETE');
+
+  dbRuntime.set('paypalOrders', [{
+    id: 'ORDER-1',
+    status: 'APPROVED',
+    amount: 25,
+    currency: 'USD',
+    description: 'KCC test',
+    createTime: new Date().toISOString(),
+    updateTime: new Date().toISOString(),
+    mode: 'sandbox'
+  }]);
+
   captureResponse = {
     status: 'COMPLETED',
     purchase_units: [{
