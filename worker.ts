@@ -206,8 +206,10 @@ async function executeMissionTask(env: KccCloudflareEnv, taskId: string, payload
     await updateWorkerConnectionState(env.KCC_DB, candidate.workerId, state);
 
     const trustEvent = collaboration.status === 'COMPLETED' ? 'COLLAB_SUCCESS'
-      : collaboration.status === 'FAILED' ? 'COLLAB_FAILURE'
-      : undefined;
+      : collaboration.status === 'FAILED' && collaboration.error?.startsWith('WORKER_BOUNDARY_VIOLATION:')
+        ? 'BOUNDARY_VIOLATION'
+        : collaboration.status === 'FAILED' ? 'COLLAB_FAILURE'
+        : undefined;
     if (trustEvent) {
       const trust = evolveWorkerTrust(candidate.trust, trustEvent);
       trust.workerId = candidate.workerId;
