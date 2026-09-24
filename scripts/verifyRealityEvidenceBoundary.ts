@@ -1,5 +1,10 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
+const isolatedDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'kcc-reality-proof-'));
+process.env.KCC_DB_DIR = isolatedDataDir;
 process.env.KCC_PROVIDER_EVIDENCE_SECRET = 'test-only-provider-evidence-secret';
 
 const { dbRuntime } = await import('../server/dbStorage.js');
@@ -173,3 +178,4 @@ const validPayPal = verifier.verifyTaskResult(
 assert.equal(validPayPal.verified, true);
 
 console.log('Reality evidence boundary proof passed: forged API inspection and PayPal capture fields cannot establish verification without fresh signed/persisted provider-backed evidence.');
+fs.rmSync(isolatedDataDir, { recursive: true, force: true });
