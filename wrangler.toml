@@ -2,6 +2,7 @@ name = "kitora-command-center"
 main = "worker.ts"
 compatibility_date = "2026-09-22"
 workers_dev = true
+previews = { }
 
 [vars]
 KCC_AI_PROVIDER = "gemini"
