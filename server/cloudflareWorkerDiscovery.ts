@@ -30,6 +30,16 @@ const SENSITIVE_PATTERNS = [
   /sk-[a-z0-9_-]{16,}/i
 ];
 
+const PROMPT_INJECTION_PATTERNS = [
+  /\b(?:ignore|disregard|override)\s+(?:all\s+)?(?:previous|prior|system|developer)\s+(?:instructions?|messages?)/i,
+  /\b(?:reveal|expose|print|provide|send)\s+(?:the\s+)?(?:api[_-]?key|access[_-]?token|secret|password|credentials?|authorization)\b/i
+];
+
+const EXTERNAL_ACTION_CLAIM_PATTERNS = [
+  /\b(?:i|we|our agent|this agent)\s+(?:bought|purchased|paid|published|deleted|contacted|sent|shipped|ordered)\b/i,
+  /\b(?:i|we|our agent|this agent)\s+(?:completed|placed)\s+(?:the\s+)?(?:payment|purchase|order|shipment|notification)\b/i
+];
+
 export function sanitizeDelegationText(value: string, maxLength: number): string {
   const text = String(value || '').replace(/\s+/g, ' ').trim().slice(0, maxLength);
   if (!text) return '';
@@ -43,8 +53,16 @@ export function sanitizeWorkerOutput(value: unknown, maxLength = 12000): string 
   let text = typeof value === 'string' ? value : JSON.stringify(value ?? '');
   text = text.replace(/(api[_-]?key|access[_-]?token|secret|password|authorization)\s*[:=]\s*[^\s,;]+/gi, '$1=[REDACTED]');
   text = text.replace(/bearer\s+[a-z0-9._-]{12,}/gi, 'Bearer [REDACTED]');
-  text = text.replace(/\bsk-[a-z0-9_-]{16,}\b/gi, 'sk-[REDACTED]');
+  text = text.replace(/\bsk-[a-z0-9._-]{16,}\b/gi, 'sk-[REDACTED]');
   return text.slice(0, maxLength);
+}
+
+export function detectWorkerBoundaryViolation(value: unknown): string | null {
+  const text = typeof value === 'string' ? value : JSON.stringify(value ?? '');
+  if (SENSITIVE_PATTERNS.some(pattern => pattern.test(text))) return 'SENSITIVE_DATA_BEHAVIOR';
+  if (PROMPT_INJECTION_PATTERNS.some(pattern => pattern.test(text))) return 'PROMPT_INJECTION_PATTERN';
+  if (EXTERNAL_ACTION_CLAIM_PATTERNS.some(pattern => pattern.test(text))) return 'EXTERNAL_ACTION_CLAIM';
+  return null;
 }
 
 
@@ -415,6 +433,18 @@ export async function collaborateWithA2AWorker(
         task: delegation.task,
         status: 'FAILED',
         error: 'A2A worker returned no usable evidence-backed output.',
+        checkedAt
+      };
+    }
+
+    const boundaryViolation = detectWorkerBoundaryViolation(answer);
+    if (boundaryViolation) {
+      worker.connectionState = 'QUARANTINED';
+      return {
+        workerId: worker.workerId,
+        task: delegation.task,
+        status: 'FAILED',
+        error: `WORKER_BOUNDARY_VIOLATION: ${boundaryViolation}`,
         checkedAt
       };
     }
