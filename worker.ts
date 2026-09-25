@@ -14,6 +14,15 @@ import {
   releaseCloudflareTaskForRetry
 } from './server/cloudflareStore.js';
 import { executeCloudflareBrainTask, persistCloudflareBrainDecision } from './server/cloudflareBrain.js';
+import {
+  createPayPalCheckoutOrder,
+  capturePayPalCheckoutOrder,
+  handlePayPalWebhook,
+  executeCommerceFulfillment,
+  listCommerceOrders,
+  upsertCommerceProduct,
+  ensureCommerceSchema
+} from './server/cloudflareCommerce.js';
 import { issueAutonomyPassport, admitNextActions } from './server/kccAutonomyPassport.js';
 import {
   collaborateWithA2AWorker,
@@ -395,6 +404,14 @@ export async function executeQueuedTask(
       });
       return { status: 'COMPLETED' };
 
+    case 'KCC_COMMERCE_FULFILL': {
+      await executeCommerceFulfillment(env, String(payload.orderId || ''));
+      await completeCloudflareTask(env.KCC_DB, task.id, 'COMPLETED', {
+        result: { commerce: true, orderId: String(payload.orderId || ''), failClosed: true }
+      });
+      return { status: 'COMPLETED' };
+    }
+
     case 'KCC_WORKER_DISCOVERY': {
       await ensureWorkerDiscoverySchema(env.KCC_DB);
       const query = typeof payload.query === 'string' && payload.query.trim()
@@ -531,7 +548,70 @@ export default {
       });
     }
 
-    if (request.method === 'POST' && url.pathname === '/api/kcc/tasks') {
+    if (request.method === 'POST' && url.pathname === '/api/paypal/webhook') {
+      const rawBody = await request.text();
+      const body = (() => {
+        try { return JSON.parse(rawBody); } catch { return null; }
+      })();
+      if (!body) return json({ success: false, error: 'INVALID_JSON', failClosed: true }, 400);
+      try {
+        const result = await handlePayPalWebhook(env, request.headers, body);
+        return json({ success: true, webhook: result });
+      } catch (error) {
+        return json({ success: false, error: error instanceof Error ? error.message : String(error), failClosed: true }, 400);
+      }
+    }
+
+    if (request.method === 'POST' && url.pathname === '/api/paypal/orders') {
+      try {
+        const body = await request.json();
+        const order = await createPayPalCheckoutOrder(env, body);
+        return json({ success: true, order });
+      } catch (error) {
+        return json({ success: false, error: error instanceof Error ? error.message : String(error), failClosed: true }, 400);
+      }
+    }
+
+    if (request.method === 'POST' && /^\/api\/paypal\/orders\/[^/]+\/capture$/.test(url.pathname)) {
+      const orderId = decodeURIComponent(url.pathname.split('/')[4] || '');
+      if (!orderId) return json({ success: false, error: 'PAYPAL_ORDER_ID_REQUIRED', failClosed: true }, 400);
+      try {
+        const order = await capturePayPalCheckoutOrder(env, orderId);
+        if (!env.KCC_TASK_QUEUE) throw new Error('KCC_TASK_QUEUE binding is required for commerce fulfillment');
+        await env.KCC_TASK_QUEUE.send({
+          taskId: `CF-COMMERCE-${orderId}`,
+          type: 'KCC_COMMERCE_FULFILL',
+          payload: { orderId },
+          enqueuedAt: new Date().toISOString()
+        });
+        return json({ success: true, order, fulfillmentQueued: true });
+      } catch (error) {
+        return json({ success: false, error: error instanceof Error ? error.message : String(error), failClosed: true }, 400);
+      }
+    }
+
+    if (request.method === 'GET' && url.pathname === '/api/kcc/commerce/orders') {
+      if (!workerAuthorized(request, env)) return json({ success: false, error: 'WORKER_AUTH_REQUIRED', failClosed: true }, 401);
+      await ensureCommerceSchema(env.KCC_DB);
+      return json({ success: true, orders: await listCommerceOrders(env.KCC_DB) });
+    }
+
+    if (request.method === 'POST' && url.pathname === '/api/kcc/commerce/products') {
+      if (!workerAuthorized(request, env)) return json({ success: false, error: 'WORKER_AUTH_REQUIRED', failClosed: true }, 401);
+      const body = await request.json().catch(() => ({})) as Record<string, unknown>;
+      const productId = String(body.productId || '').trim();
+      const cjProductId = String(body.cjProductId || '').trim();
+      const cjVariantId = String(body.cjVariantId || '').trim();
+      const priceUsd = Number(body.priceUsd);
+      const costUsd = Number(body.costUsd);
+      if (!productId || !cjProductId || !cjVariantId || !Number.isFinite(priceUsd) || priceUsd <= 0 || !Number.isFinite(costUsd) || costUsd < 0) {
+        return json({ success: false, error: 'INVALID_COMMERCE_PRODUCT_MAPPING', failClosed: true }, 400);
+      }
+      await upsertCommerceProduct(env.KCC_DB, { productId, cjProductId, cjVariantId, priceUsd, costUsd });
+      return json({ success: true, productId, cjProductId, cjVariantId, priceUsd, costUsd });
+    }
+
+    if (request.method === 'GET' && url.pathname === '/api/kcc/tasks') {
       if (!workerAuthorized(request, env)) return json({ success: false, error: 'WORKER_AUTH_REQUIRED', failClosed: true }, 401);
       if (!env.KCC_TASK_QUEUE) return json({ success: false, error: 'KCC_TASK_QUEUE binding is required', failClosed: true }, 503);
 
