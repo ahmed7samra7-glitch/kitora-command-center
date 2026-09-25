@@ -27,6 +27,18 @@ export interface CloudflareRuntimeEnv {
   GEMINI_MODEL?: string;
   KCC_AI_PROVIDER?: string;
   KCC_ALLOW_PAID_AI_FALLBACK?: string;
+  PAYPAL_CLIENT_ID?: string;
+  PAYPAL_CLIENT_SECRET?: string;
+  PAYPAL_MODE?: string;
+  PAYPAL_WEBHOOK_ID?: string;
+  CJ_DROPSHIPPING_API_KEY?: string;
+  CJ_LOGISTICS_NAME?: string;
+  CJ_FROM_COUNTRY_CODE?: string;
+  META_WHATSAPP_LIVE_BEARER_TOKEN?: string;
+  META_WHATSAPP_PHONE_NUMBER_ID?: string;
+  META_WHATSAPP_GRAPH_VERSION?: string;
+  KCC_AUTOFULFILL_ENABLED?: string;
+  KCC_MAX_AUTO_FULFILL_COST_USD?: string;
   OPENAI_MODEL?: string;
   CLAUDE_MODEL?: string;
   OPENAI_API_KEY?: string;
