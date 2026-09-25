@@ -233,6 +233,37 @@ export async function ensureCommerceSchema(db: CloudflareD1Database): Promise<vo
   `).run();
 }
 
+export async function searchCJProducts(env: CommerceEnv, keyword: string, limit = 10): Promise<Array<Record<string, unknown>>> {
+  const token = await cjAccessToken(env);
+  const url = new URL('https://developers.cjdropshipping.com/api2.0/v1/product/listV2');
+  url.searchParams.set('page', '1');
+  url.searchParams.set('size', String(Math.max(1, Math.min(50, Math.floor(limit)))));
+  if (keyword.trim()) url.searchParams.set('keyWord', keyword.trim().slice(0, 120));
+
+  const response = await fetch(url.toString(), { headers: { 'CJ-Access-Token': token } });
+  const payload = await response.json().catch(() => null) as any;
+  if (!response.ok || payload?.code !== 200 || !payload?.result) {
+    throw new Error(`CJ_PRODUCT_SEARCH_FAILED_${response.status}`);
+  }
+
+  const source = Array.isArray(payload?.data?.list)
+    ? payload.data.list
+    : Array.isArray(payload?.data?.content)
+      ? payload.data.content
+      : [];
+
+  return source.slice(0, 50).map((item: any) => ({
+    pid: String(item.pid || item.id || ''),
+    name: String(item.productNameEn || item.nameEn || item.name || ''),
+    image: String(item.productImage || item.bigImage || ''),
+    sku: String(item.productSku || ''),
+    sellPrice: Number(item.sellPrice || item.nowPrice || 0),
+    costPrice: Number(item.costPrice || 0),
+    inventory: Number(item.inventory || item.totalInventory || 0),
+    requestId: String(payload.requestId || '')
+  })).filter((item: any) => item.pid && item.name);
+}
+
 export async function upsertCommerceProduct(
   db: CloudflareD1Database,
   product: { productId: string; cjProductId: string; cjVariantId: string; priceUsd: number; costUsd: number }
