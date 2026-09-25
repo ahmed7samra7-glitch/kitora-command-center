@@ -7,6 +7,8 @@ import {
   runWorkerCanary,
   sanitizeDelegationText,
   scoutAiWorkerEcosystem,
+  updateWorkerConnectionState,
+  persistDiscoveredWorkers,
   type DiscoveredAiWorker
 } from '../server/cloudflareWorkerDiscovery.js';
 
@@ -155,6 +157,44 @@ try {
   }
 } finally {
   globalThis.fetch = originalFetch;
+}
+
+
+// Quarantine state must survive persistence and connection-state refreshes.
+let lastQuery = '';
+let lastBinds: unknown[] = [];
+const quarantineDb = {
+  prepare(query: string) {
+    lastQuery = query;
+    return {
+      bind(...values: unknown[]) {
+        lastBinds = values;
+        return {
+          async run() { return { success: true, meta: { changes: 1 } }; }
+        };
+      }
+    };
+  }
+};
+await updateWorkerConnectionState(quarantineDb, 'A2A:bad-worker', 'QUARANTINED');
+if (lastBinds[0] !== 'QUARANTINED') {
+  throw new Error('Expected QUARANTINED to be persisted as the worker connection state.');
+}
+await persistDiscoveredWorkers(quarantineDb, [{
+  workerId: 'A2A:bad-worker',
+  name: 'Bad Worker',
+  provider: 'test',
+  description: 'unsafe test worker',
+  protocol: 'A2A',
+  endpoint: 'https://bad.example/a2a',
+  capabilities: ['research'],
+  connectionState: 'DISCOVERED',
+  discoveredAt: new Date().toISOString(),
+  lastCheckedAt: new Date().toISOString(),
+  source: 'test'
+}]);
+if (!lastQuery.includes("WHEN kcc_discovered_workers.connection_state = 'QUARANTINED'")) {
+  throw new Error('Worker discovery persistence must preserve an existing quarantine state.');
 }
 
 let repairTurns = 0;
