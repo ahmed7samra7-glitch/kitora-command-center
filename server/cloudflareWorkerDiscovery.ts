@@ -478,7 +478,7 @@ export async function collaborateWithA2AWorker(
 export async function runWorkerCanary(worker: DiscoveredAiWorker): Promise<WorkerTrustRecord> {
   const checkedAt = new Date().toISOString();
   if (!worker.endpoint || worker.protocol !== 'A2A') {
-    worker.connectionState = 'UNAVAILABLE';
+    worker.connectionState = 'QUARANTINED';
     return {
       workerId: worker.workerId,
       level: 'QUARANTINED',
@@ -641,7 +641,7 @@ export async function persistDiscoveredWorkers(
       worker.protocol,
       worker.endpoint,
       JSON.stringify(worker.capabilities),
-      worker.connectionState === 'QUARANTINED' ? 'UNAVAILABLE' : worker.connectionState,
+      worker.connectionState,
       worker.discoveredAt,
       worker.lastCheckedAt,
       worker.source,
