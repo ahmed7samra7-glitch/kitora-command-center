@@ -527,3 +527,96 @@ export async function listCommerceOrders(db: CloudflareD1Database): Promise<Comm
   const rows = await db.prepare('SELECT * FROM kcc_commerce_orders ORDER BY created_at DESC LIMIT 100').all<CommerceOrderRow>();
   return rows.results || [];
 }
+
+
+function normalizePhone(value: string): string {
+  return String(value || '').replace(/[^0-9]/g, '');
+}
+
+async function verifyWhatsAppSignature(secret: string, rawBody: string, signatureHeader: string | null): Promise<boolean> {
+  const provided = String(signatureHeader || '');
+  if (!provided.startsWith('sha256=')) return false;
+  const expectedBytes = await crypto.subtle.sign(
+    'HMAC',
+    await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    ),
+    new TextEncoder().encode(rawBody)
+  );
+  const expected = 'sha256=' + Array.from(new Uint8Array(expectedBytes)).map((b) => b.toString(16).padStart(2, '0')).join('');
+  if (expected.length !== provided.length) return false;
+  let diff = 0;
+  for (let i = 0; i < expected.length; i += 1) diff |= expected.charCodeAt(i) ^ provided.charCodeAt(i);
+  return diff === 0;
+}
+
+export function whatsappWebhookChallenge(env: CommerceEnv, params: URLSearchParams): Response {
+  const mode = params.get('hub.mode');
+  const token = params.get('hub.verify_token');
+  const challenge = params.get('hub.challenge');
+  const expected = String((env as any).META_WHATSAPP_WEBHOOK_VERIFY_TOKEN || '').trim();
+  if (mode === 'subscribe' && expected && token === expected && challenge) {
+    return new Response(challenge, { status: 200, headers: { 'content-type': 'text/plain' } });
+  }
+  return new Response('Forbidden', { status: 403 });
+}
+
+export async function handleWhatsAppWebhook(
+  env: CommerceEnv,
+  headers: Headers,
+  rawBody: string
+): Promise<{ verified: boolean; processed: number }> {
+  const secret = String((env as any).META_WHATSAPP_APP_SECRET || '').trim();
+  if (!secret) throw new Error('META_WHATSAPP_APP_SECRET is required for WhatsApp webhook verification');
+  if (!await verifyWhatsAppSignature(secret, rawBody, headers.get('x-hub-signature-256'))) {
+    throw new Error('WHATSAPP_WEBHOOK_SIGNATURE_INVALID');
+  }
+
+  const body = JSON.parse(rawBody) as any;
+  const statuses = Array.isArray(body?.entry)
+    ? body.entry.flatMap((entry: any) =>
+        Array.isArray(entry?.changes)
+          ? entry.changes.flatMap((change: any) => Array.isArray(change?.value?.statuses) ? change.value.statuses : [])
+          : []
+      )
+    : [];
+
+  let processed = 0;
+  for (const status of statuses) {
+    const state = String(status?.status || '').trim().toLowerCase();
+    if (state !== 'delivered' && state !== 'read') continue;
+    const messageId = String(status?.id || '').trim();
+    const recipient = normalizePhone(String(status?.recipient_id || '').trim());
+    if (!messageId || !recipient) continue;
+
+    const order = await env.KCC_DB.prepare(
+      "SELECT * FROM kcc_commerce_orders WHERE whatsapp_message_id=? AND notification_status='PROVIDER_ACCEPTED'"
+    ).bind(messageId).first<CommerceOrderRow>();
+
+    if (!order || normalizePhone(order.customer_phone) !== recipient) continue;
+
+    const now = new Date().toISOString();
+    const nextStatus = state === 'read' ? 'READ' : 'DELIVERED';
+    await env.KCC_DB.prepare(
+      "UPDATE kcc_commerce_orders SET notification_status=?,updated_at=? WHERE id=? AND notification_status='PROVIDER_ACCEPTED'"
+    ).bind(nextStatus, now, order.id).run();
+
+    await env.KCC_DB.prepare(
+      "INSERT OR IGNORE INTO kcc_provider_evidence (id,evidence_type,provider_id,provider_verified,external_reference,created_at) VALUES (?,?,?,?,?,?)"
+    ).bind(
+      `REAL-NOTIFICATION-${messageId}`,
+      'REAL_NOTIFICATION_EVIDENCE',
+      'WHATSAPP_CLOUD_API',
+      1,
+      `${messageId}:${state}`,
+      now
+    ).run();
+    processed += 1;
+  }
+
+  return { verified: true, processed };
+}
