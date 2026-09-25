@@ -156,14 +156,16 @@ if (
   throw new Error('Expected preflight to report configuration gaps without claiming provider reachability or KCC_ALIVE.');
 }
 
-const configuredPreflight = await worker.fetch(new Request('https://kcc.test/api/kcc/preflight'), {
-  method: 'GET'
-}, {
+const configuredPreflightEnv: KccCloudflareEnv = {
   ...env,
   GEMINI_API_KEY: 'test-gemini-key',
   KCC_AI_PROVIDER: 'gemini',
   KCC_ALLOW_PAID_AI_FALLBACK: 'false'
-});
+};
+const configuredPreflight = await worker.fetch(
+  new Request('https://kcc.test/api/kcc/preflight', { method: 'GET' }),
+  configuredPreflightEnv
+);
 if (configuredPreflight.status !== 200) throw new Error(`Expected configured preflight 200, got ${configuredPreflight.status}`);
 const configuredPreflightBody = await configuredPreflight.json() as any;
 if (
