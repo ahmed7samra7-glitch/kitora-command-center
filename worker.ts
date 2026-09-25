@@ -297,19 +297,28 @@ function isTransientBrainFailure(error?: string): boolean {
 }
 
 async function preflight(env: KccCloudflareEnv): Promise<Response> {
-  const evidence = await readEvidenceSummary(env.KCC_DB);
+  let evidence = { fulfillmentEvidence: false, notificationEvidence: false };
+  let d1SchemaReady = true;
+
+  try {
+    evidence = await readEvidenceSummary(env.KCC_DB);
+  } catch {
+    d1SchemaReady = false;
+  }
+
   const providerConfigured = hasConfiguredLiveProvider(env);
   const queueConfigured = Boolean(env.KCC_TASK_QUEUE);
   const workerSecretConfigured = Boolean(env.KCC_WORKER_SECRET?.trim());
   const kccAlive = evidence.fulfillmentEvidence && evidence.notificationEvidence;
 
   const blockers: string[] = [];
+  if (!d1SchemaReady) blockers.push('D1_SCHEMA_NOT_READY');
   if (!providerConfigured) blockers.push('AI_PROVIDER_NOT_CONFIGURED');
   if (!queueConfigured) blockers.push('KCC_TASK_QUEUE_NOT_CONFIGURED');
   if (!workerSecretConfigured) blockers.push('KCC_WORKER_SECRET_NOT_CONFIGURED');
 
-  const autonomousMissionConfigured = providerConfigured && queueConfigured;
-  const operatorTaskApiConfigured = queueConfigured && workerSecretConfigured;
+  const autonomousMissionConfigured = d1SchemaReady && providerConfigured && queueConfigured;
+  const operatorTaskApiConfigured = d1SchemaReady && queueConfigured && workerSecretConfigured;
 
   return json({
     success: autonomousMissionConfigured,
@@ -318,6 +327,7 @@ async function preflight(env: KccCloudflareEnv): Promise<Response> {
     checks: {
       workerLive: true,
       d1Bound: true,
+      d1SchemaReady,
       taskQueueBound: queueConfigured,
       zeroCostAiProviderConfigured: providerConfigured,
       workerAuthConfigured: workerSecretConfigured,
