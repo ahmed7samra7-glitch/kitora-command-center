@@ -6,6 +6,7 @@ export interface CommerceEnv {
   PAYPAL_CLIENT_SECRET?: string;
   PAYPAL_MODE?: string;
   PAYPAL_WEBHOOK_ID?: string;
+  APP_URL?: string;
   CJ_DROPSHIPPING_API_KEY?: string;
   CJ_LOGISTICS_NAME?: string;
   CJ_FROM_COUNTRY_CODE?: string;
@@ -125,8 +126,29 @@ async function paypalRequest<T>(env: CommerceEnv, path: string, init: RequestIni
   return payload;
 }
 
+async function ensurePayPalWebhook(env: CommerceEnv): Promise<string> {
+  if ((env.PAYPAL_WEBHOOK_ID || '').trim()) return env.PAYPAL_WEBHOOK_ID!.trim();
+  const appUrl = required(env, 'APP_URL').replace(/\/$/, '');
+  const existing = await paypalRequest<{ webhooks?: Array<{ id?: string; url?: string }> }>(env, '/v1/notifications/webhooks');
+  const existingMatch = (existing.webhooks || []).find(item => item.url === `${appUrl}/api/paypal/webhook`);
+  if (existingMatch?.id) return existingMatch.id;
+  const created = await paypalRequest<{ id?: string }>(env, '/v1/notifications/webhooks', {
+    method: 'POST',
+    body: JSON.stringify({
+      url: `${appUrl}/api/paypal/webhook`,
+      event_types: [
+        { name: 'PAYMENT.CAPTURE.COMPLETED' },
+        { name: 'PAYMENT.CAPTURE.DENIED' }
+      ]
+    })
+  });
+  const id = String(created.id || '').trim();
+  if (!id) throw new Error('PayPal webhook registration returned no webhook ID');
+  return id;
+}
+
 async function verifyPayPalWebhook(env: CommerceEnv, headers: Headers, webhookEvent: unknown): Promise<boolean> {
-  const webhookId = required(env, 'PAYPAL_WEBHOOK_ID');
+  const webhookId = await ensurePayPalWebhook(env);
   const transmissionId = headers.get('paypal-transmission-id') || '';
   const transmissionTime = headers.get('paypal-transmission-time') || '';
   const certUrl = headers.get('paypal-cert-url') || '';
@@ -173,8 +195,10 @@ export async function ensureCommerceSchema(db: CloudflareD1Database): Promise<vo
     cj_product_id TEXT NOT NULL,
     cj_variant_id TEXT NOT NULL,
     price_usd REAL NOT NULL,
-    cost_usd REAL NOT NULL,
-    active INTEGER NOT NULL DEFAULT 1
+    cost_usd REAL NOT NULL CHECK (cost_usd >= 0),
+    active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0,1)),
+    created_at TEXT NOT NULL DEFAULT '',
+    updated_at TEXT NOT NULL DEFAULT ''
   )`).run();
   await db.prepare(`CREATE TABLE IF NOT EXISTS kcc_commerce_orders (
     id TEXT PRIMARY KEY,
@@ -183,8 +207,8 @@ export async function ensureCommerceSchema(db: CloudflareD1Database): Promise<vo
     product_id TEXT NOT NULL,
     cj_product_id TEXT NOT NULL,
     cj_variant_id TEXT NOT NULL,
-    quantity INTEGER NOT NULL,
-    amount_usd REAL NOT NULL,
+    quantity INTEGER NOT NULL CHECK (quantity > 0),
+    amount_usd REAL NOT NULL CHECK (amount_usd > 0),
     customer_name TEXT NOT NULL,
     customer_email TEXT NOT NULL,
     customer_phone TEXT NOT NULL,
@@ -202,7 +226,7 @@ export async function ensureCommerceSchema(db: CloudflareD1Database): Promise<vo
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     last_error TEXT
-  )`).run();
+  `).run();
 }
 
 export async function upsertCommerceProduct(
@@ -228,6 +252,7 @@ export async function createPayPalCheckoutOrder(
   input: CommerceCheckoutInput
 ): Promise<{ id: string; status: string; approvalUrl?: string }> {
   await ensureCommerceSchema(env.KCC_DB);
+  await ensurePayPalWebhook(env);
   const quantity = Number(input.quantity);
   if (!Number.isInteger(quantity) || quantity <= 0) throw new Error('quantity must be a positive integer');
   for (const key of ['productId','customerName','customerEmail','customerPhone','shippingAddress','shippingCity','shippingCountry','shippingZip'] as const) {
@@ -249,6 +274,15 @@ export async function createPayPalCheckoutOrder(
         reference_id: product.product_id,
         custom_id: product.product_id,
         amount: { currency_code: 'USD', value: amount.toFixed(2) },
+        shipping: {
+          name: { full_name: input.customerName.trim() },
+          address: {
+            address_line_1: input.shippingAddress.trim(),
+            admin_area_2: input.shippingCity.trim(),
+            country_code: input.shippingCountry.trim().toUpperCase(),
+            postal_code: input.shippingZip.trim()
+          }
+        },
         items: [{
           name: product.product_id,
           unit_amount: { currency_code: 'USD', value: product.price_usd.toFixed(2) },
@@ -458,12 +492,27 @@ export async function executeCommerceFulfillment(env: CommerceEnv, orderId: stri
   if (order.fulfillment_status === 'SUBMITTED' && order.cj_order_id) return;
 
   const fulfillment = await createCJOrder(env, order);
+  const sandbox = (env.PAYPAL_MODE || 'sandbox').trim().toLowerCase() !== 'live';
   const now = new Date().toISOString();
   await env.KCC_DB.prepare(
     `UPDATE kcc_commerce_orders
-     SET fulfillment_status='SUBMITTED', cj_order_id=?, cj_provider_request_id=?, updated_at=?, last_error=NULL
+     SET fulfillment_status=?, cj_order_id=?, cj_provider_request_id=?, updated_at=?, last_error=NULL
      WHERE id=?`
-  ).bind(fulfillment.cjOrderId, fulfillment.providerRequestId, now, orderId).run();
+  ).bind(sandbox ? 'SANDBOX_SUBMITTED' : 'SUBMITTED', fulfillment.cjOrderId, fulfillment.providerRequestId, now, orderId).run();
+
+  if (!sandbox) {
+    await env.KCC_DB.prepare(
+      `INSERT INTO kcc_provider_evidence (id,evidence_type,provider_id,provider_verified,external_reference,created_at)
+       VALUES (?,?,?,?,?,?)`
+    ).bind(
+      `REAL-FULFILLMENT-${order.id}`,
+      'REAL_FULFILLMENT_EVIDENCE',
+      'CJ_DROPSHIPPING',
+      1,
+      `${fulfillment.cjOrderId}:${fulfillment.providerRequestId}`,
+      now
+    ).run();
+  }
 
   const text = `KITORA order ${order.paypal_order_id} received and submitted to fulfillment. CJ reference: ${fulfillment.cjOrderId}.`;
   const notice = await sendWhatsApp(env, order.customer_phone, text);
