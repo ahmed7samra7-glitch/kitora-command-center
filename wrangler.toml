@@ -8,6 +8,8 @@ previews = { }
 KCC_AI_PROVIDER = "gemini"
 GEMINI_MODEL = "gemini-3.5-flash-lite"
 KCC_ALLOW_PAID_AI_FALLBACK = "false"
+KCC_AUTOFULFILL_ENABLED = "true"
+KCC_MAX_AUTO_FULFILL_COST_USD = "30"
 
 # Secrets are intentionally not declared as deployment-required.
 # The runtime remains fail-closed when they are absent:
