@@ -23,6 +23,7 @@ import {
   executeCommerceFulfillment,
   listCommerceOrders,
   upsertCommerceProduct,
+  searchCJProducts,
   ensureCommerceSchema
 } from './server/cloudflareCommerce.js';
 import { issueAutonomyPassport, admitNextActions } from './server/kccAutonomyPassport.js';
@@ -610,6 +611,17 @@ export default {
       if (!workerAuthorized(request, env)) return json({ success: false, error: 'WORKER_AUTH_REQUIRED', failClosed: true }, 401);
       await ensureCommerceSchema(env.KCC_DB);
       return json({ success: true, orders: await listCommerceOrders(env.KCC_DB) });
+    }
+
+    if (request.method === 'POST' && url.pathname === '/api/kcc/commerce/cj/search') {
+      if (!workerAuthorized(request, env)) return json({ success: false, error: 'WORKER_AUTH_REQUIRED', failClosed: true }, 401);
+      const body = await request.json().catch(() => ({})) as Record<string, unknown>;
+      try {
+        const products = await searchCJProducts(env, String(body.keyword || ''), Number(body.limit || 10));
+        return json({ success: true, source: 'cj-live-provider', products });
+      } catch (error) {
+        return json({ success: false, error: error instanceof Error ? error.message : String(error), failClosed: true }, 400);
+      }
     }
 
     if (request.method === 'POST' && url.pathname === '/api/kcc/commerce/products') {
