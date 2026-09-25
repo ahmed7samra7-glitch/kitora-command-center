@@ -18,6 +18,8 @@ import {
   createPayPalCheckoutOrder,
   capturePayPalCheckoutOrder,
   handlePayPalWebhook,
+  handleWhatsAppWebhook,
+  whatsappWebhookChallenge,
   executeCommerceFulfillment,
   listCommerceOrders,
   upsertCommerceProduct,
@@ -548,6 +550,20 @@ export default {
       });
     }
 
+    if (request.method === 'GET' && url.pathname === '/api/whatsapp/webhook') {
+      return whatsappWebhookChallenge(env, url.searchParams);
+    }
+
+    if (request.method === 'POST' && url.pathname === '/api/whatsapp/webhook') {
+      const rawBody = await request.text();
+      try {
+        const result = await handleWhatsAppWebhook(env, request.headers, rawBody);
+        return json({ success: true, webhook: result });
+      } catch (error) {
+        return json({ success: false, error: error instanceof Error ? error.message : String(error), failClosed: true }, 400);
+      }
+    }
+
     if (request.method === 'POST' && url.pathname === '/api/paypal/webhook') {
       const rawBody = await request.text();
       const body = (() => {
@@ -611,7 +627,7 @@ export default {
       return json({ success: true, productId, cjProductId, cjVariantId, priceUsd, costUsd });
     }
 
-    if (request.method === 'GET' && url.pathname === '/api/kcc/tasks') {
+    if (request.method === 'POST' && url.pathname === '/api/kcc/tasks') {
       if (!workerAuthorized(request, env)) return json({ success: false, error: 'WORKER_AUTH_REQUIRED', failClosed: true }, 401);
       if (!env.KCC_TASK_QUEUE) return json({ success: false, error: 'KCC_TASK_QUEUE binding is required', failClosed: true }, 503);
 
