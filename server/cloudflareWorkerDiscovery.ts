@@ -601,7 +601,7 @@ export async function updateWorkerConnectionState(
     `UPDATE kcc_discovered_workers
      SET connection_state=?, last_checked_at=?, updated_at=?
      WHERE worker_id=?`
-  ).bind(state === 'QUARANTINED' ? 'UNAVAILABLE' : state, new Date().toISOString(), new Date().toISOString(), workerId).run();
+  ).bind(state, new Date().toISOString(), new Date().toISOString(), workerId).run();
 }
 
 export async function persistDiscoveredWorkers(
@@ -622,6 +622,8 @@ export async function persistDiscoveredWorkers(
         endpoint=excluded.endpoint,
         capabilities=excluded.capabilities,
         connection_state=CASE
+          WHEN kcc_discovered_workers.connection_state = 'QUARANTINED'
+            THEN 'QUARANTINED'
           WHEN kcc_discovered_workers.connection_state IN ('VERIFIED','REACHABLE')
             AND datetime(kcc_discovered_workers.last_checked_at) > datetime('now', '-24 hours')
             THEN kcc_discovered_workers.connection_state
