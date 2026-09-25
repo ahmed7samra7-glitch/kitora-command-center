@@ -198,16 +198,20 @@ async function executeMissionTask(env: KccCloudflareEnv, taskId: string, payload
         }, `KCC-${taskId}`);
 
     await persistWorkerCollaboration(env.KCC_DB, taskId, collaboration);
-    const state = collaboration.status === 'COMPLETED'
-      ? 'REACHABLE'
-      : collaboration.status === 'REQUIRES_AUTH'
-        ? 'REQUIRES_AUTH'
-        : 'UNAVAILABLE';
+    const state = candidate.connectionState === 'QUARANTINED'
+      ? 'QUARANTINED'
+      : collaboration.status === 'COMPLETED'
+        ? 'REACHABLE'
+        : collaboration.status === 'REQUIRES_AUTH'
+          ? 'REQUIRES_AUTH'
+          : 'UNAVAILABLE';
     await updateWorkerConnectionState(env.KCC_DB, candidate.workerId, state);
 
     const trustEvent = collaboration.status === 'COMPLETED' ? 'COLLAB_SUCCESS'
-      : collaboration.status === 'FAILED' ? 'COLLAB_FAILURE'
-      : undefined;
+      : collaboration.status === 'FAILED' && collaboration.error?.startsWith('WORKER_BOUNDARY_VIOLATION:')
+        ? 'BOUNDARY_VIOLATION'
+        : collaboration.status === 'FAILED' ? 'COLLAB_FAILURE'
+        : undefined;
     if (trustEvent) {
       const trust = evolveWorkerTrust(candidate.trust, trustEvent);
       trust.workerId = candidate.workerId;
@@ -290,6 +294,56 @@ function isTransientBrainFailure(error?: string): boolean {
     || value.includes('timeout')
     || value.includes('temporarily unavailable')
     || value.includes('high demand');
+}
+
+async function preflight(env: KccCloudflareEnv): Promise<Response> {
+  let evidence = { fulfillmentEvidence: false, notificationEvidence: false };
+  let d1SchemaReady = true;
+
+  try {
+    evidence = await readEvidenceSummary(env.KCC_DB);
+  } catch {
+    d1SchemaReady = false;
+  }
+
+  const providerConfigured = hasConfiguredLiveProvider(env);
+  const queueConfigured = Boolean(env.KCC_TASK_QUEUE);
+  const workerSecretConfigured = Boolean(env.KCC_WORKER_SECRET?.trim());
+  const kccAlive = evidence.fulfillmentEvidence && evidence.notificationEvidence;
+
+  const blockers: string[] = [];
+  if (!d1SchemaReady) blockers.push('D1_SCHEMA_NOT_READY');
+  if (!providerConfigured) blockers.push('AI_PROVIDER_NOT_CONFIGURED');
+  if (!queueConfigured) blockers.push('KCC_TASK_QUEUE_NOT_CONFIGURED');
+  if (!workerSecretConfigured) blockers.push('KCC_WORKER_SECRET_NOT_CONFIGURED');
+
+  const autonomousMissionConfigured = d1SchemaReady && providerConfigured && queueConfigured;
+  const operatorTaskApiConfigured = d1SchemaReady && queueConfigured && workerSecretConfigured;
+
+  return json({
+    success: autonomousMissionConfigured,
+    runtime: 'cloudflare-workers',
+    storage: 'cloudflare-d1',
+    checks: {
+      workerLive: true,
+      d1Bound: true,
+      d1SchemaReady,
+      taskQueueBound: queueConfigured,
+      zeroCostAiProviderConfigured: providerConfigured,
+      workerAuthConfigured: workerSecretConfigured,
+      providerReachability: 'NOT_TESTED',
+      providerBackedEvidence: 'NOT_TESTED'
+    },
+    readiness: {
+      autonomousMissionConfigured,
+      operatorTaskApiConfigured,
+      kccAlive,
+      fulfillmentEvidence: evidence.fulfillmentEvidence,
+      notificationEvidence: evidence.notificationEvidence
+    },
+    blockers,
+    note: 'Configuration/readiness only. This endpoint performs no external provider action and does not establish KCC_ALIVE.'
+  }, autonomousMissionConfigured ? 200 : 503);
 }
 
 async function health(env: KccCloudflareEnv): Promise<Response> {
@@ -451,6 +505,9 @@ export default {
 
     if ((request.method === 'GET' || request.method === 'HEAD') && (url.pathname === '/api/kcc/health' || url.pathname === '/api/health')) {
       return health(env);
+    }
+    if (request.method === 'GET' && url.pathname === '/api/kcc/preflight') {
+      return preflight(env);
     }
 
     if (request.method === 'GET' && url.pathname === '/api/kcc/runtime') {

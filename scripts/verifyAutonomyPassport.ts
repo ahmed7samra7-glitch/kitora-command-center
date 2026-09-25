@@ -52,4 +52,49 @@ if (approval.mode !== 'OWNER_APPROVAL') {
   throw new Error('Expected high-sensitivity mission to require owner approval.');
 }
 
+const invalidSensitivity = issueAutonomyPassport({
+  goal: 'Prepare a financial decision.',
+  sensitivityScore: Number.NaN
+});
+if (invalidSensitivity.mode !== 'OWNER_APPROVAL') {
+  throw new Error('Invalid sensitivity input must fail closed to owner approval.');
+}
+
+const invalidCost = issueAutonomyPassport({
+  goal: 'Prepare a financial decision.',
+  costUSD: Number.NaN
+});
+if (invalidCost.mode !== 'OWNER_APPROVAL') {
+  throw new Error('Invalid cost input must fail closed to owner approval.');
+}
+
+const negativeCost = issueAutonomyPassport({
+  goal: 'Prepare a financial decision.',
+  costUSD: -500
+});
+if (negativeCost.mode !== 'OWNER_APPROVAL') {
+  throw new Error('Negative cost input must fail closed to owner approval.');
+}
+
+const mixedExternalWrite = issueAutonomyPassport({
+  goal: 'Do not purchase inventory. Purchase inventory later only after analysis.'
+});
+if (mixedExternalWrite.mode !== 'BLOCKED') {
+  throw new Error('Any later positive external-write occurrence must fail closed even when an earlier occurrence is negated.');
+}
+
+const overrideExternalWrite = issueAutonomyPassport({
+  goal: 'Never publish content, but publish the approved campaign now.'
+});
+if (overrideExternalWrite.mode !== 'BLOCKED') {
+  throw new Error('Override phrasing must not bypass the external-write boundary.');
+}
+
+const mixedNextActions = admitNextActions(readOnly, [
+  { agentId: 'RESEARCH', goal: 'Do not contact suppliers. Contact a supplier for pricing now.' }
+]);
+if (mixedNextActions.admitted.length !== 0 || mixedNextActions.rejected.length !== 1) {
+  throw new Error('Mixed negation and positive side-effect wording must be rejected in next actions.');
+}
+
 console.log('KCC Autonomy Passport verification: PASS');

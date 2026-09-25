@@ -1,4 +1,8 @@
 import worker, { KccCloudflareEnv, processQueueMessage } from '../worker.js';
+import { executeCloudflareBrainTask } from '../server/cloudflareBrain.js';
+import {
+  hasConfiguredLiveProvider
+} from '../server/cloudflareStore.js';
 import type {
   CloudflareD1Database,
   CloudflareD1Prepared,
@@ -139,6 +143,91 @@ if (healthBody.productionReadiness.kccAlive !== false) {
   throw new Error('KCC_ALIVE must remain false without provider evidence.');
 }
 
+const preflight = await call('/api/kcc/preflight');
+if (preflight.status !== 503) throw new Error(`Expected preflight 503 without AI provider, got ${preflight.status}`);
+const preflightBody = await preflight.json() as any;
+if (
+  preflightBody.readiness?.autonomousMissionConfigured !== false ||
+  !Array.isArray(preflightBody.blockers) ||
+  !preflightBody.blockers.includes('AI_PROVIDER_NOT_CONFIGURED') ||
+  preflightBody.checks?.providerReachability !== 'NOT_TESTED' ||
+  preflightBody.readiness?.kccAlive !== false
+) {
+  throw new Error('Expected preflight to report configuration gaps without claiming provider reachability or KCC_ALIVE.');
+}
+
+const brokenD1: KccCloudflareEnv = {
+  ...env,
+  GEMINI_API_KEY: 'test-gemini-key',
+  KCC_AI_PROVIDER: 'gemini',
+  KCC_ALLOW_PAID_AI_FALLBACK: 'false',
+  KCC_DB: {
+    prepare() {
+      return {
+        bind() { return this; },
+        async all() { throw new Error('missing schema'); },
+        async first() { return null; },
+        async run() { return { success: false, meta: { changes: 0 } }; }
+      };
+    }
+  }
+};
+const brokenPreflight = await worker.fetch(
+  new Request('https://kcc.test/api/kcc/preflight', { method: 'GET' }),
+  brokenD1
+);
+if (brokenPreflight.status !== 503) throw new Error(`Expected preflight 503 when D1 schema is unavailable, got ${brokenPreflight.status}`);
+const brokenPreflightBody = await brokenPreflight.json() as any;
+if (
+  brokenPreflightBody.readiness?.autonomousMissionConfigured !== false ||
+  !brokenPreflightBody.blockers?.includes('D1_SCHEMA_NOT_READY') ||
+  brokenPreflightBody.checks?.d1SchemaReady !== false
+) {
+  throw new Error('Expected preflight to fail closed when D1 schema is unavailable.');
+}
+
+const configuredPreflightEnv: KccCloudflareEnv = {
+  ...env,
+  GEMINI_API_KEY: 'test-gemini-key',
+  KCC_AI_PROVIDER: 'gemini',
+  KCC_ALLOW_PAID_AI_FALLBACK: 'false'
+};
+const configuredPreflight = await worker.fetch(
+  new Request('https://kcc.test/api/kcc/preflight', { method: 'GET' }),
+  configuredPreflightEnv
+);
+if (configuredPreflight.status !== 200) throw new Error(`Expected configured preflight 200, got ${configuredPreflight.status}`);
+const configuredPreflightBody = await configuredPreflight.json() as any;
+if (
+  configuredPreflightBody.readiness?.autonomousMissionConfigured !== true ||
+  configuredPreflightBody.readiness?.kccAlive !== false ||
+  configuredPreflightBody.checks?.providerReachability !== 'NOT_TESTED'
+) {
+  throw new Error('Expected configured preflight to report Brain runtime configuration without asserting live-provider reachability.');
+}
+
+if (hasConfiguredLiveProvider({
+  KCC_AI_PROVIDER: 'gemini',
+  KCC_ALLOW_PAID_AI_FALLBACK: 'false',
+  OPENAI_API_KEY: 'test-paid-provider-key'
+})) {
+  throw new Error('Health/provider telemetry must not report an unused paid provider as executable when paid fallback is disabled.');
+}
+if (!hasConfiguredLiveProvider({
+  KCC_AI_PROVIDER: 'gemini',
+  KCC_ALLOW_PAID_AI_FALLBACK: 'false',
+  GEMINI_API_KEY: 'test-gemini-key'
+})) {
+  throw new Error('Configured zero-cost Gemini provider must be reported as executable.');
+}
+if (!hasConfiguredLiveProvider({
+  KCC_AI_PROVIDER: 'openai',
+  KCC_ALLOW_PAID_AI_FALLBACK: 'true',
+  OPENAI_API_KEY: 'test-openai-key'
+})) {
+  throw new Error('An explicitly enabled paid provider must be reported as executable.');
+}
+
 const unauthorized = await call('/api/kcc/tasks', {
   method: 'POST',
   body: JSON.stringify({ type: 'KCC_HEALTH_CHECK' })
@@ -230,7 +319,6 @@ const brainTask = db.tasks.find((task) => task.id === brainTaskId);
 if (!brainTask || brainTask.status !== 'FAILED' || !brainTask.result?.includes('BLOCKED')) {
   throw new Error('Expected missing AI provider to block Brain execution without synthetic success.');
 }
-
 
 // Transient Gemini overload must use the Queue retry path, not a terminal FAILED state.
 const transientDb = new FakeD1();
@@ -333,6 +421,59 @@ await processQueueMessage(env, aliveMessage);
 const aliveTask = db.tasks.find((task) => task.id === aliveTaskId);
 if (!aliveTask || aliveTask.status !== 'COMPLETED') {
   throw new Error('Expected KCC_ALIVE status check to complete without making KCC_ALIVE true.');
+}
+
+// Brain-level governance must also fail closed when called directly.
+const brainGovernanceFetch = globalThis.fetch;
+globalThis.fetch = (async (input: RequestInfo | URL) => {
+  const url = String(input);
+  if (url.includes('generativelanguage.googleapis.com')) {
+    return new Response(JSON.stringify({
+      candidates: [{
+        content: {
+          parts: [{ text: JSON.stringify({ status: 'PASS', nextActions: [] }) }]
+        }
+      }]
+    }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' }
+    });
+  }
+  return brainGovernanceFetch(input);
+}) as typeof globalThis.fetch;
+
+try {
+  const invalidBrainSensitivity = await executeCloudflareBrainTask({
+    KCC_AI_PROVIDER: 'gemini',
+    KCC_ALLOW_PAID_AI_FALLBACK: 'false',
+    GEMINI_API_KEY: 'test-key',
+    GEMINI_MODEL: 'gemini-2.5-flash-lite'
+  }, {
+    taskId: 'brain-governance-naN',
+    agentId: 'EXECUTIVE_AUDITOR',
+    goal: 'Prepare a financial review.',
+    sensitivityScore: Number.NaN
+  });
+  if (!invalidBrainSensitivity.requiresOwnerApproval) {
+    throw new Error('Direct Brain execution must require owner approval for invalid sensitivity.');
+  }
+
+  const negativeBrainCost = await executeCloudflareBrainTask({
+    KCC_AI_PROVIDER: 'gemini',
+    KCC_ALLOW_PAID_AI_FALLBACK: 'false',
+    GEMINI_API_KEY: 'test-key',
+    GEMINI_MODEL: 'gemini-2.5-flash-lite'
+  }, {
+    taskId: 'brain-governance-negative-cost',
+    agentId: 'EXECUTIVE_AUDITOR',
+    goal: 'Prepare a financial review.',
+    costUSD: -10
+  });
+  if (!negativeBrainCost.requiresOwnerApproval) {
+    throw new Error('Direct Brain execution must require owner approval for negative cost.');
+  }
+} finally {
+  globalThis.fetch = brainGovernanceFetch;
 }
 
 console.log('Cloudflare Worker + D1 + Queue verification: PASS');

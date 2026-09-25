@@ -132,19 +132,29 @@ export class KCCRealityVerifier {
     } else if (method === 'API_CHECK') {
       const inspection = executionOutput?.kitoraInspection;
       const receiptId = typeof inspection?.providerReceiptId === 'string' ? inspection.providerReceiptId.trim() : '';
+      const storeUrl = typeof inspection?.storeUrl === 'string' ? inspection.storeUrl.trim() : '';
+      const inspectedAt = typeof inspection?.inspectedAt === 'string' ? inspection.inspectedAt.trim() : '';
       const receipt = getProviderEvidenceReceipt(receiptId);
-      const receiptValid = verifyProviderEvidenceReceipt(receipt, {
-        provider: 'KITORA_STORE',
-        operation: 'STORE_INSPECTION',
-        resourceId: typeof inspection?.storeUrl === 'string' ? inspection.storeUrl : undefined,
-        observedAt: typeof inspection?.inspectedAt === 'string' ? inspection.inspectedAt : undefined,
-        metadata: {
-          liveHttpAccessible: inspection?.liveHttpAccessible === true,
-          httpStatusCode: inspection?.httpStatusCode ?? null,
-          checkoutStatus: inspection?.checkoutStatus,
-          title: inspection?.title ?? null
-        }
-      });
+      let receiptValid = false;
+
+      if (!storeUrl || !inspectedAt) {
+        verified = false;
+        confidenceScore = 0.0;
+        evidence.push('API verification rejected: storeUrl and inspectedAt are required provider-evidence fields.');
+      } else {
+        receiptValid = verifyProviderEvidenceReceipt(receipt, {
+          provider: 'KITORA_STORE',
+          operation: 'STORE_INSPECTION',
+          resourceId: storeUrl,
+          observedAt: inspectedAt,
+          metadata: {
+            liveHttpAccessible: inspection?.liveHttpAccessible === true,
+            httpStatusCode: inspection?.httpStatusCode ?? null,
+            checkoutStatus: inspection?.checkoutStatus,
+            title: inspection?.title ?? null
+          }
+        });
+      }
 
       if (!receiptValid) {
         verified = false;

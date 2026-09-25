@@ -176,6 +176,56 @@ class PayPalRuntime {
     return orderRecord;
   }
 
+  private async reconcileCapturedOrder(orderId: string, expectedCaptureId?: string): Promise<PayPalOrderRecord | null> {
+    const savedOrders = dbRuntime.get('paypalOrders') || [];
+    const index = savedOrders.findIndex((o: PayPalOrderRecord) => o.id === orderId);
+
+    if (!this.isConfigured() || index < 0) return null;
+    if (savedOrders[index].mode !== this.mode) {
+      throw new Error(`PayPal order ${orderId} was created for ${savedOrders[index].mode}, not configured ${this.mode}`);
+    }
+
+    const res = await fetch(`${this.baseUrl}/v2/checkout/orders/${orderId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${await this.getAccessToken()}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`PayPal capture reconciliation failed (${res.status}): ${errText}`);
+    }
+
+    const data = await res.json();
+    const captures = Array.isArray(data.purchase_units)
+      ? data.purchase_units.flatMap((unit: any) => Array.isArray(unit?.payments?.captures) ? unit.payments.captures : [])
+      : [];
+    const completedCapture = captures.find((capture: any) => {
+      const id = typeof capture?.id === 'string' ? capture.id.trim() : '';
+      return capture?.status === 'COMPLETED' && id && (!expectedCaptureId || id === expectedCaptureId);
+    });
+
+    if (data.status !== 'COMPLETED' || !completedCapture) {
+      return null;
+    }
+
+    const captureId = String(completedCapture.id).trim();
+    const updatedRecord: PayPalOrderRecord = {
+      ...savedOrders[index],
+      status: 'COMPLETED',
+      captureId,
+      updateTime: new Date().toISOString(),
+      payer: data.payer
+    };
+
+    savedOrders[index] = updatedRecord;
+    dbRuntime.set('paypalOrders', savedOrders);
+    eventBus.publish('PAYPAL.ORDER.CAPTURED', 'PayPalRuntime', updatedRecord);
+    return updatedRecord;
+  }
+
   public async captureOrder(orderId: string): Promise<PayPalOrderRecord> {
     const savedOrders = dbRuntime.get('paypalOrders') || [];
     const index = savedOrders.findIndex((o: PayPalOrderRecord) => o.id === orderId);
@@ -191,6 +241,12 @@ class PayPalRuntime {
     }
     if (savedOrders[index].status === 'COMPLETED' && savedOrders[index].captureId) {
       throw new Error(`PayPal order ${orderId} is already completed; refusing duplicate capture`);
+    }
+
+    if (savedOrders[index].captureId) {
+      const reconciled = await this.reconcileCapturedOrder(orderId, savedOrders[index].captureId);
+      if (reconciled) return reconciled;
+      throw new Error('PayPal capture is already initiated; provider has not yet confirmed completion');
     }
 
     const token = await this.getAccessToken();
@@ -211,29 +267,44 @@ class PayPalRuntime {
     const captures = Array.isArray(data.purchase_units)
       ? data.purchase_units.flatMap((unit: any) => Array.isArray(unit?.payments?.captures) ? unit.payments.captures : [])
       : [];
-    const completedCapture = captures.find((capture: any) =>
-      capture?.status === 'COMPLETED' &&
-      typeof capture?.id === 'string' &&
-      capture.id.trim()
-    );
-    if (data.status !== 'COMPLETED' || !completedCapture) {
-      throw new Error('PayPal capture response was incomplete: order status must be COMPLETED and a COMPLETED capture with a provider capture ID is required');
+    const providerCapture = captures.find((capture: any) => {
+      const id = typeof capture?.id === 'string' ? capture.id.trim() : '';
+      return Boolean(id);
+    });
+
+    if (!providerCapture) {
+      throw new Error('PayPal capture response was incomplete: a provider capture ID is required');
     }
 
-    const captureId = String(completedCapture.id).trim();
-    const updatedRecord: PayPalOrderRecord = {
+    const captureId = String(providerCapture.id).trim();
+    const pendingRecord: PayPalOrderRecord = {
       ...savedOrders[index],
-      status: 'COMPLETED',
       captureId,
+      updateTime: new Date().toISOString()
+    };
+
+    if (data.status !== 'COMPLETED' || providerCapture.status !== 'COMPLETED') {
+      savedOrders[index] = pendingRecord;
+      dbRuntime.set('paypalOrders', savedOrders);
+
+      const reconciled = await this.reconcileCapturedOrder(orderId, captureId);
+      if (reconciled) return reconciled;
+
+      throw new Error('PayPal capture response was incomplete: provider capture is not yet confirmed COMPLETED');
+    }
+
+    const completedRecord: PayPalOrderRecord = {
+      ...pendingRecord,
+      status: 'COMPLETED',
       updateTime: new Date().toISOString(),
       payer: data.payer
     };
 
-    savedOrders[index] = updatedRecord;
+    savedOrders[index] = completedRecord;
     dbRuntime.set('paypalOrders', savedOrders);
 
-    eventBus.publish('PAYPAL.ORDER.CAPTURED', 'PayPalRuntime', updatedRecord);
-    return updatedRecord;
+    eventBus.publish('PAYPAL.ORDER.CAPTURED', 'PayPalRuntime', completedRecord);
+    return completedRecord;
   }
 
   /** Reconciles PayPal webhooks without repeating a completed capture. */
@@ -247,30 +318,47 @@ class PayPalRuntime {
       receivedAt: new Date().toISOString()
     });
 
-    const captureId = typeof resource?.id === 'string' ? resource.id.trim() : '';
-    const orderId = typeof resource?.supplementary_data?.related_ids?.order_id === 'string'
-      ? resource.supplementary_data.related_ids.order_id.trim()
-      : '';
+    const resourceId = typeof resource?.id === 'string' ? resource.id.trim() : '';
+    const captureId = eventType === 'PAYMENT.CAPTURE.COMPLETED' ? resourceId : '';
+    const orderId = eventType === 'CHECKOUT.ORDER.APPROVED'
+      ? resourceId
+      : (typeof resource?.supplementary_data?.related_ids?.order_id === 'string'
+        ? resource.supplementary_data.related_ids.order_id.trim()
+        : '');
 
     if (eventType === 'PAYMENT.CAPTURE.COMPLETED') {
       const savedOrder = this.getSavedOrders().find((order) =>
         (orderId && order.id === orderId) ||
         (captureId && order.captureId === captureId)
       );
-      return {
-        processed: Boolean(
-          savedOrder?.status === 'COMPLETED' &&
-          savedOrder.captureId &&
-          (!captureId || savedOrder.captureId === captureId)
-        ),
-        eventType,
-      };
+
+      if (!savedOrder) {
+        return { processed: false, eventType };
+      }
+
+      if (
+        savedOrder.status === 'COMPLETED' &&
+        savedOrder.captureId &&
+        (!captureId || savedOrder.captureId === captureId)
+      ) {
+        return { processed: true, eventType };
+      }
+
+      const reconciled = await this.reconcileCapturedOrder(savedOrder.id, captureId || savedOrder.captureId);
+      return { processed: Boolean(reconciled), eventType };
     }
 
     if (eventType === 'CHECKOUT.ORDER.APPROVED') {
       const savedOrder = this.getSavedOrders().find((order) => order.id === orderId);
-      if (!savedOrder || savedOrder.status !== 'APPROVED' || savedOrder.captureId) {
+      if (!savedOrder) {
         return { processed: false, eventType };
+      }
+      if (savedOrder.status === 'COMPLETED' && savedOrder.captureId) {
+        return { processed: true, eventType };
+      }
+      if (savedOrder.captureId) {
+        const reconciled = await this.reconcileCapturedOrder(orderId, savedOrder.captureId);
+        return { processed: Boolean(reconciled), eventType };
       }
       await this.captureOrder(orderId);
     }

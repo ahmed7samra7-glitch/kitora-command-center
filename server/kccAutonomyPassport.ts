@@ -58,9 +58,11 @@ function isNegatedExternalWrite(value: string, matchIndex: number): boolean {
 function looksLikeExternalWrite(text: string): boolean {
   const value = String(text || '');
   return EXTERNAL_WRITE_PATTERNS.some((pattern) => {
-    const match = pattern.exec(value);
-    if (!match || typeof match.index !== 'number') return false;
-    return !isNegatedExternalWrite(value, match.index);
+    const scanner = new RegExp(pattern.source, pattern.flags.includes('g') ? pattern.flags : pattern.flags + 'g');
+    for (const match of value.matchAll(scanner)) {
+      if (typeof match.index === 'number' && !isNegatedExternalWrite(value, match.index)) return true;
+    }
+    return false;
   });
 }
 
@@ -72,8 +74,11 @@ export function issueAutonomyPassport(input: {
 }): KccAutonomyPassport {
   const issuedAt = new Date();
   const ttlSeconds = Math.max(60, Math.min(3600, Number(input.ttlSeconds || 900)));
-  const sensitivity = Number(input.sensitivityScore || 0);
-  const cost = Number(input.costUSD || 0);
+  const rawSensitivity = Number(input.sensitivityScore ?? 0);
+  const rawCost = Number(input.costUSD ?? 0);
+  // Invalid numeric governance inputs fail closed instead of becoming NaN/zero.
+  const sensitivity = Number.isFinite(rawSensitivity) && rawSensitivity >= 0 ? rawSensitivity : Number.POSITIVE_INFINITY;
+  const cost = Number.isFinite(rawCost) && rawCost >= 0 ? rawCost : Number.POSITIVE_INFINITY;
   const goal = String(input.goal || '').trim();
 
   let mode: KccAutonomyMode = 'READ_ONLY';
