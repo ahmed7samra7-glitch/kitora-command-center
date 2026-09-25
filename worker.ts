@@ -198,11 +198,13 @@ async function executeMissionTask(env: KccCloudflareEnv, taskId: string, payload
         }, `KCC-${taskId}`);
 
     await persistWorkerCollaboration(env.KCC_DB, taskId, collaboration);
-    const state = collaboration.status === 'COMPLETED'
-      ? 'REACHABLE'
-      : collaboration.status === 'REQUIRES_AUTH'
-        ? 'REQUIRES_AUTH'
-        : 'UNAVAILABLE';
+    const state = candidate.connectionState === 'QUARANTINED'
+      ? 'QUARANTINED'
+      : collaboration.status === 'COMPLETED'
+        ? 'REACHABLE'
+        : collaboration.status === 'REQUIRES_AUTH'
+          ? 'REQUIRES_AUTH'
+          : 'UNAVAILABLE';
     await updateWorkerConnectionState(env.KCC_DB, candidate.workerId, state);
 
     const trustEvent = collaboration.status === 'COMPLETED' ? 'COLLAB_SUCCESS'
