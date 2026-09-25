@@ -156,6 +156,36 @@ if (
   throw new Error('Expected preflight to report configuration gaps without claiming provider reachability or KCC_ALIVE.');
 }
 
+const brokenD1: KccCloudflareEnv = {
+  ...env,
+  GEMINI_API_KEY: 'test-gemini-key',
+  KCC_AI_PROVIDER: 'gemini',
+  KCC_ALLOW_PAID_AI_FALLBACK: 'false',
+  KCC_DB: {
+    prepare() {
+      return {
+        bind() { return this; },
+        async all() { throw new Error('missing schema'); },
+        async first() { return null; },
+        async run() { return { success: false, meta: { changes: 0 } }; }
+      };
+    }
+  }
+};
+const brokenPreflight = await worker.fetch(
+  new Request('https://kcc.test/api/kcc/preflight', { method: 'GET' }),
+  brokenD1
+);
+if (brokenPreflight.status !== 503) throw new Error(`Expected preflight 503 when D1 schema is unavailable, got ${brokenPreflight.status}`);
+const brokenPreflightBody = await brokenPreflight.json() as any;
+if (
+  brokenPreflightBody.readiness?.autonomousMissionConfigured !== false ||
+  !brokenPreflightBody.blockers?.includes('D1_SCHEMA_NOT_READY') ||
+  brokenPreflightBody.checks?.d1SchemaReady !== false
+) {
+  throw new Error('Expected preflight to fail closed when D1 schema is unavailable.');
+}
+
 const configuredPreflightEnv: KccCloudflareEnv = {
   ...env,
   GEMINI_API_KEY: 'test-gemini-key',
