@@ -492,12 +492,18 @@ export async function executeCommerceFulfillment(env: CommerceEnv, orderId: stri
     throw new Error('KCC_AUTOFULFILL_DISABLED');
   }
 
-  const order = await env.KCC_DB.prepare('SELECT * FROM kcc_commerce_orders WHERE id=?').bind(orderId).first<CommerceOrderRow>();
+  let order = await env.KCC_DB.prepare('SELECT * FROM kcc_commerce_orders WHERE id=?').bind(orderId).first<CommerceOrderRow>();
   if (!order) throw new Error('COMMERCE_ORDER_NOT_FOUND');
   if (order.payment_status !== 'COMPLETED') throw new Error('PAYMENT_NOT_PROVIDER_CONFIRMED');
-  if (order.fulfillment_status === 'SUBMITTED' && order.cj_order_id) return;
 
-  const fulfillment = await createCJOrder(env, order);
+  if (order.fulfillment_status === 'SUBMITTED' && order.cj_order_id) {
+    if (order.notification_status === 'PROVIDER_ACCEPTED' || order.notification_status === 'DELIVERED' || order.notification_status === 'READ') return;
+    if (order.whatsapp_message_id) return;
+  }
+
+  const fulfillment = order.cj_order_id
+    ? { cjOrderId: String(order.cj_order_id), providerRequestId: String(order.cj_provider_request_id || ''), status: order.fulfillment_status }
+    : await createCJOrder(env, order);
   const sandbox = (env.PAYPAL_MODE || 'sandbox').trim().toLowerCase() !== 'live';
   const now = new Date().toISOString();
   await env.KCC_DB.prepare(
