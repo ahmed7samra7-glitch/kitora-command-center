@@ -12,7 +12,11 @@ export interface CommerceEnv {
   CJ_FROM_COUNTRY_CODE?: string;
   META_WHATSAPP_LIVE_BEARER_TOKEN?: string;
   META_WHATSAPP_PHONE_NUMBER_ID?: string;
+  META_WHATSAPP_APP_SECRET?: string;
+  META_WHATSAPP_WEBHOOK_VERIFY_TOKEN?: string;
   META_WHATSAPP_GRAPH_VERSION?: string;
+  WHATSAPP_TOKEN?: string;
+  WHATSAPP_PHONE_NUMBER_ID?: string;
   KCC_AUTOFULFILL_ENABLED?: string;
   KCC_MAX_AUTO_FULFILL_COST_USD?: string;
   KCC_DB: CloudflareD1Database;
@@ -457,8 +461,10 @@ async function sendWhatsApp(
   to: string,
   body: string
 ): Promise<{ messageId: string; providerRequestId: string }> {
-  const token = required(env, 'META_WHATSAPP_LIVE_BEARER_TOKEN');
-  const phoneNumberId = required(env, 'META_WHATSAPP_PHONE_NUMBER_ID');
+  const token = String(env.META_WHATSAPP_LIVE_BEARER_TOKEN || env.WHATSAPP_TOKEN || '').trim();
+  const phoneNumberId = String(env.META_WHATSAPP_PHONE_NUMBER_ID || env.WHATSAPP_PHONE_NUMBER_ID || '').trim();
+  if (!token) throw new Error('META_WHATSAPP_LIVE_BEARER_TOKEN or WHATSAPP_TOKEN is required for WhatsApp notifications');
+  if (!phoneNumberId) throw new Error('META_WHATSAPP_PHONE_NUMBER_ID or WHATSAPP_PHONE_NUMBER_ID is required for WhatsApp notifications');
   const graphVersion = (env.META_WHATSAPP_GRAPH_VERSION || 'v21.0').trim();
   const response = await fetch(`https://graph.facebook.com/${graphVersion}/${encodeURIComponent(phoneNumberId)}/messages`, {
     method: 'POST',
