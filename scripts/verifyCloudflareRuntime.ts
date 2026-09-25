@@ -143,6 +143,37 @@ if (healthBody.productionReadiness.kccAlive !== false) {
   throw new Error('KCC_ALIVE must remain false without provider evidence.');
 }
 
+const preflight = await call('/api/kcc/preflight');
+if (preflight.status !== 503) throw new Error(`Expected preflight 503 without AI provider, got ${preflight.status}`);
+const preflightBody = await preflight.json() as any;
+if (
+  preflightBody.readiness?.autonomousMissionConfigured !== false ||
+  !Array.isArray(preflightBody.blockers) ||
+  !preflightBody.blockers.includes('AI_PROVIDER_NOT_CONFIGURED') ||
+  preflightBody.checks?.providerReachability !== 'NOT_TESTED' ||
+  preflightBody.readiness?.kccAlive !== false
+) {
+  throw new Error('Expected preflight to report configuration gaps without claiming provider reachability or KCC_ALIVE.');
+}
+
+const configuredPreflight = await worker.fetch(new Request('https://kcc.test/api/kcc/preflight'), {
+  method: 'GET'
+}, {
+  ...env,
+  GEMINI_API_KEY: 'test-gemini-key',
+  KCC_AI_PROVIDER: 'gemini',
+  KCC_ALLOW_PAID_AI_FALLBACK: 'false'
+});
+if (configuredPreflight.status !== 200) throw new Error(`Expected configured preflight 200, got ${configuredPreflight.status}`);
+const configuredPreflightBody = await configuredPreflight.json() as any;
+if (
+  configuredPreflightBody.readiness?.autonomousMissionConfigured !== true ||
+  configuredPreflightBody.readiness?.kccAlive !== false ||
+  configuredPreflightBody.checks?.providerReachability !== 'NOT_TESTED'
+) {
+  throw new Error('Expected configured preflight to report Brain runtime configuration without asserting live-provider reachability.');
+}
+
 if (hasConfiguredLiveProvider({
   KCC_AI_PROVIDER: 'gemini',
   KCC_ALLOW_PAID_AI_FALLBACK: 'false',
