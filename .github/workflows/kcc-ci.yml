@@ -68,6 +68,8 @@ jobs:
 
       - name: Verify Cloudflare Worker runtime
         run: npm run verify:cloudflare-runtime
+      - name: Verify Cloudflare commerce bridge
+        run: npm run verify:cloudflare-commerce
 
       - name: Verify KCC Autonomy Passport
         run: npm run verify:autonomy-passport
