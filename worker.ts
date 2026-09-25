@@ -294,6 +294,46 @@ function isTransientBrainFailure(error?: string): boolean {
     || value.includes('high demand');
 }
 
+async function preflight(env: KccCloudflareEnv): Promise<Response> {
+  const evidence = await readEvidenceSummary(env.KCC_DB);
+  const providerConfigured = hasConfiguredLiveProvider(env);
+  const queueConfigured = Boolean(env.KCC_TASK_QUEUE);
+  const workerSecretConfigured = Boolean(env.KCC_WORKER_SECRET?.trim());
+  const kccAlive = evidence.fulfillmentEvidence && evidence.notificationEvidence;
+
+  const blockers: string[] = [];
+  if (!providerConfigured) blockers.push('AI_PROVIDER_NOT_CONFIGURED');
+  if (!queueConfigured) blockers.push('KCC_TASK_QUEUE_NOT_CONFIGURED');
+  if (!workerSecretConfigured) blockers.push('KCC_WORKER_SECRET_NOT_CONFIGURED');
+
+  const autonomousMissionConfigured = providerConfigured && queueConfigured;
+  const operatorTaskApiConfigured = queueConfigured && workerSecretConfigured;
+
+  return json({
+    success: autonomousMissionConfigured,
+    runtime: 'cloudflare-workers',
+    storage: 'cloudflare-d1',
+    checks: {
+      workerLive: true,
+      d1Bound: true,
+      taskQueueBound: queueConfigured,
+      zeroCostAiProviderConfigured: providerConfigured,
+      workerAuthConfigured: workerSecretConfigured,
+      providerReachability: 'NOT_TESTED',
+      providerBackedEvidence: 'NOT_TESTED'
+    },
+    readiness: {
+      autonomousMissionConfigured,
+      operatorTaskApiConfigured,
+      kccAlive,
+      fulfillmentEvidence: evidence.fulfillmentEvidence,
+      notificationEvidence: evidence.notificationEvidence
+    },
+    blockers,
+    note: 'Configuration/readiness only. This endpoint performs no external provider action and does not establish KCC_ALIVE.'
+  }, autonomousMissionConfigured ? 200 : 503);
+}
+
 async function health(env: KccCloudflareEnv): Promise<Response> {
   try {
     const evidence = await readEvidenceSummary(env.KCC_DB);
@@ -453,6 +493,9 @@ export default {
 
     if ((request.method === 'GET' || request.method === 'HEAD') && (url.pathname === '/api/kcc/health' || url.pathname === '/api/health')) {
       return health(env);
+    }
+    if (request.method === 'GET' && url.pathname === '/api/kcc/preflight') {
+      return preflight(env);
     }
 
     if (request.method === 'GET' && url.pathname === '/api/kcc/runtime') {
