@@ -125,6 +125,25 @@ try {
   globalThis.fetch = originalFetch;
 }
 
+// A worker without a secure A2A endpoint is quarantined immediately and stays quarantined.
+const noEndpointWorker: DiscoveredAiWorker = {
+  workerId: 'A2A:no-endpoint-worker',
+  name: 'No Endpoint Worker',
+  provider: 'test',
+  description: 'worker without a secure endpoint',
+  protocol: 'UNKNOWN',
+  endpoint: null,
+  capabilities: ['research'],
+  connectionState: 'DISCOVERED',
+  discoveredAt: new Date().toISOString(),
+  lastCheckedAt: new Date().toISOString(),
+  source: 'test'
+};
+const noEndpointTrust = await runWorkerCanary(noEndpointWorker);
+if (noEndpointTrust.level !== 'QUARANTINED' || noEndpointTrust.canaryStatus !== 'QUARANTINED' || noEndpointWorker.connectionState !== 'QUARANTINED') {
+  throw new Error('Expected workers without a secure A2A endpoint to be quarantined.');
+}
+
 let quarantineFetchCount = 0;
 globalThis.fetch = (async (input: RequestInfo | URL) => {
   const url = String(input);
